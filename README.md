@@ -12,6 +12,7 @@ Sous Chef is an app that works with you to make the most of your kitchen invento
 | Tucker (Kenneth) Haas | <img src="./images/tucker.png" width="150"> |
 | Sarah Tieu            | <img src="./images/sarahtieu.png" width="150"> |
 | Kally Zheng           | <img src="./images/KallyHeadshot.JPG" width="150"> |
+| Kally Zheng           | <img src="./images/KallyHeadshot.JPG" width="150"> |
 
 ## Team Skills
 | Member                | Skills                        | Personal Traits  | Desired Growth | Weaknesses |
@@ -19,6 +20,7 @@ Sous Chef is an app that works with you to make the most of your kitchen invento
 | Aitan Grossman        | Back end, Web, Algorithms | Cooperative, Pragmatic, Likes cuddling | Iterated development, courage | UI design, no friends |
 | Tucker (Kenneth) Haas | Backend, System Architecture, Python, C, C++, Go, Project Management | Cooperative, Honest, Strong Willed | Visual Design, Organization | Obsess over details, Web dev
 | Sarah Tieu            | Python, Go, Back end, ML, NLP | Organized, Cooperative | Need finding, Prototyping, Front end | Front end |
+| Kally Zheng           | Python, Java, Visual Design, Needfinding |  Organized, Open minded, Motivated | Web Development, Mobile Development | Selfconfidence, ML, NLP
 | Kally Zheng           | Python, Java, Visual Design, Needfinding |  Organized, Open minded, Motivated | Web Development, Mobile Development | Selfconfidence, ML, NLP
 
 ## Team Communication
