@@ -1,8 +1,8 @@
-# Diversify.ai
+# Füd
 <img src="./images/sousChef@2x.png" width="150">
 
 ## Project Synopsis
-Diversify.ai is a program that seeks to take you out of your daily health routine and discover new things to make your lifestyle healthier and more enjoyable than ever. Enter and rate your favorite foods/exercises, and diversify.ai will recommend similarly tasting and healthy foods/exercises to allow you to explore new things while still enjoying your lifestyle.
+Füd is a program that seeks to take you out of your daily health routine and discover new things to make your lifestyle healthier and more enjoyable than ever. Enter and rate your favorite foods/exercises, and Füd will recommend similarly tasting and healthy foods/exercises to allow you to explore new things while still enjoying your lifestyle.
 
 ## Team Members
 | Member                | Photo                                         |
