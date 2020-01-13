@@ -10,7 +10,7 @@ Sous Chef is an app that works with you to make the most of your kitchen invento
 | --------------------- | --------------------------------------------- |
 | Aitan Grossman        | <img src="./images/Headshot.jpg" width="150"> |
 | Tucker (Kenneth) Haas | <img src="./images/tucker.png" width="150"> |
-| Connor Quinn           | <img src="./images/sarahtieu.png" width="150"> |
+| Connor Quinn           | <img src="./images/IMG_0172.jpeg" width="150"> |
 | Kally Zheng           | <img src="./images/KallyHeadshot.JPG" width="150"> |
 | Kally Zheng           | <img src="./images/KallyHeadshot.JPG" width="150"> |
 
