@@ -2,8 +2,7 @@
 <img src="./images/sousChef@2x.png" width="150">
 
 ## Project Synopsis
-Sous Chef is an app that works with you to make the most of your kitchen inventory. By allowing you to scan in receipts, Sous Chef allows you to easily find new recipes using ingredients you already have, meaning less time running to the store to buy a missing ingredient and more time discovering new and exciting foods. 
-
+Diversify.ai is a program that seeks to take you out of your daily health routine and discover new things to make your lifestyle healthier and more enjoyable than ever. Enter and rate your favorite foods/exercises, and diversify.ai will recommend similarly tasting and healthy foods/exercises to allow you to explore new things while still enjoying your lifestyle.
 
 ## Team Members
 | Member                | Photo                                         |
@@ -28,6 +27,6 @@ Sous Chef is an app that works with you to make the most of your kitchen invento
 * [Google Team Drive](https://drive.google.com/drive/u/0/folders/0APuBDtZh-TEUUk9PVA)
 * [SGM Worksheet](https://docs.google.com/forms/d/1GayYOwG_QavQE4iNx63emikCSeXUXO9Gq0VRaRGm9ok/edit?usp=sharing)
 * @stanford Email
-    * aitan
+    * ctquinn
     * thaas19
     * stieu12
