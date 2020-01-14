@@ -23,10 +23,12 @@ Füd is a program that seeks to take you out of your daily health routine and di
 | Kally Zheng           | Python, Java, Visual Design, Needfinding |  Organized, Open minded, Motivated | Web Development, Mobile Development | Selfconfidence, ML, NLP
 
 ## Team Communication
-* Facebook Messenger
+* Slack
 * [Google Team Drive](https://drive.google.com/drive/u/0/folders/0APuBDtZh-TEUUk9PVA)
 * [SGM Worksheet](https://docs.google.com/forms/d/1GayYOwG_QavQE4iNx63emikCSeXUXO9Gq0VRaRGm9ok/edit?usp=sharing)
 * @stanford Email
     * ctquinn
-    * thaas19
-    * stieu12
+    * pranavu
+    * sushilu
+    * brocklin
+    * mcai88
