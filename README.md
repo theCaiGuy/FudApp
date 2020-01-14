@@ -1,5 +1,5 @@
 # Füd
-<img src="./images/sousChef@2x.png" width="150">
+<img src="./images/FudLogo.png" width="150">
 
 ## Project Synopsis
 Füd is a program that seeks to take you out of your daily health routine and discover new things to make your lifestyle healthier and more enjoyable than ever. Enter and rate your favorite foods, and Füd will recommend similarly tasting and healthy foods to allow you to explore new things while still enjoying your lifestyle.
