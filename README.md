@@ -9,9 +9,9 @@ Füd is a program that seeks to take you out of your daily health routine and di
 | --------------------- | --------------------------------------------- |
 | Aitan Grossman        | <img src="./images/Headshot.jpg" width="150"> |
 | Tucker (Kenneth) Haas | <img src="./images/tucker.png" width="150"> |
-| Connor Quinn           | <img src="./images/IMG_0172.jpeg" width="150"> |
+| Connor Quinn          | <img src="./images/IMG_0172.jpeg" width="150"> |
 | Kally Zheng           | <img src="./images/KallyHeadshot.JPG" width="150"> |
-| Kally Zheng           | <img src="./images/KallyHeadshot.JPG" width="150"> |
+| Ben Rocklin           | <img src="./images/MontyNussPhotographyBenjamin003-copy-630x420 - Copy (2).jpg" width="150"> |
 
 ## Team Skills
 | Member                | Skills                        | Personal Traits  | Desired Growth | Weaknesses |
@@ -20,7 +20,7 @@ Füd is a program that seeks to take you out of your daily health routine and di
 | Tucker (Kenneth) Haas | Backend, System Architecture, Python, C, C++, Go, Project Management | Cooperative, Honest, Strong Willed | Visual Design, Organization | Obsess over details, Web dev
 | Connor Quinn          | Data analysis and visualization, Machine Learning | Gets things done early, communication is everything | Software engineering practices beyond hard code |  The engineering mindset |
 | Kally Zheng           | Python, Java, Visual Design, Needfinding |  Organized, Open minded, Motivated | Web Development, Mobile Development | Selfconfidence, ML, NLP
-| Kally Zheng           | Python, Java, Visual Design, Needfinding |  Organized, Open minded, Motivated | Web Development, Mobile Development | Selfconfidence, ML, NLP
+| Ben Rocklin           | Full stack, ML, AI, systems, Java, Python, Typescript | Hardworking, enjoy new programming languages, loves constructing things with code, likes humor | More practical frontend experience, planning | Bad memory, product management, consumer-side work
 
 ## Team Communication
 * Slack
