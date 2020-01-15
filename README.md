@@ -7,7 +7,7 @@ Füd is a program that seeks to take you out of your daily health routine and di
 ## Team Members
 | Member                | Photo                                         |
 | --------------------- | --------------------------------------------- |
-| Aitan Grossman        | <img src="./images/Headshot.jpg" width="150"> |
+| Pranav Upadhyayula        | <img src="./images/IMG_9755.jpeg" width="150"> |
 | Tucker (Kenneth) Haas | <img src="./images/tucker.png" width="150"> |
 | Connor Quinn           | <img src="./images/IMG_0172.jpeg" width="150"> |
 | Kally Zheng           | <img src="./images/KallyHeadshot.JPG" width="150"> |
@@ -16,7 +16,7 @@ Füd is a program that seeks to take you out of your daily health routine and di
 ## Team Skills
 | Member                | Skills                        | Personal Traits  | Desired Growth | Weaknesses |
 | --------------------- | ----------------------------- | ---------------- | -------------- | ---------- |
-| Aitan Grossman        | Back end, Web, Algorithms | Cooperative, Pragmatic, Likes cuddling | Iterated development, courage | UI design, no friends |
+| Pranav Upadhyayula | Machine Learning, Python, web app development, product management, building MVPs | Efficient, detail-oriented, customer-obsessed, organized | Quickly pivoting, conducting effective customer interviews  | Systems, architecture, backend |
 | Tucker (Kenneth) Haas | Backend, System Architecture, Python, C, C++, Go, Project Management | Cooperative, Honest, Strong Willed | Visual Design, Organization | Obsess over details, Web dev
 | Connor Quinn          | Data analysis and visualization, Machine Learning | Gets things done early, communication is everything | Software engineering practices beyond hard code |  The engineering mindset |
 | Kally Zheng           | Python, Java, Visual Design, Needfinding |  Organized, Open minded, Motivated | Web Development, Mobile Development | Selfconfidence, ML, NLP
