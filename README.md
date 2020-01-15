@@ -19,7 +19,7 @@ Füd is the recommendation engine for your lifestyle! Using AI techniques, Füd 
 | Pranav Upadhyayula | Machine Learning, Python, web app development, product management, building MVPs | Efficient, detail-oriented, customer-obsessed, organized | Quickly pivoting, conducting effective customer interviews  | Systems, architecture, backend |
 | Sushil Upadhyayula | AI/ML, Fullstack development | Work well in sprints | Rapid prototyping | Systems, remote work
 | Connor Quinn          | Data analysis and visualization, Machine Learning, leadership and communication | Gets things done early, communication is everything | Software engineering practices beyond hard code |  The engineering mindset |
-| Michael Cai           | Skills: Python, AI/ML, Statistics, ReactJS, NodeJS |  Organized, Driven, Detail-oriented | Project Management, Full Stack | Impatient, Headstrong
+| Michael Cai           | Python, AI/ML, Statistics, ReactJS, NodeJS |  Organized, Driven, Detail-oriented | Project Management, Full Stack | Impatient, Headstrong
 | Ben Rocklin           | Full stack, ML, AI, systems, Java, Python, Typescript | Hardworking, enjoy new programming languages, loves constructing things with code, likes humor | More practical frontend experience, planning | Bad memory, product management, consumer-side work
 
 ## Team Communication
