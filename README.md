@@ -2,7 +2,7 @@
 <img src="./images/FudLogo.png" width="150">
 
 ## Project Synopsis
-Füd is a program that seeks to take you out of your daily health routine and discover new things to make your lifestyle healthier and more enjoyable than ever. Enter and rate your favorite foods, and Füd will recommend similarly tasting and healthy foods to allow you to explore new things while still enjoying your lifestyle.
+Füd is the recommendation engine for your lifestyle! Using AI techniques, Füd will help you get out of your daily health routine and discover new things to make your lifestyle more enjoyable than ever. Enter and rate your favorite foods, and Füd will recommend similarly tasting and healthy foods to allow you to explore new things while still enjoying the tastes you love.
 
 ## Team Members
 | Member                | Photo                                         |
