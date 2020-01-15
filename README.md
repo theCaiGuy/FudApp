@@ -27,8 +27,8 @@ Füd is the recommendation engine for your lifestyle! Using AI techniques, Füd 
 * Asana
 * [SGM Worksheet](https://docs.google.com/forms/d/1GayYOwG_QavQE4iNx63emikCSeXUXO9Gq0VRaRGm9ok/edit?usp=sharing)
 * @stanford Email
-    * ctquinn
     * pranavu
     * sushilu
-    * brocklin
+    * ctquinn
     * mcai88
+    * brocklin
