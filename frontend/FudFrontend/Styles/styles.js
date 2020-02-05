@@ -27,6 +27,12 @@ const styles = StyleSheet.create({
     },
     daily_list: {
       flex: 1,
+    },
+    button: {
+      marginButtom: 30,
+      width: 260,
+      alignItems: 'center',
+      backgroundColor: '#2196f3'
     }
   });
 
