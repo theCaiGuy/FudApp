@@ -7,6 +7,7 @@ import {
   View,
 } from 'react-native';
 import { styles } from '../Styles/styles'
+import { TouchableOpacity } from 'react-native-gesture-handler';
 
 export class SignInScreen extends React.Component {
   static navigationOptions = {
@@ -16,14 +17,18 @@ export class SignInScreen extends React.Component {
   render() {
     return (
       <View style={styles.container}>
-        <Button title="Sign in!" onPress={this._signInAsync} />
+        <TouchableOpacity title="Sign in!" onPress={this._signInAsync}>
+          <View style={styles.button}>
+            <Text>Test</Text>
+          </View>
+        </TouchableOpacity>
       </View>
     );
   }
 
   _signInAsync = async () => {
     await AsyncStorage.setItem('userToken', 'abc');
-    this.props.navigation.navigate('Prefs');
+    this.props.navigation.navigate('App');
   };
 }
 

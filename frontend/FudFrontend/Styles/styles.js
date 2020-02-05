@@ -11,7 +11,7 @@ const styles = StyleSheet.create({
       justifyContent: 'center',
     },
     info_item: {
-      backgroundColor: '#419A1C',
+      backgroundColor: '#3b821b',
       padding: 20,
       marginVertical: 8,
       marginHorizontal: 16,

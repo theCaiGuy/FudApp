@@ -17,7 +17,7 @@ const AppStack = createStackNavigator(
   },
   {
     defaultNavigationOptions: {
-      cardStyle: { backgroundColor: '#FFFFFF' },
+      cardStyle: { backgroundColor: '#fff' },
       headerStyle: {
         shadowRadius: 0,
         shadowOffset: {
@@ -34,7 +34,7 @@ const AuthStack = createStackNavigator(
   },
   {
     defaultNavigationOptions: {
-      cardStyle: { backgroundColor: '#FFFFFF' },
+      cardStyle: { backgroundColor: '#fff' },
       headerStyle: {
         shadowRadius: 0,
         shadowOffset: {
@@ -52,7 +52,7 @@ const PreferencesStack = createStackNavigator(
   },
   {
     defaultNavigationOptions: {
-      cardStyle: { backgroundColor: '#FFFFFF' },
+      cardStyle: { backgroundColor: '#fff' },
       headerStyle: {
         shadowRadius: 0,
         shadowOffset: {
@@ -75,7 +75,7 @@ export default createAppContainer(
       initialRouteName: 'AuthLoading',
       defaultNavigationOptions: {
         cardStyle: { 
-          backgroundColor: '#FFFFFF' 
+          backgroundColor: '#fff' 
         },
         headerStyle: {
           shadowRadius: 0,
