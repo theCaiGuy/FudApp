@@ -5,7 +5,8 @@ import { createStackNavigator } from 'react-navigation-stack';
 import { GoalsScreen } from './Views/goals_view'
 import { HomeScreen } from './Views/home_view'
 import { PreferencesScreen } from './Views/preferences_view'
-import { AuthLoadingScreen, SignInScreen } from './Views/profile_view'
+import { AuthLoadingScreen, SignInScreen } from './Views/sign_in_view'
+import { SignUpScreen } from './Views/sign_up_view'
 import { DetailScreen } from './Views/progress_view'
 
 // Adapted from https://snack.expo.io/@react-navigation/auth-flow-v3
@@ -17,7 +18,7 @@ const AppStack = createStackNavigator(
   },
   {
     defaultNavigationOptions: {
-      cardStyle: { backgroundColor: '#FFFFFF' },
+      cardStyle: { backgroundColor: '#fff' },
       headerStyle: {
         shadowRadius: 0,
         shadowOffset: {
@@ -31,16 +32,12 @@ const AppStack = createStackNavigator(
 const AuthStack = createStackNavigator(
   { 
     SignIn: SignInScreen,
+    SignUp: SignUpScreen,
   },
   {
     defaultNavigationOptions: {
-      cardStyle: { backgroundColor: '#FFFFFF' },
-      headerStyle: {
-        shadowRadius: 0,
-        shadowOffset: {
-            height: 0,
-        },
-      },
+      cardStyle: { backgroundColor: '#fff' },
+      headerMode: 'none'
     },
   }
 );
@@ -52,7 +49,7 @@ const PreferencesStack = createStackNavigator(
   },
   {
     defaultNavigationOptions: {
-      cardStyle: { backgroundColor: '#FFFFFF' },
+      cardStyle: { backgroundColor: '#fff' },
       headerStyle: {
         shadowRadius: 0,
         shadowOffset: {
@@ -75,7 +72,7 @@ export default createAppContainer(
       initialRouteName: 'AuthLoading',
       defaultNavigationOptions: {
         cardStyle: { 
-          backgroundColor: '#FFFFFF' 
+          backgroundColor: '#fff' 
         },
         headerStyle: {
           shadowRadius: 0,
