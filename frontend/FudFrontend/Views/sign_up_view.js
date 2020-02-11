@@ -5,7 +5,7 @@ import {
   Button,
   Image,
   KeyboardAvoidingView,
-  SafeAreaView, 
+  SafeAreaView,
   ScrollView,
   StatusBar,
   Text,
@@ -32,7 +32,6 @@ export class SignUpScreen extends React.Component {
               style={styles.profile_text_input}
               placeholder="Name"
               autoCorrect={false}
-              autoCapitalize={false}
             />
             <Text style={styles.welcome}>
               What is your email?
@@ -41,7 +40,6 @@ export class SignUpScreen extends React.Component {
               style={styles.profile_text_input}
               placeholder="Email"
               autoCorrect={false}
-              autoCapitalize={false}              
             />
             <Text style={styles.welcome}>
               Choose a password
@@ -50,17 +48,15 @@ export class SignUpScreen extends React.Component {
               style={styles.profile_text_input}
               placeholder="Password"
               autoCorrect={false}
-              autoCapitalize={false}
               secureTextEntry={true}
             />
             <TextInput
               style={styles.profile_text_input}
               placeholder="Re-enter Password"
               autoCorrect={false}
-              autoCapitalize={false}
               secureTextEntry={true}
             />
-            <TouchableHighlight 
+            <TouchableHighlight
               style={styles.sign_in_button}
               onPress={this._signInAsync}
             >
