@@ -5,7 +5,7 @@ import {
   Button,
   Image,
   KeyboardAvoidingView,
-  SafeAreaView, 
+  SafeAreaView,
   ScrollView,
   StatusBar,
   Text,
@@ -16,10 +16,6 @@ import { styles } from '../Styles/styles'
 import { TouchableHighlight } from 'react-native-gesture-handler';
 
 export class SignInScreen extends React.Component {
-  static navigationOptions = {
-      header: null,
-  };
-
 
   render() {
     return (
@@ -33,16 +29,14 @@ export class SignInScreen extends React.Component {
             style={styles.profile_text_input}
             placeholder="Username"
             autoCorrect={false}
-            autoCapitalize={false}              
           />
           <TextInput
             style={styles.profile_text_input}
             placeholder="Password"
             autoCorrect={false}
-            autoCapitalize={false}
             secureTextEntry={true}
           />
-          <TouchableHighlight 
+          <TouchableHighlight
             style={styles.sign_in_button}
             onPress={this._signInAsync}
           >
@@ -50,7 +44,7 @@ export class SignInScreen extends React.Component {
               <Text style={styles.title}>Sign In</Text>
             </View>
           </TouchableHighlight>
-          <TouchableHighlight 
+          <TouchableHighlight
             style={styles.sign_up_button}
             onPress={this._signUpAsync}
           >
