@@ -10,7 +10,7 @@ export class PreferencesScreen extends React.Component {
     static navigationOptions = {
       title: 'Set Food Preferences',
     };
-  
+
     render() {
       return (
         <View style={styles.container}>
