@@ -9,6 +9,7 @@
 *.orig.*
 **/web-build/
 **/web-report/
+*/__pycache__
 
 # macOS
 *.DS_Store
