@@ -1,5 +1,6 @@
 import React from 'react';
 import {
+    Text,
     Button,
     StatusBar,
     View,
@@ -10,7 +11,7 @@ export class DetailScreen extends React.Component {
     static navigationOptions = {
       title: 'Details of your Füd Plan',
     };
-  
+
     render() {
       return (
         <View style={styles.container}>
