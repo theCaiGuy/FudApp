@@ -69,6 +69,36 @@ const styles = StyleSheet.create({
       flex: 1,
       alignItems: 'stretch',
       marginVertical: 0,
+    },
+    meal_date_item: {
+      backgroundColor: '#3b821b',
+      paddingHorizontal: 20,
+      paddingVertical: 10,
+      marginVertical: 8,
+      marginHorizontal: 16,
+    },
+    central_header: {
+      alignItems: 'center'
+    },
+    central_header_text: {
+      fontSize: 28,
+      textAlign: 'center'
+    },
+    meal_date: {
+      fontSize: 20,
+      color: '#fff'
+    },
+    meal_item: {
+      backgroundColor: '#3b821b',
+      paddingHorizontal: 20,
+      paddingVertical: 10,
+    },
+    meal_item_text: {
+      color: '#fff'
+    },
+    meal: {
+      flexDirection: 'row',
+      alignItems: 'center'
     }
   });
 
