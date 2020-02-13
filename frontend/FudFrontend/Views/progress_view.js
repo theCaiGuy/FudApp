@@ -5,7 +5,6 @@ import {
     StatusBar,
     View,
     FlatList,
-    Text,
     CheckBox,
     Switch
 } from 'react-native';
