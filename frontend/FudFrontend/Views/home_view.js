@@ -41,10 +41,10 @@ const DATA = [
 ];
 
 
-function Day_Component({ 
-  date, 
-  protein, 
-  carbs, 
+function Day_Component({
+  date,
+  protein,
+  carbs,
   fat,
   meal_button_async
 }) {
@@ -53,7 +53,7 @@ function Day_Component({
   var fat_progress = fat / 135
 
   return (
-    <TouchableHighlight 
+    <TouchableHighlight
       style={styles.info_item}
       onPress={meal_button_async}
     >
@@ -82,7 +82,7 @@ export class HomeScreen extends React.Component {
         <FlatList
           style={styles.daily_list}
           data={DATA}
-          renderItem={({ item }) => <Day_Component 
+          renderItem={({ item }) => <Day_Component
             date={item.date}
             protein={item.protein}
             carbs={item.carbs}
@@ -110,4 +110,3 @@ export class HomeScreen extends React.Component {
     this.props.navigation.navigate('Auth');
   };
 }
-  

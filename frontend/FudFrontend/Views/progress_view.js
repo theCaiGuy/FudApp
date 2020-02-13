@@ -1,10 +1,10 @@
 import React, { Component } from 'react';
 import {
+    Text,
     Button,
     StatusBar,
     View,
     FlatList,
-    Text,
     CheckBox,
     Switch
 } from 'react-native';
@@ -143,7 +143,7 @@ export class DetailScreen extends React.Component {
     static navigationOptions = {
       title: 'Weekly Füd Plan',
     };
-  
+
     render() {
       return (
         <View style={styles.container}>
