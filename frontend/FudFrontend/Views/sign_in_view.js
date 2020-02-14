@@ -2,25 +2,26 @@ import React from 'react';
 import {
   ActivityIndicator,
   AsyncStorage,
-  Button,
   Image,
-  KeyboardAvoidingView,
   SafeAreaView,
-  ScrollView,
   StatusBar,
   Text,
   TextInput,
   View,
 } from 'react-native';
 import { styles } from '../Styles/styles'
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scrollview'
 import { TouchableHighlight } from 'react-native-gesture-handler';
 
 export class SignInScreen extends React.Component {
+  static navigationOptions = {
+    headerShown: false,
+  };
 
   render() {
     return (
       <SafeAreaView style={styles.sign_in_container}>
-        <KeyboardAvoidingView style={{flex:1}}>
+        <KeyboardAwareScrollView style={{flex:1}}>
           <Image
             style={styles.logo}
             source={require('../assets/icon.png')}
@@ -52,7 +53,7 @@ export class SignInScreen extends React.Component {
               <Text style={styles.title}>I'm New Here</Text>
             </View>
           </TouchableHighlight>
-        </KeyboardAvoidingView>
+        </KeyboardAwareScrollView>
       </SafeAreaView>
     );
   }
