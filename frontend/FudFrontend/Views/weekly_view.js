@@ -87,21 +87,20 @@ export class HomeScreen extends React.Component {
             protein={item.protein}
             carbs={item.carbs}
             fat={item.fat}
-            meal_button_async={this._showMoreApp}
+            meal_button_async={this._showMoreAppAsync}
           />}
           keyExtractor={item => item.date}
         />
-        <Button title="Adjust Food Preferences" onPress={this._changePrefs} />
         <Button title="Sign Out of Füd" onPress={this._signOutAsync} />
       </SafeAreaView>
     );
   }
 
-  _showMoreApp = () => {
+  _showMoreAppAsync = () => {
     this.props.navigation.navigate('Detail');
   };
 
-  _changePrefs = () => {
+  _changePrefsAsync = () => {
     this.props.navigation.navigate('Prefs');
   }
 

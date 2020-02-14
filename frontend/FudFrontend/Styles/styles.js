@@ -82,7 +82,14 @@ const styles = StyleSheet.create({
     },
     central_header_text: {
       fontSize: 28,
-      textAlign: 'center'
+      textAlign: 'center',
+      marginTop: 20,
+    },
+    central_subheader_text: {
+      fontSize: 20,
+      textAlign: 'center',
+      marginTop: 5,
+      marginBottom: 5,
     },
     meal_date: {
       fontSize: 20,
@@ -99,7 +106,38 @@ const styles = StyleSheet.create({
     meal: {
       flexDirection: 'row',
       alignItems: 'center'
-    }
+    },
+    radioform_style: {
+      marginHorizontal: 10,
+    },
+    separator: {
+      marginVertical: 8,
+      borderBottomColor: '#737373',
+      borderBottomWidth: StyleSheet.hairlineWidth,
+    },
+    text_subcontainer: {
+      marginHorizontal: 10
+    },
+    menu_style: {
+      marginVertical: 10,
+      marginHorizontal: 10,
+      flex: 1,
+      alignItems: 'center',
+    },
+    goal_selection_button: {
+      backgroundColor: '#3b821b',
+      padding: 20,
+      marginVertical: 8,
+      marginHorizontal: 16,
+      alignItems: 'center',
+    },
+    goal_selection_text: {
+      fontSize: 20,
+      textAlign: 'center',
+      marginTop: 5,
+      marginBottom: 5,
+      color: 'white'
+    },
   });
 
 export { styles }

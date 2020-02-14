@@ -1,12 +1,11 @@
 import React, { Component } from 'react';
 import {
-    Text,
-    Button,
-    StatusBar,
-    View,
-    FlatList,
-    CheckBox,
-    Switch
+  AsyncStorage,
+  Text,
+  Button,
+  StatusBar,
+  View,
+  FlatList,
 } from 'react-native';
 import { styles } from '../Styles/styles'
 
@@ -79,7 +78,6 @@ class Dish_Component extends Component {
     this.state = { checked: false };
   }
   
-  
   render() {
     return (
       <View>
@@ -140,14 +138,15 @@ function Daily_Meals_Component({
 }
 
 export class DetailScreen extends React.Component {
-    static navigationOptions = {
-      title: 'Weekly Füd Plan',
-    };
+  static navigationOptions = {
+    headerShown: false,
+  };
 
     render() {
       return (
         <View style={styles.container}>
-          <Text style={styles.central_header_text}>Week of {DATA.week}:</Text>
+          <Text style={styles.central_header_text}>Your Füd Plan</Text>
+          <Text style={styles.central_subheader_text}>Week of {DATA.week}</Text>
           <FlatList
             data={DATA.plan}
             renderItem={({ item }) => <Daily_Meals_Component
@@ -157,13 +156,24 @@ export class DetailScreen extends React.Component {
             keyExtractor={(item, index) => 'key' + index}
           />
           
-          <Button title="Back to Home" onPress={this._goHomeAsync} />
+          <Button title="Adjust Preferences" onPress={this._changePrefsAsync} />
+          <Button title="View Weekly History" onPress={this._goHomeAsync} />
+          <Button title="Sign Out of Füd" onPress={this._signOutAsync} />
           <StatusBar barStyle="default" />
         </View>
       );
     }
 
+    _changePrefsAsync = () => {
+      this.props.navigation.navigate('Prefs');
+    }
+
     _goHomeAsync = async () => {
       this.props.navigation.navigate('Home');
+    };
+
+    _signOutAsync = async () => {
+      await AsyncStorage.clear();
+      this.props.navigation.navigate('Auth');
     };
   }

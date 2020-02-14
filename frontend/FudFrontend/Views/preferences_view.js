@@ -12,7 +12,7 @@ import {
   View,
 } from 'react-native';
 import Constants from 'expo-constants';
-// import { styles } from '../Styles/styles'
+import { styles } from '../Styles/styles'
 
 const PROTEIN_DATA = [
   {
@@ -113,8 +113,8 @@ const FAT_DATA = [
 
 function Item({ title, clicked }) {
   return (
-    <View style={clicked===0?styles.item1:styles.item2}>
-      <Text style={styles.title}>{title}</Text>
+    <View style={clicked===0?local_styles.item1:local_styles.item2}>
+      <Text style={local_styles.title}>{title}</Text>
     </View>
   );
 }
@@ -128,7 +128,7 @@ export class PreferencesScreen extends React.Component {
     render() {
       return (
         <SafeAreaView style={styles.container}>
-          <Text>Protein</Text>
+          <Text style={styles.central_subheader_text}>Protein</Text>
           <FlatList
             data={PROTEIN_DATA}
             renderItem={({item}) =>
@@ -139,7 +139,7 @@ export class PreferencesScreen extends React.Component {
             keyExtractor={item => item.id}
           />
 
-          <Text>Carbs</Text>
+          <Text style={styles.central_subheader_text}>Carbs</Text>
           <FlatList
             data={CARB_DATA}
             renderItem={({item}) =>
@@ -150,7 +150,7 @@ export class PreferencesScreen extends React.Component {
             keyExtractor={item => item.id}
           />
 
-          <Text>Fats</Text>
+          <Text style={styles.central_subheader_text}>Fats</Text>
           <FlatList
             data={FAT_DATA}
             renderItem={({item}) =>
@@ -174,17 +174,12 @@ export class PreferencesScreen extends React.Component {
         this.props.navigation.navigate('App');
       };
 
-
     _goToMainAsync = () => {
         this.props.navigation.navigate('App');
       };
   }
 
-  const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    marginTop: Constants.statusBarHeight,
-  },
+const local_styles = StyleSheet.create({
   item1: {
     backgroundColor: '#419A1C',
     padding: 10,

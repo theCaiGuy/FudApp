@@ -1,7 +1,6 @@
 import React from 'react';
 import {
     Button,
-    StatusBar,
     View,
     StyleSheet,
     SafeAreaView,
@@ -9,23 +8,24 @@ import {
     Text,
     TextInput,
     Picker,
-    KeyboardAvoidingView
 } from 'react-native';
-import Constants from 'expo-constants';
-import {Slider} from 'react-native'
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scrollview'
 import RadioForm, {RadioButton, RadioButtonInput, RadioButtonLabel} from 'react-native-simple-radio-button';
 import { styles } from '../Styles/styles'
+import Menu, { MenuItem, MenuDivider } from 'react-native-material-menu';
+import { TouchableHighlight } from 'react-native-gesture-handler';
 
 function Separator() {
-  return <View style={styles_local.separator} />;
+  return <View style={styles.separator} />;
 }
 
 export class GoalsScreen extends React.Component {
     constructor(props) {
       super(props);
       this.state = {
-        fitness_goal: 0,
-        activity_level: "Sedentary"
+        fitness_goal: "Fat Loss",
+        activity_level: "Sedentary",
+        gender: "Not Specified",
       };
     }
 
@@ -33,116 +33,217 @@ export class GoalsScreen extends React.Component {
       title: 'Set Fitness Goals',
     };
 
-    render() {
-      const { checked } = this.state;
+    _gender_menu = null;
+ 
+    setGenderMenuRef = ref => {
+      this._gender_menu = ref;
+    };
+  
+    showGenderMenu = () => {
+      this._gender_menu.show();
+    };
 
-      let radio_props_fitness_goals = [
-        {label: 'Fat loss', value: 0 },
-        {label: 'Muscle gain', value: 1 },
-        {label: 'Maintenance', value: 2 }
-      ];
+    _activity_menu = null;
+ 
+    setActivityMenuRef = ref => {
+      this._activity_menu = ref;
+    };
+  
+    showActivityMenu = () => {
+      this._activity_menu.show();
+    };
+
+    _goal_menu = null;
+ 
+    setGoalMenuRef = ref => {
+      this._goal_menu = ref;
+    };
+  
+    showGoalMenu = () => {
+      this._goal_menu.show();
+    };
+
+    render() {
 
       return (
-        <SafeAreaView style={styles_local.container}>
-          <ScrollView>
-            <View style={styles_local.container}>
-              <Text style={styles_local.title}>
+        <SafeAreaView style={styles.container}>
+          <KeyboardAwareScrollView>
+            <View style={styles.container}>
+              <Text style={styles.central_subheader_text}>
                 About you:
               </Text>
 
               <TextInput
-                style={{ height: 40, borderWidth: 1 }}
+                style={styles.profile_text_input}
                 placeholder = 'Height (in)'
               />
 
               <TextInput
-                style={{ height: 40, borderWidth: 1 }}
+                style={styles.profile_text_input}
                 placeholder = 'Weight (lbs)'
               />
 
-              <Text style={styles_local.title}>
+              <TextInput
+                style={styles.profile_text_input}
+                placeholder = 'Age (years)'
+              />
+
+              <Text style={styles.central_subheader_text}>
+                Gender:
+              </Text>
+
+              <Menu
+                ref={this.setGenderMenuRef}
+                button={
+                  <TouchableHighlight 
+                    style={styles.goal_selection_button} 
+                    onPress={this.showGenderMenu}
+                  >
+                    <Text style={styles.goal_selection_text}>
+                      {this.state.gender}
+                    </Text>
+                  </TouchableHighlight>
+                }
+                style={styles.menu_style}
+              >
+                <MenuItem onPress={() => {
+                  this.setState({gender: "Not Specified"});
+                  this._gender_menu.hide();
+                }}>Not Specified</MenuItem>
+
+                <MenuDivider />
+
+                <MenuItem onPress={() => {
+                  this.setState({gender: "Male"});
+                  this._gender_menu.hide();
+                }}>Male</MenuItem>
+
+                <MenuDivider />
+
+                <MenuItem onPress={() => {
+                  this.setState({gender: "Female"});
+                  this._gender_menu.hide();
+                }}>Female</MenuItem>
+              </Menu>
+
+              <Text style={styles.central_subheader_text}>
                 Activity level:
               </Text>
 
-              <Picker
-                selectedValue={this.state.activity_level}
-                onValueChange={(itemValue, itemIndex) =>
-                  this.setState({activity_level: itemValue})
-                }>
-                <Picker.Item label="Sedentary" value="Sedentary" />
-                <Picker.Item label="Moderate" value="Moderate" />
-                <Picker.Item label="Athlete" value="Athlete" />
-              </Picker>
-              <Text style={styles_local.title}>
-                You selected: {this.state.activity_level}
+              <Menu
+                ref={this.setActivityMenuRef}
+                button={
+                  <TouchableHighlight 
+                    style={styles.goal_selection_button} 
+                    onPress={this.showActivityMenu}
+                  >
+                    <Text style={styles.goal_selection_text}>
+                      {this.state.activity_level}
+                    </Text>
+                  </TouchableHighlight>
+                }
+              >
+                <MenuItem onPress={() => {
+                  this.setState({activity_level: "Sedentary"});
+                  this._activity_menu.hide();
+                }}>Sedentary</MenuItem>
+
+                <MenuDivider />
+
+                <MenuItem onPress={() => {
+                  this.setState({activity_level: "Moderate"});
+                  this._activity_menu.hide();
+                }}>Moderate</MenuItem>
+
+                <MenuDivider />
+
+                <MenuItem onPress={() => {
+                  this.setState({activity_level: "Athlete"});
+                  this._activity_menu.hide();
+                }}>Athlete</MenuItem>
+              </Menu>
+
+              <Text style={styles.central_subheader_text}>
+                Fitness Goals:
               </Text>
-            </View>
 
-            <Separator />
+              <Menu
+                ref={this.setGoalMenuRef}
+                button={
+                  <TouchableHighlight 
+                    style={styles.goal_selection_button} 
+                    onPress={this.showGoalMenu}
+                  >
+                    <Text style={styles.goal_selection_text}>
+                      {this.state.fitness_goal}
+                    </Text>
+                  </TouchableHighlight>
+                }
+              >
+                <MenuItem 
+                  onPress={() => {
+                    this.setState({fitness_goal: "Fat Loss"});
+                    this._goal_menu.hide();
+                  }}
+                >
+                  Fat Loss
+                </MenuItem>
 
-            <View style={styles_local.container}>
-              <Text style={styles_local.title}>
-                Set your fitness goals:
-              </Text>
+                <MenuDivider />
 
-              <RadioForm
-                radio_props={radio_props_fitness_goals}
-                initial={0}
-                onPress={(value) => {this.setState({fitness_goal:value})}}
-                style={styles_local.title}
-              />
+                <MenuItem 
+                  onPress={() => {
+                    this.setState({fitness_goal: "Muscle Gain"});
+                    this._goal_menu.hide();
+                  }}
+                >
+                  Muscle Gain
+                </MenuItem>
 
-              <Text style={styles_local.title}>
-                You selected: {radio_props_fitness_goals[this.state.fitness_goal].label}
-              </Text>
+                <MenuDivider />
 
-              <Text style={styles_local.title}>
+                <MenuItem 
+                  onPress={() => {
+                    this.setState({fitness_goal: "Maintenance"});
+                    this._goal_menu.hide();
+                  }}
+                >
+                  Maintenance
+                </MenuItem>
+              </Menu>
+
+              <Text style={styles.central_subheader_text}>
                 Details:
               </Text>
 
-              <Slider
-                style={{width: 200, height: 40}}
-                minimumValue={0}
-                maximumValue={10}
-                minimumTrackTintColor="#3B821B"
-                maximumTrackTintColor="#000000"
-              />
-
               <TextInput
-                style={{ height: 40, borderWidth: 1 }}
+                style={styles.profile_text_input}
                 placeholder = 'Number of pounds to lose/gain'
               />
               <TextInput
-                style={{ height: 40, borderWidth: 1 }}
+                style={styles.profile_text_input}
                 placeholder = 'Number of weeks to achieve goal'
               />
-            </View>
 
-            <Separator />
-
-            <View style={styles.container}>
-              <Text style={styles_local.title}>
+              <Text style={styles.central_subheader_text}>
                 Calculations:
               </Text>
-              <Text>
+              <Text style={styles.text_subcontainer}>
                 Eat *1700* calories per day, or *11,900* calories per week.
               </Text>
-              <Text>
+              <Text style={styles.text_subcontainer}>
                 Your diet should consist of *40%* carbs, *30%* protein, and *30%* fat.
               </Text>
-              <Text>
+              <Text style={styles.text_subcontainer}>
                 This means *170g* carbs, *128g* protein, and *57g* fat on a daily basis.
               </Text>
-            </View>
 
-            <View style={styles.container}>
               <Button
                 title="Set Füd Preferences"
                 onPress={this._setFudPrefsAsync}
               />
-              <StatusBar barStyle="default" />
             </View>
-          </ScrollView>
+          </KeyboardAwareScrollView>
         </SafeAreaView>
       );
     }
@@ -151,24 +252,3 @@ export class GoalsScreen extends React.Component {
         this.props.navigation.navigate('Preferences');
       };
   }
-
-  const styles_local = StyleSheet.create({
-    container: {
-      flex: 1,
-      marginTop: Constants.statusBarHeight,
-      marginHorizontal: 16,
-    },
-    title: {
-      textAlign: 'center',
-      marginVertical: 8,
-    },
-    fixToText: {
-      flexDirection: 'row',
-      justifyContent: 'space-between',
-    },
-    separator: {
-      marginVertical: 8,
-      borderBottomColor: '#737373',
-      borderBottomWidth: StyleSheet.hairlineWidth,
-    },
-});
