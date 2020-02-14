@@ -7,12 +7,12 @@ client = pymongo.MongoClient("mongodb+srv://connor:connor@foodcluster-trclg.mong
 db = client.users.users_info
 
 
-# Function: set_user_preferences
+# Function: set_user_goals
 # Sets preferences about user in user_info table
 
 # Arguments: A user_id
-@app.route('/goals/set_user_preferences', methods = ["POST"])
-def set_user_preferences():
+@app.route('/goals/set_user_goals', methods = ["POST"])
+def set_user_goals():
     if "user_id" in request.args:
         user_id = int(request.args["user_id"])
     else:
@@ -34,16 +34,31 @@ def set_user_preferences():
     return "Success"
 
 
+# Function: fetch_user_goals
+# Gets preferences about user in user_info table
+
+# Arguments: A user_id
+@app.route('/goals/fetch_user_goals', methods = ["GET"])
+def fetch_user_goals():
+    if "user_id" in request.args:
+        user_id = int(request.args["user_id"])
+    else:
+        return "Error: No user id provided."
+
+    # Gets document from DB
+    user_info = db.find_one({"user_id" : user_id})
+    del user_info["_id"]
+
+    return jsonify(user_info)
 
 
 
-
-# Function: get_user_macros
+# Function: fetch_user_macros
 # Returns a Jsonified list of user daily goals [Calories, ]
 
 # Arguments: A user_id
-@app.route('/goals/get_user_macros')
-def get_user_macros():
+@app.route('/goals/fetch_user_macros', methods = ["GET"])
+def fetch_user_macros():
     if "user_id" in request.args:
         user_id = int(request.args["user_id"])
     else:
@@ -85,5 +100,10 @@ def get_user_macros():
     fat_g = (0.35 * user_tdee) / 9.0
     carbs_g = (0.35 * user_tdee) / 4.0
 
-    return_list = [user_tdee, protein_g, fat_g, carbs_g]
-    return jsonify(return_list)
+    return_dict = {
+        "tdee" : user_tdee,
+        "protein" : protein_g,
+        "fat" : fat_g,
+        "carbs" : carbs_g
+    }
+    return jsonify(return_dict)
