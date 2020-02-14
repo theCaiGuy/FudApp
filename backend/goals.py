@@ -6,11 +6,43 @@ import pymongo
 client = pymongo.MongoClient("mongodb+srv://connor:connor@foodcluster-trclg.mongodb.net/test?retryWrites=true&w=majority")
 db = client.users.users_info
 
+
+# Function: set_user_preferences
+# Sets preferences about user in user_info table
+
+# Arguments: A user_id
+@app.route('/goals/set_user_preferences', methods = ["POST"])
+def set_user_preferences():
+    if "user_id" in request.args:
+        user_id = int(request.args["user_id"])
+    else:
+        return "Error: No user id provided."
+
+    # Creates document for DB
+    db_post = {
+        "user_id" : user_id,
+        "age" : request.args["age"],
+        "height_cm" : request.args["height"],
+        "weight_kg" : request.args["weight"],
+        "sex" : request.args["sex"],
+        "activity" : request.args["activity"],
+        "goal" : request.args["goal"]
+    }
+
+    db.insert_one(db_post)
+
+    return "Success"
+
+
+
+
+
+
 # Function: get_user_macros
 # Returns a Jsonified list of user daily goals [Calories, ]
 
 # Arguments: A user_id
-@app.route('/get_user_macros')
+@app.route('/goals/get_user_macros')
 def get_user_macros():
     if "user_id" in request.args:
         user_id = int(request.args["user_id"])
@@ -23,6 +55,7 @@ def get_user_macros():
     if user_info is None:
         return "Error: User not in DB"
 
+    # Calculates TDEE
     user_tdee = (10.0 * user_info["weight_kg"] + 6.25 * user_info["height_cm"] - 5.0 * user_info["age"])
     if user_info["sex"] == "M":
         user_tdee += 5.0
