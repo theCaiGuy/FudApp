@@ -10,6 +10,8 @@
 **/web-build/
 **/web-report/
 */__pycache__
+*.pyc
+**/venv/*
 
 # macOS
 *.DS_Store
