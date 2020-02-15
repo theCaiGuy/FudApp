@@ -11,8 +11,13 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
+import {
+  CheckBox
+} from 'react-native-elements'
 import Constants from 'expo-constants';
 import { styles } from '../Styles/styles'
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scrollview'
+
 
 const PROTEIN_DATA = [
   {
@@ -120,48 +125,116 @@ function Item({ title, clicked }) {
 }
 
 export class PreferencesScreen extends React.Component {
-    static navigationOptions = {
-      title: 'Set Food Preferences',
+  constructor(props) {
+    super(props);
+    this.state = {
+      vegan: false,
+      vegetarian: false,
+      pescatarian: false,
+      no_red_meat: false,
+      no_pork: false,
+      no_beef: false,
     };
+  }
 
+  static navigationOptions = {
+    title: 'Set Food Preferences',
+  };
 
     render() {
       return (
         <SafeAreaView style={styles.container}>
-          <Text style={styles.central_subheader_text}>Protein</Text>
-          <FlatList
-            data={PROTEIN_DATA}
-            renderItem={({item}) =>
-              <TouchableOpacity onPress={() => item.clicked=1} >
-                <Item title={item.title} clicked={item.clicked} />
-              </TouchableOpacity>
-            }
-            keyExtractor={item => item.id}
-          />
+          <KeyboardAwareScrollView>
+            <Text style={styles.central_subheader_text}>Dietary Restrictions</Text>
+            <CheckBox
+              title='Vegan'
+              checked={this.state.vegan}
+              checkedColor='#3b821b'
+              onPress={() => 
+                this.setState({vegan: !this.state.vegan})
+              }
+            />
 
-          <Text style={styles.central_subheader_text}>Carbs</Text>
-          <FlatList
-            data={CARB_DATA}
-            renderItem={({item}) =>
-              <TouchableOpacity onPress={() => item.clicked=1} >
-                <Item title={item.title} clicked={item.clicked} />
-              </TouchableOpacity>
-            }
-            keyExtractor={item => item.id}
-          />
+            <CheckBox
+              title='Vegetarian'
+              checked={this.state.vegetarian}
+              checkedColor='#3b821b'
+              onPress={() => 
+                this.setState({vegetarian: !this.state.vegetarian})
+              }
+            />
 
-          <Text style={styles.central_subheader_text}>Fats</Text>
-          <FlatList
-            data={FAT_DATA}
-            renderItem={({item}) =>
-              <TouchableOpacity onPress={() => item.clicked=1} >
-                <Item title={item.title} clicked={item.clicked} />
-              </TouchableOpacity>
-            }
-            keyExtractor={item => item.id}
-          />
-          <Button title="Generate Meals" onPress={this._showMoreApp} />
-          <StatusBar barStyle="default" />
+            <CheckBox
+              title='Pescatarian'
+              checked={this.state.pescatarian}
+              checkedColor='#3b821b'
+              onPress={() => 
+                this.setState({pescatarian: !this.state.pescatarian})
+              }
+            />
+
+            <CheckBox
+              title='No Red Meat'
+              checked={this.state.no_red_meat}
+              checkedColor='#3b821b'
+              onPress={() => 
+                this.setState({no_red_meat: !this.state.no_red_meat})
+              }
+            />
+
+            <CheckBox
+              title='No Pork'
+              checked={this.state.no_pork}
+              checkedColor='#3b821b'
+              onPress={() => 
+                this.setState({no_pork: !this.state.no_pork})
+              }
+            />
+
+            <CheckBox
+              title='No Beef'
+              checked={this.state.no_beef}
+              checkedColor='#3b821b'
+              onPress={() => 
+                this.setState({no_beef: !this.state.no_beef})
+              }
+            />
+
+
+            <Text style={styles.central_subheader_text}>Protein</Text>
+            <FlatList
+              data={PROTEIN_DATA}
+              renderItem={({item}) =>
+                <TouchableOpacity onPress={() => item.clicked=1} >
+                  <Item title={item.title} clicked={item.clicked} />
+                </TouchableOpacity>
+              }
+              keyExtractor={item => item.id}
+            />
+
+            <Text style={styles.central_subheader_text}>Carbs</Text>
+            <FlatList
+              data={CARB_DATA}
+              renderItem={({item}) =>
+                <TouchableOpacity onPress={() => item.clicked=1} >
+                  <Item title={item.title} clicked={item.clicked} />
+                </TouchableOpacity>
+              }
+              keyExtractor={item => item.id}
+            />
+
+            <Text style={styles.central_subheader_text}>Fats</Text>
+            <FlatList
+              data={FAT_DATA}
+              renderItem={({item}) =>
+                <TouchableOpacity onPress={() => item.clicked=1} >
+                  <Item title={item.title} clicked={item.clicked} />
+                </TouchableOpacity>
+              }
+              keyExtractor={item => item.id}
+            />
+            <Button title="Generate Meals" onPress={this._showMoreApp} />
+          </KeyboardAwareScrollView>
         </SafeAreaView>
       );
     }
