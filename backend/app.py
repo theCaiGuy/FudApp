@@ -7,6 +7,7 @@ import food
 import users
 import plan
 import goals
+import user_history
 
 @app.route('/')
 def index():
