@@ -30,7 +30,7 @@ def fetch_user_history():
 # Gets history about a user
 
 # Arguments: A user_id
-@app.route('/history/set_user_history', methods = ["GET"])
+@app.route('/history/set_user_history', methods = ["POST"])
 def set_user_history():
     if "user_id" in request.args:
         user_id = int(request.args["user_id"])
