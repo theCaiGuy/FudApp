@@ -3,9 +3,7 @@ import {
   AsyncStorage,
   Text,
   SafeAreaView,
-  StatusBar,
   View,
-  FlatList,
 } from 'react-native';
 import { styles } from '../Styles/styles'
 import {
@@ -30,7 +28,6 @@ const ALTERNATE_INGREDIENTS = [
   'Peppermint',
   '1oz. Dove Dark Chocolate'
 ]
-
 
 
 function DishComponent({
