@@ -71,9 +71,9 @@ function Day_Component({
 }
 
 
-export class WeekScreen extends React.Component {
+export class MonthScreen extends React.Component {
   static navigationOptions = {
-    title: 'Your weekly progress',
+    title: 'Your monthly progress',
   };
 
   render() {
