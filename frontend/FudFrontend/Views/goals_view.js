@@ -1,23 +1,16 @@
 import React from 'react';
 import {
-    Button,
     View,
-    StyleSheet,
     SafeAreaView,
-    ScrollView,
     Text,
-    TextInput,
-    Picker,
 } from 'react-native';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scrollview'
-import RadioForm, {RadioButton, RadioButtonInput, RadioButtonLabel} from 'react-native-simple-radio-button';
 import { styles } from '../Styles/styles'
-import Menu, { MenuItem, MenuDivider } from 'react-native-material-menu';
-import { TouchableHighlight } from 'react-native-gesture-handler';
-
-function Separator() {
-  return <View style={styles.separator} />;
-}
+import {
+  Button,
+  ButtonGroup,
+  Input,
+} from 'react-native-elements'
 
 export class GoalsScreen extends React.Component {
     constructor(props) {
@@ -25,207 +18,135 @@ export class GoalsScreen extends React.Component {
       this.state = {
         fitness_goal: "Fat Loss",
         activity_level: "Sedentary",
-        gender: "Not Specified",
+        sex: "Not Specified",
+        sex_index: 0,
+        activity_index: 0,
+        fitness_index: 0,
       };
+      this.updateSexIndex = this.updateSexIndex.bind(this)
+      this.updateActivityIndex = this.updateActivityIndex.bind(this)
+      this.updateFitnessIndex = this.updateFitnessIndex.bind(this)
     }
 
     static navigationOptions = {
       title: 'Set Fitness Goals',
     };
 
-    _gender_menu = null;
- 
-    setGenderMenuRef = ref => {
-      this._gender_menu = ref;
-    };
-  
-    showGenderMenu = () => {
-      this._gender_menu.show();
-    };
+    updateSexIndex (sex_index) {
+      this.setState({sex_index});
+      if (sex_index == 0) {
+        this.setState({sex : "Not Specified"});
+      } else if (sex_index == 1) {
+        this.setState({sex : "Male"});
+      } else if (sex_index == 2) {
+        this.setState({sex: "Female"});
+      }
+    }
 
-    _activity_menu = null;
- 
-    setActivityMenuRef = ref => {
-      this._activity_menu = ref;
-    };
-  
-    showActivityMenu = () => {
-      this._activity_menu.show();
-    };
+    updateActivityIndex (activity_index) {
+      this.setState({activity_index});
+      if (activity_index == 0) {
+        this.setState({activity_level : "Sedentary"});
+      } else if (activity_index == 1) {
+        this.setState({activity_level : "Moderate"});
+      } else if (activity_index == 2) {
+        this.setState({activity_level: "Athlete"});
+      }
+    }
 
-    _goal_menu = null;
- 
-    setGoalMenuRef = ref => {
-      this._goal_menu = ref;
-    };
-  
-    showGoalMenu = () => {
-      this._goal_menu.show();
-    };
+    updateFitnessIndex (fitness_index) {
+      this.setState({fitness_index});
+      if (fitness_index == 0) {
+        this.setState({fitness_goal : "Fat Loss"});
+      } else if (fitness_index == 1) {
+        this.setState({fitness_goal : "Muscle Gain"});
+      } else if (fitness_index == 2) {
+        this.setState({fitness_goal: "Maintenance"});
+      }
+    }
 
     render() {
+      const sex_buttons = ['Not Specified', 'Male', 'Female']
+      const activity_buttons = ['Sedentary', 'Moderate', 'Athlete']
+      const fitness_buttons = ['Fat Loss', 'Muscle Gain', 'Maintenance']
 
       return (
         <SafeAreaView style={styles.container}>
           <KeyboardAwareScrollView>
             <View style={styles.container}>
-              <Text style={styles.central_subheader_text}>
-                About you:
-              </Text>
 
-              <TextInput
-                style={styles.profile_text_input}
-                placeholder = 'Height (in)'
+              <Input
+                label = 'Height'
+                labelStyle={styles.profile_text_input_label}
+                containerStyle={styles.profile_text_input}
+                placeholder = 'Your Height in Centimeters'
               />
 
-              <TextInput
-                style={styles.profile_text_input}
-                placeholder = 'Weight (lbs)'
+              <Input
+                label = 'Weight'
+                labelStyle={styles.profile_text_input_label}
+                containerStyle={styles.profile_text_input}
+                placeholder = 'Your Weight in Kilograms'
               />
 
-              <TextInput
-                style={styles.profile_text_input}
-                placeholder = 'Age (years)'
+              <Input
+                label = 'Age'
+                labelStyle={styles.profile_text_input_label}
+                containerStyle={styles.profile_text_input}
+                placeholder = 'Your Age in Years'
               />
 
-              <Text style={styles.central_subheader_text}>
-                Gender:
+              <Text style={styles.left_align_subheader_text}>
+                Sex
               </Text>
 
-              <Menu
-                ref={this.setGenderMenuRef}
-                button={
-                  <TouchableHighlight 
-                    style={styles.goal_selection_button} 
-                    onPress={this.showGenderMenu}
-                  >
-                    <Text style={styles.goal_selection_text}>
-                      {this.state.gender}
-                    </Text>
-                  </TouchableHighlight>
-                }
-                style={styles.menu_style}
-              >
-                <MenuItem onPress={() => {
-                  this.setState({gender: "Not Specified"});
-                  this._gender_menu.hide();
-                }}>Not Specified</MenuItem>
-
-                <MenuDivider />
-
-                <MenuItem onPress={() => {
-                  this.setState({gender: "Male"});
-                  this._gender_menu.hide();
-                }}>Male</MenuItem>
-
-                <MenuDivider />
-
-                <MenuItem onPress={() => {
-                  this.setState({gender: "Female"});
-                  this._gender_menu.hide();
-                }}>Female</MenuItem>
-              </Menu>
-
-              <Text style={styles.central_subheader_text}>
-                Activity level:
-              </Text>
-
-              <Menu
-                ref={this.setActivityMenuRef}
-                button={
-                  <TouchableHighlight 
-                    style={styles.goal_selection_button} 
-                    onPress={this.showActivityMenu}
-                  >
-                    <Text style={styles.goal_selection_text}>
-                      {this.state.activity_level}
-                    </Text>
-                  </TouchableHighlight>
-                }
-              >
-                <MenuItem onPress={() => {
-                  this.setState({activity_level: "Sedentary"});
-                  this._activity_menu.hide();
-                }}>Sedentary</MenuItem>
-
-                <MenuDivider />
-
-                <MenuItem onPress={() => {
-                  this.setState({activity_level: "Moderate"});
-                  this._activity_menu.hide();
-                }}>Moderate</MenuItem>
-
-                <MenuDivider />
-
-                <MenuItem onPress={() => {
-                  this.setState({activity_level: "Athlete"});
-                  this._activity_menu.hide();
-                }}>Athlete</MenuItem>
-              </Menu>
-
-              <Text style={styles.central_subheader_text}>
-                Fitness Goals:
-              </Text>
-
-              <Menu
-                ref={this.setGoalMenuRef}
-                button={
-                  <TouchableHighlight 
-                    style={styles.goal_selection_button} 
-                    onPress={this.showGoalMenu}
-                  >
-                    <Text style={styles.goal_selection_text}>
-                      {this.state.fitness_goal}
-                    </Text>
-                  </TouchableHighlight>
-                }
-              >
-                <MenuItem 
-                  onPress={() => {
-                    this.setState({fitness_goal: "Fat Loss"});
-                    this._goal_menu.hide();
-                  }}
-                >
-                  Fat Loss
-                </MenuItem>
-
-                <MenuDivider />
-
-                <MenuItem 
-                  onPress={() => {
-                    this.setState({fitness_goal: "Muscle Gain"});
-                    this._goal_menu.hide();
-                  }}
-                >
-                  Muscle Gain
-                </MenuItem>
-
-                <MenuDivider />
-
-                <MenuItem 
-                  onPress={() => {
-                    this.setState({fitness_goal: "Maintenance"});
-                    this._goal_menu.hide();
-                  }}
-                >
-                  Maintenance
-                </MenuItem>
-              </Menu>
-
-              <Text style={styles.central_subheader_text}>
-                Details:
-              </Text>
-
-              <TextInput
-                style={styles.profile_text_input}
-                placeholder = 'Number of pounds to lose/gain'
-              />
-              <TextInput
-                style={styles.profile_text_input}
-                placeholder = 'Number of weeks to achieve goal'
+              <ButtonGroup
+                onPress={this.updateSexIndex}
+                selectedIndex={this.state.sex_index}
+                buttons={sex_buttons}
+                containerStyle={styles.button_group_style}
+                selectedButtonStyle={styles.goal_selection_button}
               />
 
-              <Text style={styles.central_subheader_text}>
+              <Text style={styles.left_align_subheader_text}>
+                Activity level
+              </Text>
+
+              <ButtonGroup
+                onPress={this.updateActivityIndex}
+                selectedIndex={this.state.activity_index}
+                buttons={activity_buttons}
+                containerStyle={styles.button_group_style}
+                selectedButtonStyle={styles.goal_selection_button}
+              />
+
+              <Text style={styles.left_align_subheader_text}>
+                Fitness Goals
+              </Text>
+
+              <ButtonGroup
+                onPress={this.updateFitnessIndex}
+                selectedIndex={this.state.fitness_index}
+                buttons={fitness_buttons}
+                containerStyle={styles.button_group_style}
+                selectedButtonStyle={styles.goal_selection_button}
+              />
+
+              <Input
+                label = 'Number of pounds to lose/gain'
+                labelStyle={styles.profile_text_input_label}
+                containerStyle={styles.profile_text_input}
+                placeholder='Pounds to lose/gain'
+              />
+
+              <Input
+                label = 'Number of weeks to achieve goal'
+                labelStyle={styles.profile_text_input_label}
+                containerStyle={styles.profile_text_input}
+                placeholder='Weeks to achieve goal'
+              />
+
+              <Text style={styles.left_align_subheader_text}>
                 Calculations:
               </Text>
               <Text style={styles.text_subcontainer}>
@@ -239,8 +160,10 @@ export class GoalsScreen extends React.Component {
               </Text>
 
               <Button
-                title="Set Füd Preferences"
+                title="Set Fitness Goals!"
                 onPress={this._setFudPrefsAsync}
+                buttonStyle={styles.sign_in_button}
+                titleStyle={styles.title}
               />
             </View>
           </KeyboardAwareScrollView>
@@ -249,6 +172,7 @@ export class GoalsScreen extends React.Component {
     }
 
     _setFudPrefsAsync = () => {
-        this.props.navigation.navigate('Preferences');
-      };
+      this.props.navigation.navigate('Prefs');
+    };
+
   }

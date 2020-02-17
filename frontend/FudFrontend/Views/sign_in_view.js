@@ -5,13 +5,15 @@ import {
   Image,
   SafeAreaView,
   StatusBar,
-  Text,
-  TextInput,
   View,
 } from 'react-native';
 import { styles } from '../Styles/styles'
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scrollview'
-import { TouchableHighlight } from 'react-native-gesture-handler';
+import {
+  Button,
+  Input,
+} from 'react-native-elements'
+import Icon from 'react-native-vector-icons/FontAwesome';
 
 export class SignInScreen extends React.Component {
   static navigationOptions = {
@@ -26,33 +28,58 @@ export class SignInScreen extends React.Component {
             style={styles.logo}
             source={require('../assets/icon.png')}
           />
-          <TextInput
-            style={styles.profile_text_input}
-            placeholder="Username"
+          <Input
+            containerStyle={styles.signin_text_input}
+            placeholder="Your Email"
             autoCorrect={false}
+            autoCapitalize='none'
+            containerStyle={styles.profile_text_input}
+            labelStyle={styles.profile_text_input_label}
+            leftIcon={
+              <Icon
+                name='user'
+                size={18}
+                color='black'
+                style={{marginHorizontal: 10}}
+              />
+            }
           />
-          <TextInput
-            style={styles.profile_text_input}
-            placeholder="Password"
+
+          <Input
+            containerStyle={styles.signin_text_input}
+            placeholder="Your Password"
             autoCorrect={false}
             secureTextEntry={true}
+            labelStyle={styles.profile_text_input_label}
+            leftIcon={
+              <Icon
+                name='key'
+                size={18}
+                color='black'
+                style={{marginHorizontal: 10}}
+              />
+            }
           />
-          <TouchableHighlight
-            style={styles.sign_in_button}
+
+          <Button
+            title="Sign In"
             onPress={this._signInAsync}
-          >
-            <View>
-              <Text style={styles.title}>Sign In</Text>
-            </View>
-          </TouchableHighlight>
-          <TouchableHighlight
-            style={styles.sign_up_button}
+            buttonStyle={styles.sign_in_button}
+            titleStyle={styles.title}
+          />
+
+          <Button
+            title="I'm New Here"
             onPress={this._signUpAsync}
-          >
-            <View>
-              <Text style={styles.title}>I'm New Here</Text>
-            </View>
-          </TouchableHighlight>
+            buttonStyle={styles.sign_in_button}
+            titleStyle={styles.title}
+          />
+
+          <Button
+            title="Forgot Password?"
+            type='clear'
+          />
+          
         </KeyboardAwareScrollView>
       </SafeAreaView>
     );

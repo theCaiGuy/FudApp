@@ -43,7 +43,7 @@ const styles = StyleSheet.create({
     sign_in_button: {
       backgroundColor: '#3b821b',
       padding: 20,
-      marginVertical: 8,
+      marginVertical: 10,
       marginHorizontal: 16,
       alignItems: 'center',
     },
@@ -54,12 +54,20 @@ const styles = StyleSheet.create({
       marginHorizontal: 16,
       alignItems: 'center',
     },
-    profile_text_input:{ 
-      height: 40, 
-      borderColor: 'gray', 
-      borderWidth: 1,
-      marginHorizontal: 16,
-      marginVertical: 8,
+    profile_text_input: { 
+      marginVertical: 10,
+    },
+    signin_text_input: { 
+      marginVertical: 20,
+    },
+    profile_text_input_label: {
+      color: 'black',
+      fontSize: 16,
+      fontWeight: 'bold'
+    },
+    profile_text_inner_input: {
+      marginHorizontal: 0,
+      marginVertical: 3,
     },
     logo: {
       alignSelf: 'center',
@@ -81,15 +89,26 @@ const styles = StyleSheet.create({
       alignItems: 'center'
     },
     central_header_text: {
-      fontSize: 28,
+      fontSize: 25,
       textAlign: 'center',
-      marginTop: 20,
+      marginVertical: 10,
+      fontWeight: 'bold'
     },
     central_subheader_text: {
-      fontSize: 20,
+      fontSize: 17,
       textAlign: 'center',
       marginTop: 5,
       marginBottom: 5,
+      marginHorizontal: 10,
+      fontWeight: 'bold',
+    },
+    left_align_subheader_text: {
+      fontSize: 17,
+      fontWeight: 'bold',
+      textAlign: 'left',
+      marginTop: 5,
+      marginBottom: 5,
+      marginHorizontal: 10,
     },
     meal_date: {
       fontSize: 20,
@@ -126,10 +145,6 @@ const styles = StyleSheet.create({
     },
     goal_selection_button: {
       backgroundColor: '#3b821b',
-      padding: 20,
-      marginVertical: 8,
-      marginHorizontal: 16,
-      alignItems: 'center',
     },
     goal_selection_text: {
       fontSize: 20,
@@ -138,6 +153,34 @@ const styles = StyleSheet.create({
       marginBottom: 5,
       color: 'white'
     },
+    button_group_style: {
+      height: 50,
+      marginHorizontal: 10,
+      marginVertical: 10
+    },
+    bottom_button_container: {
+      marginTop: 10,
+      backgroundColor: '#3b821b',
+      height: 100,
+    },
+    nav_button: {
+      backgroundColor: '#3b821b',
+      padding: 10,
+      marginVertical: 10,
+      marginHorizontal: 16,
+      alignItems: 'center',
+    },
+    sign_out_button: {
+      backgroundColor: 'red',
+      padding: 10,
+      marginVertical: 10,
+      marginHorizontal: 16,
+      alignItems: 'center',
+    },
+    nav_text: {
+      fontSize: 20,
+      color: 'white',
+    }
   });
 
 export { styles }

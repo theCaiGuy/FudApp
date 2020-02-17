@@ -1,113 +1,95 @@
 import React from 'react';
 import {
-  StatusBar,
-  AsyncStorage,
-  Button,
-  FlatList,
   SafeAreaView,
   StyleSheet,
   Text,
-  TouchableHighlight,
-  TouchableOpacity,
   View,
 } from 'react-native';
-import Constants from 'expo-constants';
+import {
+  Button,
+  CheckBox,
+  Input,
+} from 'react-native-elements'
 import { styles } from '../Styles/styles'
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scrollview'
+
 
 const PROTEIN_DATA = [
   {
     id: '1',
     title: 'Chicken',
-    clicked: 0,
   },
   {
     id: '2',
     title: 'Turkey',
-    clicked: 1,
   },
   {
     id: '3',
     title: 'Steak',
-    clicked: 0,
   },
   {
     id: '4',
     title: 'Egg Whites',
-    clicked: 1,
   },
   {
     id: '5',
     title: 'Salmon',
-    clicked: 0,
   },
   {
     id: '6',
     title: 'Tofu',
-    clicked: 0,
   },
 ];
 const CARB_DATA = [
   {
     id: '1',
     title: 'Brown Rice',
-    clicked: 1,
   },
   {
     id: '2',
     title: 'Pasta',
-    clicked: 0,
   },
   {
     id: '3',
     title: 'Bread',
-    clicked: 0,
   },
   {
     id: '4',
     title: 'White Rice',
-    clicked: 0,
   },
   {
     id: '5',
     title: 'Candy',
-    clicked: 0,
   },
   {
     id: '6',
     title: 'Sweet Potato',
-    clicked: 1,
   },
 ];
 const FAT_DATA = [
   {
     id: '1',
     title: 'Peanut Butter',
-    clicked: 0,
   },
   {
     id: '2',
     title: 'Olive Oil',
-    clicked: 1,
   },
   {
     id: '3',
     title: 'Avacado',
-    clicked: 1,
   },
   {
     id: '4',
     title: 'Butter',
-    clicked: 0,
   },
   {
     id: '5',
     title: 'Cheese',
-    clicked: 0,
   },
   {
     id: '6',
     title: 'Dark Chocolate',
-    clicked: 0,
   },
 ];
 
@@ -120,63 +102,180 @@ function Item({ title, clicked }) {
 }
 
 export class PreferencesScreen extends React.Component {
-    static navigationOptions = {
-      title: 'Set Food Preferences',
+  constructor(props) {
+    super(props);
+    this.state = {
+      protein_prefs: [],
+      fat_prefs: [],
+      carb_prefs: [],
+      dietary_restrictions: [],
+      allergens: '',
     };
+  }
 
+  updateDietaryRestrictions (restriction) {
+    let restrictions = [...this.state.dietary_restrictions];
+    if (restrictions.includes(restriction)) {
+      restrictions.splice( restrictions.indexOf(restriction), 1 )
+      this.setState({
+        dietary_restrictions: restrictions
+      });
+    } else {
+      restrictions.push(restriction)
+      this.setState({
+        dietary_restrictions: restrictions
+      })
+    }
+  }
+
+  updateProteinPrefs (protein) {
+    let protein_prefs = [...this.state.protein_prefs];
+    if (protein_prefs.includes(protein)) {
+      protein_prefs.splice( protein_prefs.indexOf(protein), 1 )
+      this.setState({
+        protein_prefs: protein_prefs
+      });
+    } else {
+      protein_prefs.push(protein)
+      this.setState({
+        protein_prefs: protein_prefs
+      })
+    }
+  }
+
+  updateFatPrefs (fat) {
+    let fat_prefs = [...this.state.fat_prefs];
+    if (fat_prefs.includes(fat)) {
+      fat_prefs.splice( fat_prefs.indexOf(fat), 1 )
+      this.setState({
+        fat_prefs: fat_prefs
+      });
+    } else {
+      fat_prefs.push(fat)
+      this.setState({
+        fat_prefs: fat_prefs
+      })
+    }
+  }
+
+  updateCarbPrefs (carb) {
+    let carb_prefs = [...this.state.carb_prefs];
+    if (carb_prefs.includes(carb)) {
+      carb_prefs.splice( carb_prefs.indexOf(carb), 1 )
+      this.setState({
+        carb_prefs: carb_prefs
+      });
+    } else {
+      carb_prefs.push(carb)
+      this.setState({
+        carb_prefs: carb_prefs
+      })
+    }
+  }
+
+  static navigationOptions = {
+    title: 'Set Food Preferences',
+  };
 
     render() {
+      const dietary_restrictions = [
+        'Vegan',
+        'Vegetarian',
+        'Pescatarian',
+        'No Red Meat',
+        'No Pork',
+        'No Beef',
+        'Peanut Free',
+      ]
+
       return (
         <SafeAreaView style={styles.container}>
-          <Text style={styles.central_subheader_text}>Protein</Text>
-          <FlatList
-            data={PROTEIN_DATA}
-            renderItem={({item}) =>
-              <TouchableOpacity onPress={() => item.clicked=1} >
-                <Item title={item.title} clicked={item.clicked} />
-              </TouchableOpacity>
-            }
-            keyExtractor={item => item.id}
-          />
+          <KeyboardAwareScrollView>
+            <Text style={styles.left_align_subheader_text}>Dietary Restrictions</Text>
 
-          <Text style={styles.central_subheader_text}>Carbs</Text>
-          <FlatList
-            data={CARB_DATA}
-            renderItem={({item}) =>
-              <TouchableOpacity onPress={() => item.clicked=1} >
-                <Item title={item.title} clicked={item.clicked} />
-              </TouchableOpacity>
-            }
-            keyExtractor={item => item.id}
-          />
+            <View>
+              {
+                dietary_restrictions.map((l, i) => (
+                  <CheckBox
+                    title={l}
+                    checked={this.state.protein_prefs.includes(l)}
+                    checkedColor='#3b821b'
+                    onPress={this.updateProteinPrefs.bind(this, l)}
+                    key={i}
+                  />
+                ))
+              }
+            </View>
 
-          <Text style={styles.central_subheader_text}>Fats</Text>
-          <FlatList
-            data={FAT_DATA}
-            renderItem={({item}) =>
-              <TouchableOpacity onPress={() => item.clicked=1} >
-                <Item title={item.title} clicked={item.clicked} />
-              </TouchableOpacity>
-            }
-            keyExtractor={item => item.id}
-          />
-          <Button title="Generate Meals" onPress={this._showMoreApp} />
-          <StatusBar barStyle="default" />
+            <Input
+              label = 'Allergens'
+              labelStyle={styles.profile_text_input_label}
+              containerStyle={styles.profile_text_input}
+              placeholder='Comma-separated list'
+            />
+
+            <Text style={styles.left_align_subheader_text}>Protein Preferences</Text>
+
+            <View>
+              {
+                PROTEIN_DATA.map((l, i) => (
+                  <CheckBox
+                    title={l.title}
+                    checked={this.state.protein_prefs.includes(i)}
+                    checkedColor='#3b821b'
+                    onPress={this.updateProteinPrefs.bind(this, i)}
+                    key={i}
+                  />
+                ))
+              }
+            </View>
+
+            <Text style={styles.left_align_subheader_text}>Carbohydrate Preferences</Text>
+
+            <View>
+              {
+                CARB_DATA.map((l, i) => (
+                  <CheckBox
+                    title={l.title}
+                    checked={this.state.carb_prefs.includes(i)}
+                    checkedColor='#3b821b'
+                    onPress={this.updateCarbPrefs.bind(this, i)}
+                    key={i}
+                  />
+                ))
+              }
+            </View>
+
+            <Text style={styles.left_align_subheader_text}>Fat Preferences</Text>
+
+            <View>
+              {
+                FAT_DATA.map((l, i) => (
+                  <CheckBox
+                    title={l.title}
+                    checked={this.state.fat_prefs.includes(i)}
+                    checkedColor='#3b821b'
+                    onPress={this.updateFatPrefs.bind(this, i)}
+                    key={i}
+                  />
+                ))
+              }
+            </View>
+
+            <Button
+              title="Generate Meals!"
+              onPress={this._generateMealsAsync}
+              buttonStyle={styles.sign_in_button}
+              titleStyle={styles.title}
+            />          
+          </KeyboardAwareScrollView>
         </SafeAreaView>
       );
     }
 
-    _showMoreApp = () => {
-      this.props.navigation.navigate('Detail');
+    _generateMealsAsync = () => {
+      this.props.navigation.navigate('App');
     };
-
-    _setGenerateMealsAsync = () => {
-        this.props.navigation.navigate('App');
-      };
-
-    _goToMainAsync = () => {
-        this.props.navigation.navigate('App');
-      };
   }
 
 const local_styles = StyleSheet.create({
