@@ -1,10 +1,13 @@
 from flask import Flask
 from flask import request, jsonify
+from flask_httpauth import HTTPBasicAuth
+import os
 app = Flask(__name__)
+auth = HTTPBasicAuth()
+app.config['SECRET_KEY'] = os.urandom(12)
 
 import auth
 import food
-import users
 import plan
 import goals
 import user_history
