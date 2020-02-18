@@ -12,7 +12,7 @@ db = client.foods.food_data
 
 # Function: get_food()
 # Serves up nutrition info on food specified by id
-@app.route('/get_food')
+@app.route('/food/get_food', methods = ["GET"])
 def get_food():
     if "food_id" in request.args:
         food_id = int(request.args["food_id"])
@@ -75,15 +75,15 @@ def findAllSimilarFoods(food1):
         otherFood = get_important_macros(x)
         similarity = find_weighted_similarity(food1, otherFood)
         if similarity >= 0.80:
-            similarFoods.append((x['Food Name'], similarity, x["Food Group"]))
+            similarFoods.append((x['food_id'], x['Food Name'], similarity, x["Food Group"]))
 
-    return sorted(similarFoods, key = lambda tup: tup[1], reverse = True)
+    return sorted(similarFoods, key = lambda tup: tup[2], reverse = True)
 
 
 
 # Function: get_similar_food
-# Returns info on 3 most similar foods to that provided by an id
-@app.route('/get_similar_food')
+# Returns info on a few of the most similar foods to that provided by an id
+@app.route('/food/get_similar_food', methods = ["GET"])
 def get_similar_food():
     if "food_id" in request.args:
         food_id = int(request.args["food_id"])
@@ -99,4 +99,4 @@ def get_similar_food():
         return "Error: improper food id provided"
 
     # Returns 2nd-4th best matches, as 1st best is the original!
-    return jsonify(best_matches[1:4])
+    return jsonify(best_matches[1])
