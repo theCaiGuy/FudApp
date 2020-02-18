@@ -7,8 +7,10 @@ import {
   Text,
   TouchableHighlight,
   View,
+  StyleSheet,
 } from 'react-native';
 import { styles } from '../Styles/styles'
+import CalendarPicker from 'react-native-calendar-picker';
 import * as Progress from 'react-native-progress';
 
 // HARD CODED DATA
@@ -72,25 +74,37 @@ function Day_Component({
 
 
 export class MonthScreen extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      selectedStartDate: null,
+    };
+    this.onDateChange = this.onDateChange.bind(this);
+  }
+
+  onDateChange(date) {
+    this.setState({
+      selectedStartDate: date,
+    });
+  }
+
   static navigationOptions = {
     title: 'Your monthly progress',
   };
 
   render() {
+    const { selectedStartDate } = this.state;
+    const startDate = selectedStartDate ? selectedStartDate.toString() : '';
     return (
       <SafeAreaView style={styles.container}>
-        <FlatList
-          style={styles.daily_list}
-          data={DATA}
-          renderItem={({ item }) => <Day_Component
-            date={item.date}
-            protein={item.protein}
-            carbs={item.carbs}
-            fat={item.fat}
-            meal_button_async={this._showMoreAppAsync}
-          />}
-          keyExtractor={item => item.date}
+        <CalendarPicker
+          onDateChange={this.onDateChange}
         />
+
+        <View>
+          <Text>SELECTED DATE:{ startDate }</Text>
+        </View>
+
         <Button title="Sign Out of Füd" onPress={this._signOutAsync} />
       </SafeAreaView>
     );
