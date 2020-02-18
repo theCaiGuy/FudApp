@@ -99,4 +99,4 @@ def get_similar_food():
         return "Error: improper food id provided"
 
     # Returns 2nd-4th best matches, as 1st best is the original!
-    return jsonify(best_matches[1])
+    return jsonify(best_matches[1:5])

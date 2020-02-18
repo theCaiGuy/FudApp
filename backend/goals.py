@@ -86,11 +86,11 @@ def fetch_user_macros():
     user_activity = user_info["activity"]
     if user_activity == "Sedentary":
         user_tdee += 350.0
-    elif user_activity == "Light Exercise":
+    elif user_activity == "Light":
         user_tdee += 650.0
-    elif user_activity ==  "Moderate Exericse":
+    elif user_activity ==  "Moderate":
         user_tdee += 950.0
-    elif user_activity == "Heavy Exercise":
+    elif user_activity == "Heavy":
         user_tdee += 1250.0
     elif user_activity == "Athlete":
         user_tdee += 1600.0
