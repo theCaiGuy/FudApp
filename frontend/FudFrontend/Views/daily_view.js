@@ -18,64 +18,32 @@ import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scrollview'
 const ALTERNATE_INGREDIENTS = [
   'Papaya',
   'Sausage Egg McMuffin',
-  'Mustard',
-  '1oz. Philadelphia Cream Cheese',
   'Durian',
-  'Dairy Queen Hot Dog',
-  'White Bread',
   'Tequila',
   '24oz. Monster Energy',
-  'Peppermint',
-  '1oz. Dove Dark Chocolate'
 ]
 
 
-function DishComponent({
-  name,
-  meal_num,
-  ingredients,
-  ingredientChange,
-  dish_num,
-}) {
-  return (
-    <Card 
-      title={name}
-      titleStyle={styles.left_align_subheader_text}
-      dividerStyle={{width: 0}}
-      containerStyle={{marginHorizontal: 0, marginVertical: 5}}
-    >
-      {
-        ingredients.map((ingredient, i) => (
-          <ListItem
-            key={i}
-            title={ingredient}
-            bottomDivider
-            topDivider={i === 0}
-            chevron
-            onPress={ingredientChange.bind(this, meal_num, dish_num, i, ingredient)}
-          />
-        ))
-      }
-    </Card>
-  )
-}
-
 function MealComponent({
-  num,
+  name,
   dishes,
   ingredientChange,
 }) {
   return (
-    <Card title={"Meal #" + (num + 1)}>
+    <Card
+      title={name}
+      titleStyle={styles.left_align_subheader_text}
+      dividerStyle={{width: 0}}
+    >
       {
         dishes.map((dish, i) => (
-          <DishComponent 
-            name={dish.name} 
-            ingredients={dish.ingredients} 
-            key={i} 
-            ingredientChange={ingredientChange}
-            meal_num={num}
-            dish_num={i}
+          <ListItem
+            key={i}
+            title={dish["Food Name"]}
+            bottomDivider
+            topDivider={i === 0}
+            chevron
+            onPress={ingredientChange.bind(this, name, i, dish["Food Name"])}
           />
         ))
       }
@@ -83,76 +51,94 @@ function MealComponent({
   );
 }
 
+
 export class DailyScreen extends React.Component {
   constructor(props) {
     super(props);
+    var today = new Date();
+    var dd = String(today.getDate()).padStart(2, '0');
+    var mm = String(today.getMonth() + 1).padStart(2, '0'); //January is 0!
+    var yyyy = today.getFullYear();
+    curr_date = yyyy + '-' + mm + '-' + dd
+
     this.state = {
       overlay_visible: false,
-      date: '2020-02-16',
-      meal_to_edit: null,
-      dish_to_edit: null,
-      ingredient_to_edit: null,
-      ingredient_to_edit_name: null,
+      date: curr_date,
+      meal_to_edit: "Breakfast",
+      food_to_edit: 0,
+      food_to_edit_name: null,
       DATA: {
-        date: '2020-02-16',
-        meals: [
-          {
-            num: '1',
-            dishes: [
-              {
-                name: 'Scrambled egg whites with avocado',
-                ingredients: [
-                  'Egg whites',
-                  '1/2 ripe avocado',
-                  'Salt',
-                  'Pepper',
-                  'Hot Sauce',
-                ]
-              }
-            ]
-          },
-          {
-            num: '2',
-            dishes: [
-              {
-                name: 'Chicken fried rice bowl',
-                ingredients: [
-                  'Chicken',
-                  'Rice',
-                  'Garlic',
-                  'Green Onions',
-                ]
-              },
-              {
-                name: 'Plain non-fat Greek yogurt',
-                ingredients: [
-                  'Yogurt'
-                ]
-              }
-            ]
-          },
-          {
-            num: '3',
-            dishes: [
-              {
-                name: 'Steak and Potatoes',
-                ingredients: [
-                  '6oz. Sirloin Steak',
-                  '1 Idaho Potato',
-                  '1oz. Butter',
-                  'Salt',
-                  'Pepper',
-                ]
-              },
-              {
-                name: 'Vanilla Ice Cream',
-                ingredients: [
-                  'Vanilla Ice Cream',
-                ]
-              }
-            ]
-          }
+        "Breakfast" : [
+            {
+                "food_id" : 1034,
+                "Food Name" : "Cheese, port de salut",
+                "Calories" : 100,
+                "Protein (g)" : 10,
+                "Fat (g)" : 9,
+                "Carbs (g)" : 0.4,
+                "Servings" : 2.0
+            },
+            {
+                "food_id" : 18019,
+                "Food Name" : "Banana Bread",
+                "Calories" : 100,
+                "Protein (g)" : 1,
+                "Fat (g)" : 1,
+                "Carbs (g)" : 15,
+                "Servings" : 2.0
+            }
         ],
+        "Lunch" : [
+            {
+                "food_id" : 42128,
+                "Food Name" : "Turkey Ham",
+                "Calories" : 200,
+                "Protein (g)" : 30,
+                "Fat (g)" : 3,
+                "Carbs (g)" : 3,
+                "Servings" : 2.0
+            },
+            {
+                "food_id" : 18350,
+                "Food Name" : "Burger Bun",
+                "Calories" : 200,
+                "Protein (g)" : 4,
+                "Fat (g)" : 2,
+                "Carbs (g)" : 50,
+                "Servings" : 1.0
+            }
+        ],
+        "Dinner" : [
+            {
+                "food_id" : 23000,
+                "Food Name" : "Steak",
+                "Calories" : 350,
+                "Protein (g)" : 30,
+                "Fat (g)" : 12,
+                "Carbs (g)" : 2,
+                "Servings" : 1.0
+            },
+            {
+                "food_id" : 42204,
+                "Food Name" : "Rice Cake",
+                "Calories" : 100,
+                "Protein (g)" : 4,
+                "Fat (g)" : 2,
+                "Carbs (g)" : 50,
+                "Servings" : 2.5
+            }
+        ],
+        "Snacks" : [
+            {
+                "food_id" : 25067,
+                "Food Name" : "Protein Bar",
+                "Calories" : 200,
+                "Protein (g)" : 22,
+                "Fat (g)" : 9,
+                "Carbs (g)" : 3,
+                "Servings" : 1.0
+            },
+        ]
       }
 
     };
@@ -161,23 +147,21 @@ export class DailyScreen extends React.Component {
     this.quitOverlay = this.quitOverlay.bind(this)
   }
   
-  openUpdateOverlay = async (meal_to_edit, dish_to_edit, ingredient_to_edit, ingredient_to_edit_name) => {
-    await this.setState({
+  openUpdateOverlay(meal_to_edit, food_to_edit, food_to_edit_name) {
+    this.setState({
       overlay_visible: true,
       meal_to_edit: meal_to_edit,
-      dish_to_edit: dish_to_edit,
-      ingredient_to_edit: ingredient_to_edit,
-      ingredient_to_edit_name: ingredient_to_edit_name
+      food_to_edit: food_to_edit,
+      food_to_edit_name: food_to_edit_name,
     })
   }
 
-  updateIngredient = async (updatedIngredient) => {
+  updateIngredient(updatedFood) {
     meal_to_edit = this.state.meal_to_edit
-    dish_to_edit = this.state.dish_to_edit
-    ingredient_to_edit = this.state.ingredient_to_edit
+    food_to_edit = this.state.food_to_edit
     var data = {... this.state.DATA}
-    data.meals[meal_to_edit].dishes[dish_to_edit].ingredients[ingredient_to_edit] = updatedIngredient
-    await this.setState({
+    data[meal_to_edit][food_to_edit]["Food Name"] = updatedFood
+    this.setState({
       overlay_visible: false,
       DATA: data
     })
@@ -199,14 +183,14 @@ export class DailyScreen extends React.Component {
         <SafeAreaView style={styles.container}>
           <KeyboardAwareScrollView>
             <Text style={styles.central_header_text}>Your Füd Plan</Text>
-            <Text style={styles.central_subheader_text}>{this.state.DATA.date}</Text>
+            <Text style={styles.central_subheader_text}>{this.state.date}</Text>
             
             <View>
               {
-                this.state.DATA.meals.map((meal, i) => (
+                Object.keys(this.state.DATA).map((meal, i) => (
                   <MealComponent 
-                    num={i} 
-                    dishes={meal.dishes} 
+                    name={meal}
+                    dishes={this.state.DATA[meal]} 
                     key={i} 
                     ingredientChange={this.openUpdateOverlay} 
                   />
@@ -218,24 +202,39 @@ export class DailyScreen extends React.Component {
               <View>
                 <KeyboardAwareScrollView>
                   <Text style={styles.left_align_subheader_text}>
-                    {"Don't like " + this.state.ingredient_to_edit_name + "? Replace with..."}
+                    {"Nutrition Facts: " + this.state.food_to_edit_name}
                   </Text>
                   <View>
                     {
-                      ALTERNATE_INGREDIENTS.map((ingredient, i) => (
+                      Object.keys(this.state.DATA[this.state.meal_to_edit][this.state.food_to_edit]).slice(2).map((fact, i) => (
                         <ListItem
                           key={i}
-                          title={ingredient}
+                          title={fact + ": " + this.state.DATA[this.state.meal_to_edit][this.state.food_to_edit][fact]}
+                          bottomDivider
+                          topDivider={i === 0}
+                        />
+                      ))
+                    }
+                  </View>
+                  <Text style={styles.left_align_subheader_text}>
+                    {"Don't like " + this.state.food_to_edit_name + "? Here are similar foods!"}
+                  </Text>
+                  <View>
+                    {
+                      ALTERNATE_INGREDIENTS.map((food, i) => (
+                        <ListItem
+                          key={i}
+                          title={food}
                           bottomDivider
                           topDivider={i === 0}
                           chevron
-                          onPress={this.updateIngredient.bind(this, ingredient)}
+                          onPress={this.updateIngredient.bind(this, food)}
                         />
                       ))
                     }
                   </View>
                   <Button 
-                    title="Nevermind" 
+                    title="Close" 
                     onPress={this.quitOverlay} 
                     buttonStyle={styles.nav_button}
                     titleStyle={styles.nav_text}
