@@ -14,6 +14,9 @@ import {
 } from 'react-native-elements'
 
 
+const API_PATH = 'pranavs-macbook-pro-3.local:5000'
+
+
 const ACTIVITY_LEVELS = [
   'Sedentary',
   'Light',
@@ -37,7 +40,11 @@ const SEXES = [
 
 function CalculationsComponent({
   fields_filled,
-  loading
+  loading,
+  calories,
+  fat,
+  carbs,
+  protein,
 }) {
   if (!fields_filled) {
     return(
@@ -56,14 +63,17 @@ function CalculationsComponent({
       <Text style={styles.left_align_subheader_text}>
         Calculations:
       </Text>
-      <Text style={styles.text_subcontainer}>
-        Eat *1700* calories per day, or *11,900* calories per week.
+      <Text style={styles.left_align_subheader_text}>
+        {"Calories per day: " + Math.round(calories)}
       </Text>
-      <Text style={styles.text_subcontainer}>
-        Your diet should consist of *40%* carbs, *30%* protein, and *30%* fat.
+      <Text style={styles.left_align_subheader_text}>
+        {"Carbs per day: " + Math.round(carbs) + " g"}
       </Text>
-      <Text style={styles.text_subcontainer}>
-        This means *170g* carbs, *128g* protein, and *57g* fat on a daily basis.
+      <Text style={styles.left_align_subheader_text}>
+        {"Fats per day: " + Math.round(fat) + " g"}
+      </Text>
+      <Text style={styles.left_align_subheader_text}>
+        {"Protein per day: " + Math.round(protein) + " g"}
       </Text>
     </View>
   );
@@ -88,6 +98,11 @@ export class GoalsScreen extends React.Component {
         fields_filled: false,
         loading: false,
         goals_set: false,
+        user_id: 1,
+        rec_carbs: null,
+        rec_fat: null,
+        rec_protein: null,
+        rec_calories: null,
       };
       this.updateSexIndex = this.updateSexIndex.bind(this)
       this.updateActivityIndex = this.updateActivityIndex.bind(this)
@@ -129,9 +144,45 @@ export class GoalsScreen extends React.Component {
         this.setState({
           fields_filled: true,
           goals_set: true,
+          loading: true,
+        })
+        fetch(`http://${API_PATH}/goals/set_user_info?user_id=${this.state.user_id}&age=${this.state.age}&height=${this.state.height}&weight=${this.state.weight}&sex=${this.state.sex}&activity=${this.state.activity_level}&goal=${this.state.fitness_goal}`, {
+          method: 'POST',
+          headers: {
+            Accept: 'application/json',
+            'Content-Type': 'application/json',
+          },
+        })
+        .then((response) => {
+          console.log(JSON.stringify(response))
+        })
+        .catch((error) => {
+          console.error(error)
+        })
+
+        fetch(`http://${API_PATH}/goals/fetch_user_macros?user_id=${this.state.user_id}`, {
+          method: 'GET',
+          headers: {
+            Accept: 'application/json',
+            'Content-Type': 'application/json',
+          },
+        })
+        .then((response) => response.json())
+        .then((responseJson) => {
+          console.log(JSON.stringify(responseJson));
+          this.setState({
+            rec_carbs: responseJson.carbs,
+            rec_fat: responseJson.fat,
+            rec_protein: responseJson.protein,
+            rec_calories: responseJson.tdee,
+            loading: false,
+          })
+        })
+        .catch((error) => {
+          console.error(error)
         })
       } else {
-        console.log("Not Great")
+        console.log("Fields not filled")
         this.setState({fields_filled: false})
       }
     }
@@ -227,9 +278,9 @@ export class GoalsScreen extends React.Component {
                 onChangeText = {(text) => this.setState({weeks_to_goal: text})}
               />
 
-              <Button 
-                title="Set Fitness Goals!" 
-                onPress={this.calculatePlan} 
+              <Button
+                title="Set Fitness Goals!"
+                onPress={this.calculatePlan}
                 buttonStyle={styles.sign_in_button}
                 titleStyle={styles.title}
               />
@@ -237,8 +288,12 @@ export class GoalsScreen extends React.Component {
               <CalculationsComponent
                 fields_filled = {this.state.fields_filled}
                 loading = {this.state.loading}
+                calories = {this.state.rec_calories}
+                fat = {this.state.rec_fat}
+                carbs = {this.state.rec_carbs}
+                protein = {this.state.rec_protein}
               />
-              
+
 
               <Button
                 title="Looks Good to Me!"

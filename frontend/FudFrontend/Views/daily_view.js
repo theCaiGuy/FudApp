@@ -16,6 +16,14 @@ import {
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scrollview'
 
 
+const API_PATH = 'pranavs-macbook-pro-3.local:5000'
+const MEALS = [
+  'Breakfast',
+  'Lunch',
+  'Dinner',
+  'Snacks',
+]
+
 const ALTERNATE_INGREDIENTS = [
   'Papaya',
   'Sausage Egg McMuffin',
@@ -91,7 +99,7 @@ export class DailyScreen extends React.Component {
 
   componentDidMount() {
     return AsyncStorage.getItem('user_goal').then((goal) => {
-      fetch(`http://caicentralcommand.local:5000/plan/get_daily_meals?goal=${goal}`, {
+      fetch(`http://${API_PATH}/plan/get_daily_meals?goal=${goal}`, {
         method: 'GET',
         headers: {
           Accept: 'application/json',
@@ -110,7 +118,7 @@ export class DailyScreen extends React.Component {
       console.error(error);
     });
   }
-  
+
   openUpdateOverlay(meal_to_edit, food_to_edit, food_to_edit_name) {
     this.setState({
       overlay_visible: true,
@@ -155,15 +163,15 @@ export class DailyScreen extends React.Component {
           <KeyboardAwareScrollView>
             <Text style={styles.central_header_text}>Your Füd Plan</Text>
             <Text style={styles.central_subheader_text}>{this.state.date}</Text>
-            
+
             <View>
               {
-                Object.keys(this.state.DATA).map((meal, i) => (
-                  <MealComponent 
+                MEALS.map((meal, i) => (
+                  <MealComponent
                     name={meal}
-                    dishes={this.state.DATA[meal]} 
-                    key={i} 
-                    ingredientChange={this.openUpdateOverlay} 
+                    dishes={this.state.DATA[meal]}
+                    key={i}
+                    ingredientChange={this.openUpdateOverlay}
                   />
                 ))
               }
@@ -204,9 +212,9 @@ export class DailyScreen extends React.Component {
                       ))
                     }
                   </View>
-                  <Button 
-                    title="Close" 
-                    onPress={this.quitOverlay} 
+                  <Button
+                    title="Close"
+                    onPress={this.quitOverlay}
                     buttonStyle={styles.nav_button}
                     titleStyle={styles.nav_text}
                   />
@@ -214,27 +222,27 @@ export class DailyScreen extends React.Component {
               </View>
             </Overlay>
 
-            <Button 
-              title="Adjust Preferences" 
-              onPress={this._changePrefsAsync} 
+            <Button
+              title="Adjust Preferences"
+              onPress={this._changePrefsAsync}
               buttonStyle={styles.nav_button}
               titleStyle={styles.nav_text}
             />
-            <Button 
-              title="Weekly View" 
-              onPress={this._goWeekAsync} 
+            <Button
+              title="Weekly View"
+              onPress={this._goWeekAsync}
               buttonStyle={styles.nav_button}
               titleStyle={styles.nav_text}
             />
-            <Button 
-              title="Monthly View" 
-              onPress={this._goMonthAsync} 
+            <Button
+              title="Monthly View"
+              onPress={this._goMonthAsync}
               buttonStyle={styles.nav_button}
               titleStyle={styles.nav_text}
             />
-            <Button 
-              title="Sign Out of Füd" 
-              onPress={this._signOutAsync} 
+            <Button
+              title="Sign Out of Füd"
+              onPress={this._signOutAsync}
               buttonStyle={styles.sign_out_button}
               titleStyle={styles.nav_text}
             />
