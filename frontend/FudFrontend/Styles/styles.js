@@ -180,6 +180,15 @@ const styles = StyleSheet.create({
     nav_text: {
       fontSize: 20,
       color: 'white',
+    },
+    satisfy_requirements_text: {
+      fontSize: 17,
+      fontWeight: 'bold',
+      textAlign: 'center',
+      marginTop: 5,
+      marginBottom: 5,
+      marginHorizontal: 10,
+      color: 'red',
     }
   });
 

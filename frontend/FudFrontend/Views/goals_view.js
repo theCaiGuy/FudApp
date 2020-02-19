@@ -1,8 +1,9 @@
 import React from 'react';
 import {
-    View,
-    SafeAreaView,
-    Text,
+  AsyncStorage,
+  SafeAreaView,
+  Text,
+  View,
 } from 'react-native';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scrollview'
 import { styles } from '../Styles/styles'
@@ -12,20 +13,86 @@ import {
   Input,
 } from 'react-native-elements'
 
+
+const ACTIVITY_LEVELS = [
+  'Sedentary',
+  'Light',
+  'Moderate',
+  'Heavy',
+  'Athlete',
+]
+
+const GOALS = [
+  'Cut',
+  'Bulk',
+  'Maintain',
+]
+
+const SEXES = [
+  'NA',
+  'M',
+  'F',
+]
+
+
+function CalculationsComponent({
+  fields_filled,
+  loading
+}) {
+  if (!fields_filled) {
+    return(
+      <Text style={styles.satisfy_requirements_text}>Please fill in all required fields</Text>
+    );
+  }
+
+  if (loading) {
+    return(
+      <Text style={styles.central_subheader_text}>Calculating...</Text>
+    );
+  }
+
+  return(
+    <View>
+      <Text style={styles.left_align_subheader_text}>
+        Calculations:
+      </Text>
+      <Text style={styles.text_subcontainer}>
+        Eat *1700* calories per day, or *11,900* calories per week.
+      </Text>
+      <Text style={styles.text_subcontainer}>
+        Your diet should consist of *40%* carbs, *30%* protein, and *30%* fat.
+      </Text>
+      <Text style={styles.text_subcontainer}>
+        This means *170g* carbs, *128g* protein, and *57g* fat on a daily basis.
+      </Text>
+    </View>
+  );
+}
+
+
 export class GoalsScreen extends React.Component {
     constructor(props) {
       super(props);
       this.state = {
-        fitness_goal: "Fat Loss",
+        fitness_goal: "Cut",
         activity_level: "Sedentary",
-        sex: "Not Specified",
+        sex: "NA",
         sex_index: 0,
         activity_index: 0,
         fitness_index: 0,
+        height: null,
+        weight: null,
+        age: null,
+        kgs_to_gain: null,
+        weeks_to_goal: null,
+        fields_filled: false,
+        loading: false,
+        goals_set: false,
       };
       this.updateSexIndex = this.updateSexIndex.bind(this)
       this.updateActivityIndex = this.updateActivityIndex.bind(this)
       this.updateFitnessIndex = this.updateFitnessIndex.bind(this)
+      this.calculatePlan = this.calculatePlan.bind(this)
     }
 
     static navigationOptions = {
@@ -34,40 +101,44 @@ export class GoalsScreen extends React.Component {
 
     updateSexIndex (sex_index) {
       this.setState({sex_index});
-      if (sex_index == 0) {
-        this.setState({sex : "Not Specified"});
-      } else if (sex_index == 1) {
-        this.setState({sex : "Male"});
-      } else if (sex_index == 2) {
-        this.setState({sex: "Female"});
-      }
+      this.setState({sex: SEXES[sex_index]})
+      console.log(`user sex set to ${SEXES[sex_index]}`)
     }
 
     updateActivityIndex (activity_index) {
       this.setState({activity_index});
-      if (activity_index == 0) {
-        this.setState({activity_level : "Sedentary"});
-      } else if (activity_index == 1) {
-        this.setState({activity_level : "Moderate"});
-      } else if (activity_index == 2) {
-        this.setState({activity_level: "Athlete"});
-      }
+      this.setState({activity_level: ACTIVITY_LEVELS[activity_index]})
+      console.log(`user activity level set to ${ACTIVITY_LEVELS[activity_index]}`)
     }
 
     updateFitnessIndex (fitness_index) {
       this.setState({fitness_index});
-      if (fitness_index == 0) {
-        this.setState({fitness_goal : "Fat Loss"});
-      } else if (fitness_index == 1) {
-        this.setState({fitness_goal : "Muscle Gain"});
-      } else if (fitness_index == 2) {
-        this.setState({fitness_goal: "Maintenance"});
+      this.setState({fitness_goal: GOALS[fitness_index]})
+      AsyncStorage.setItem('user_goal', GOALS[fitness_index])
+      console.log(`user goal level set to ${GOALS[fitness_index]}`)
+    }
+
+    calculatePlan () {
+      height = this.state.height
+      weight = this.state.weight
+      age = this.state.age
+      kgs_to_gain = this.state.kgs_to_gain
+      weeks_to_goal = this.state.weeks_to_goal
+      if (height && weight && age && kgs_to_gain && weeks_to_goal) {
+        console.log("Great!")
+        this.setState({
+          fields_filled: true,
+          goals_set: true,
+        })
+      } else {
+        console.log("Not Great")
+        this.setState({fields_filled: false})
       }
     }
 
     render() {
       const sex_buttons = ['Not Specified', 'Male', 'Female']
-      const activity_buttons = ['Sedentary', 'Moderate', 'Athlete']
+      const activity_buttons = ['1', '2', '3', '4', '5']
       const fitness_buttons = ['Fat Loss', 'Muscle Gain', 'Maintenance']
 
       return (
@@ -80,6 +151,8 @@ export class GoalsScreen extends React.Component {
                 labelStyle={styles.profile_text_input_label}
                 containerStyle={styles.profile_text_input}
                 placeholder = 'Your Height in Centimeters'
+                keyboardType='numeric'
+                onChangeText = {(text) => this.setState({height: text})}
               />
 
               <Input
@@ -87,6 +160,8 @@ export class GoalsScreen extends React.Component {
                 labelStyle={styles.profile_text_input_label}
                 containerStyle={styles.profile_text_input}
                 placeholder = 'Your Weight in Kilograms'
+                keyboardType='numeric'
+                onChangeText = {(text) => this.setState({weight: text})}
               />
 
               <Input
@@ -94,6 +169,8 @@ export class GoalsScreen extends React.Component {
                 labelStyle={styles.profile_text_input_label}
                 containerStyle={styles.profile_text_input}
                 placeholder = 'Your Age in Years'
+                keyboardType='numeric'
+                onChangeText = {(text) => this.setState({age: text})}
               />
 
               <Text style={styles.left_align_subheader_text}>
@@ -133,10 +210,12 @@ export class GoalsScreen extends React.Component {
               />
 
               <Input
-                label = 'Number of pounds to lose/gain'
+                label = 'Number of kilograms to lose/gain'
                 labelStyle={styles.profile_text_input_label}
                 containerStyle={styles.profile_text_input}
-                placeholder='Pounds to lose/gain'
+                placeholder='Kilograms to lose/gain'
+                keyboardType='numeric'
+                onChangeText = {(text) => this.setState({kgs_to_gain: text})}
               />
 
               <Input
@@ -144,26 +223,29 @@ export class GoalsScreen extends React.Component {
                 labelStyle={styles.profile_text_input_label}
                 containerStyle={styles.profile_text_input}
                 placeholder='Weeks to achieve goal'
+                keyboardType='numeric'
+                onChangeText = {(text) => this.setState({weeks_to_goal: text})}
               />
 
-              <Text style={styles.left_align_subheader_text}>
-                Calculations:
-              </Text>
-              <Text style={styles.text_subcontainer}>
-                Eat *1700* calories per day, or *11,900* calories per week.
-              </Text>
-              <Text style={styles.text_subcontainer}>
-                Your diet should consist of *40%* carbs, *30%* protein, and *30%* fat.
-              </Text>
-              <Text style={styles.text_subcontainer}>
-                This means *170g* carbs, *128g* protein, and *57g* fat on a daily basis.
-              </Text>
+              <Button 
+                title="Set Fitness Goals!" 
+                onPress={this.calculatePlan} 
+                buttonStyle={styles.sign_in_button}
+                titleStyle={styles.title}
+              />
+
+              <CalculationsComponent
+                fields_filled = {this.state.fields_filled}
+                loading = {this.state.loading}
+              />
+              
 
               <Button
-                title="Set Fitness Goals!"
+                title="Looks Good to Me!"
                 onPress={this._setFudPrefsAsync}
                 buttonStyle={styles.sign_in_button}
                 titleStyle={styles.title}
+                disabled={!this.state.goals_set}
               />
             </View>
           </KeyboardAwareScrollView>
