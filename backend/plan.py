@@ -219,9 +219,9 @@ def get_daily_meals():
 
     ideal_plan = None
 
-    if goal == "bulk":
+    if goal == "Bulk":
         ideal_plan = EXAMPLE_PLAN_BULK
-    elif goal == "cut":
+    elif goal == "Cut":
         ideal_plan = EXAMPLE_PLAN_CUT
     else:
         ideal_plan = EXAMPLE_PLAN_MAINTAIN

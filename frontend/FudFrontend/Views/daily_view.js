@@ -11,6 +11,7 @@ import {
   Card,
   ListItem,
   Overlay,
+  colors,
 } from 'react-native-elements'
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scrollview'
 
@@ -70,81 +71,44 @@ export class DailyScreen extends React.Component {
       DATA: {
         "Breakfast" : [
             {
-                "food_id" : 1034,
-                "Food Name" : "Cheese, port de salut",
-                "Calories" : 100,
-                "Protein (g)" : 10,
-                "Fat (g)" : 9,
-                "Carbs (g)" : 0.4,
-                "Servings" : 2.0
+                "food_id" : 69,
+                "Food Name" : "Nothing",
+                "Calories" : 69,
+                "Protein (g)" : 420,
+                "Fat (g)" : 6.9,
+                "Carbs (g)" : 4.20,
+                "Servings" : 69
             },
-            {
-                "food_id" : 18019,
-                "Food Name" : "Banana Bread",
-                "Calories" : 100,
-                "Protein (g)" : 1,
-                "Fat (g)" : 1,
-                "Carbs (g)" : 15,
-                "Servings" : 2.0
-            }
         ],
-        "Lunch" : [
-            {
-                "food_id" : 42128,
-                "Food Name" : "Turkey Ham",
-                "Calories" : 200,
-                "Protein (g)" : 30,
-                "Fat (g)" : 3,
-                "Carbs (g)" : 3,
-                "Servings" : 2.0
-            },
-            {
-                "food_id" : 18350,
-                "Food Name" : "Burger Bun",
-                "Calories" : 200,
-                "Protein (g)" : 4,
-                "Fat (g)" : 2,
-                "Carbs (g)" : 50,
-                "Servings" : 1.0
-            }
-        ],
-        "Dinner" : [
-            {
-                "food_id" : 23000,
-                "Food Name" : "Steak",
-                "Calories" : 350,
-                "Protein (g)" : 30,
-                "Fat (g)" : 12,
-                "Carbs (g)" : 2,
-                "Servings" : 1.0
-            },
-            {
-                "food_id" : 42204,
-                "Food Name" : "Rice Cake",
-                "Calories" : 100,
-                "Protein (g)" : 4,
-                "Fat (g)" : 2,
-                "Carbs (g)" : 50,
-                "Servings" : 2.5
-            }
-        ],
-        "Snacks" : [
-            {
-                "food_id" : 25067,
-                "Food Name" : "Protein Bar",
-                "Calories" : 200,
-                "Protein (g)" : 22,
-                "Fat (g)" : 9,
-                "Carbs (g)" : 3,
-                "Servings" : 1.0
-            },
-        ]
-      }
+      },
+      loading: true,
 
     };
     this.openUpdateOverlay = this.openUpdateOverlay.bind(this)
     this.updateIngredient = this.updateIngredient.bind(this)
     this.quitOverlay = this.quitOverlay.bind(this)
+  }
+
+  componentDidMount() {
+    return AsyncStorage.getItem('user_goal').then((goal) => {
+      fetch(`http://caicentralcommand.local:5000/plan/get_daily_meals?goal=${goal}`, {
+        method: 'GET',
+        headers: {
+          Accept: 'application/json',
+          'Content-Type': 'application/json',
+        },
+      })
+      .then((response) => response.json())
+      .then((responseJson) => {
+        this.setState({
+          DATA: responseJson,
+          loading: false
+        });
+        console.log(`Recieved response ${JSON.stringify(responseJson)} for user_goal ${goal}`);
+      })
+    }).catch((error) => {
+      console.error(error);
+    });
   }
   
   openUpdateOverlay(meal_to_edit, food_to_edit, food_to_edit_name) {
@@ -179,6 +143,13 @@ export class DailyScreen extends React.Component {
 
     render() {
 
+      if (this.state.loading) {
+        return(
+          <SafeAreaView style={styles.container}>
+            <Text style={styles.central_subheader_text}>Loading Füd plan...</Text>
+          </SafeAreaView>
+        )
+      }
       return (
         <SafeAreaView style={styles.container}>
           <KeyboardAwareScrollView>
@@ -206,7 +177,7 @@ export class DailyScreen extends React.Component {
                   </Text>
                   <View>
                     {
-                      Object.keys(this.state.DATA[this.state.meal_to_edit][this.state.food_to_edit]).slice(2).map((fact, i) => (
+                      Object.keys(this.state.DATA[this.state.meal_to_edit][this.state.food_to_edit]).map((fact, i) => (
                         <ListItem
                           key={i}
                           title={fact + ": " + this.state.DATA[this.state.meal_to_edit][this.state.food_to_edit][fact]}
@@ -217,7 +188,7 @@ export class DailyScreen extends React.Component {
                     }
                   </View>
                   <Text style={styles.left_align_subheader_text}>
-                    {"Don't like " + this.state.food_to_edit_name + "? Here are similar foods!"}
+                    {"Don't like " + this.state.food_to_edit_name + "? Try something similar!"}
                   </Text>
                   <View>
                     {
