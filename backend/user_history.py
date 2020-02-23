@@ -29,7 +29,7 @@ def fetch_user_history():
 # Function: set_user_history
 # Gets history about a user
 
-# Arguments: A user_id
+# Arguments: A user_id, food_id, servings
 @app.route('/history/set_user_history', methods = ["POST"])
 def set_user_history():
     if "user_id" in request.args:

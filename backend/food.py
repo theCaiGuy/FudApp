@@ -10,9 +10,19 @@ from scipy import spatial
 client = pymongo.MongoClient("mongodb+srv://connor:connor@foodcluster-trclg.mongodb.net/test?retryWrites=true&w=majority")
 db = client.foods.food_data
 
+RESTRICTIONS_MAP = {
+    "Vegan" : {"Sausages and Luncheon Meats", "Poultry Products", "Pork Products", "Lamb, Veal, and Game Products", "Finfish and Shellfish Products", "Fats and Oils", "Dairy and Egg Products", "Beef Products"},
+    "Vegetarian" : {"Sausages and Luncheon Meats", "Poultry Products", "Pork Products", "Lamb, Veal, and Game Products", "Finfish and Shellfish Products", "Beef Products"},
+    "Pescatarian" : {"Sausages and Luncheon Meats", "Poultry Products", "Pork Products", "Lamb, Veal, and Game Products", "Beef Products"},
+    "No Red Meat" : {"Sausages and Luncheon Meats", "Lamb, Veal, and Game Products", "Beef Products"},
+    "No Pork" : {"Pork Products"},
+    "No Beef" : {"Beef Products"},
+    "Nut Allergy" : {"Legumes and Legume Products", "Nut and Seed Products"}
+}
+
 # Function: get_food()
 # Serves up nutrition info on food specified by id
-@app.route('/food/get_food', methods = ["GET"])
+@app.route('/food/get_food', methods = ["POST"])
 def get_food():
     if "food_id" in request.args:
         food_id = int(request.args["food_id"])
@@ -75,28 +85,81 @@ def findAllSimilarFoods(food1):
         otherFood = get_important_macros(x)
         similarity = find_weighted_similarity(food1, otherFood)
         if similarity >= 0.80:
-            similarFoods.append((x['food_id'], x['Food Name'], similarity, x["Food Group"]))
+            similarFoods.append((x['food_id'], x['Food Name'], similarity, x["Food Group"], float(x["Calories"])))
 
     return sorted(similarFoods, key = lambda tup: tup[2], reverse = True)
 
 
 
-# Function: get_similar_food
+# Function: get_similar_foods
 # Returns info on a few of the most similar foods to that provided by an id
-@app.route('/food/get_similar_food', methods = ["GET"])
-def get_similar_food():
+# Arguments:
+# food_id: int
+# servings: float
+# num_foods (optional): How many similar foods you would like returned
+@app.route('/food/get_similar_foods', methods = ["POST"])
+def get_similar_foods():
+    # Parses arguments
     if "food_id" in request.args:
         food_id = int(request.args["food_id"])
     else:
         return "Error: No food id provided."
 
-    best_matches = None
-    for curr_food in db.find({"food_id" : food_id}):
-        nutritional_atts = get_important_macros(curr_food)
-        best_matches = findAllSimilarFoods(nutritional_atts)
+    if "servings" in request.args:
+        servings = float(request.args["servings"])
+    else:
+        return "Error: No current servings provided"
+
+    if "num_foods" in request.args:
+        num_foods = int(request.args["num_foods"])
+        if num_foods >= 15 or num_foods < 1:
+            return "Error: Invalid number of foods desired"
+    else:
+        num_foods = 5
+
+    # Restrictions in a decent format
+    curr_restrictions = set()
+    for restriction in request.form:
+        curr_groups = RESTRICTIONS_MAP[restriction]
+        curr_restrictions = curr_restrictions.union(curr_groups)
+
+    # Finds the nearest foods
+    curr_food = db.find_one({"food_id" : food_id})
+    if curr_food is None:
+        return "Error: improper food id provided"
+
+    num_cals_orig = float(curr_food["Calories"])
+
+    nutritional_atts = get_important_macros(curr_food)
+    best_matches = findAllSimilarFoods(nutritional_atts)
 
     if best_matches is None:
         return "Error: improper food id provided"
 
-    # Returns 2nd-4th best matches, as 1st best is the original!
-    return jsonify(best_matches[1:5])
+
+    # Loops over food groups
+    fg_counter = 0
+    fgs = set()
+    return_dict = {}
+    for next_food in best_matches:
+        if next_food[3] in fgs or next_food[0] == food_id or next_food[3] in curr_restrictions:
+            continue
+        else:
+            # Determines new servings for consistent calories
+            num_cals = next_food[4]
+            if num_cals <= 0:
+                new_servings = 1
+            else:
+                cal_ratio = num_cals_orig / num_cals
+                new_servings = cal_ratio * servings
+
+            return_dict[next_food[0]] = new_servings
+
+            fgs.add(next_food[3])
+            fg_counter += 1
+            if fg_counter >= num_foods:
+                break
+
+
+    # Returns a dict of food_id : servings
+    return jsonify(return_dict)
