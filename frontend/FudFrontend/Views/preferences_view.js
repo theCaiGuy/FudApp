@@ -12,6 +12,7 @@ import {
 } from 'react-native-elements'
 import { styles } from '../Styles/styles'
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scrollview'
+import { API_PATH } from '../assets/constants'
 
 
 const PROTEIN_DATA = [

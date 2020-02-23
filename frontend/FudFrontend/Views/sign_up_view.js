@@ -10,6 +10,7 @@ import {
   Button,
   Input,
 } from 'react-native-elements'
+import { API_PATH } from '../assets/constants'
 
 
 export class SignUpScreen extends React.Component {

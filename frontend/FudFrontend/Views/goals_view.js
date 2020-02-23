@@ -12,9 +12,7 @@ import {
   ButtonGroup,
   Input,
 } from 'react-native-elements'
-
-
-const API_PATH = 'pranavs-macbook-pro-3.local:5000'
+import { API_PATH } from '../assets/constants'
 
 
 const ACTIVITY_LEVELS = [

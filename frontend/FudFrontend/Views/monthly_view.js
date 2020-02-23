@@ -12,6 +12,7 @@ import {
 import { styles } from '../Styles/styles'
 import CalendarPicker from 'react-native-calendar-picker';
 import * as Progress from 'react-native-progress';
+import { API_PATH } from '../assets/constants'
 
 // HARD CODED DATA
 // THIS SHOULD EVENTUALLY COME FROM OUR API

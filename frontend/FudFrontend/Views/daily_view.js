@@ -14,9 +14,9 @@ import {
   colors,
 } from 'react-native-elements'
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scrollview'
+import { API_PATH } from '../assets/constants'
 
 
-const API_PATH = 'pranavs-macbook-pro-3.local:5000'
 const MEALS = [
   'Breakfast',
   'Lunch',

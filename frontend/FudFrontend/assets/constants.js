@@ -1,0 +1,1 @@
+export const API_PATH = 'CaiCentralCommand.local:5000'
