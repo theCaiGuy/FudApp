@@ -15,3 +15,6 @@ import user_history
 @app.route('/')
 def index():
   return '<h1>Welcome to the Fud Flask API</h1>'
+  
+if __name__ == "__main__":
+    app.run(ssl_context='adhoc')
