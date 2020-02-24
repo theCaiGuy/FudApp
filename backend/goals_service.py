@@ -9,17 +9,24 @@ client = pymongo.MongoClient("mongodb+srv://connor:connor@foodcluster-trclg.mong
 db = client.users.users_info
 
 
-# Function: set_user_info
-# Sets preferences about user in user_info table
+"""
+Function: set_user_info
 
-# Arguments: A user_id
+Sets preferences about user in user_info table
+
+Arguments:
+user_id (int)
+
+Returns:
+"Success" string and code 200 -- indicating the user's info was updated in MongoDB
+"""
 @goals_service.route('/api/users/goals/set_user_info', methods = ["POST"])
 @auth.login_required
 def set_user_info():
     user_id = get_id_from_request(request)
     if not user_id:
         return "No user found", 400
-        
+
     params = request.json
     if not all(k in params for k in ("age", "height", "weight", "sex", "activity", "goal")):
         return "Please provide an age, height, weight, sex, activity level, and goal.", 400
@@ -45,13 +52,20 @@ def set_user_info():
     # db.insert_one(db_post)
     db.replace_one({"user_id" : user_id}, db_post, upsert = True)
 
-    return "Success"
+    return "Success", 200
 
 
-# Function: fetch_user_info
-# Gets preferences about user in user_info table
+"""
+Function: fetch_user_info
 
-# Arguments: A user_id
+Gets preferences about user in user_info table
+
+Arguments:
+user_id (int)
+
+Returns:
+JSON of user's data straight from MognoDB
+"""
 @goals_service.route('/api/users/goals/fetch_user_info', methods = ["POST"])
 @auth.login_required
 def fetch_user_info():
@@ -61,16 +75,22 @@ def fetch_user_info():
 
     # Gets document from DB
     user_info = db.find_one({"user_id" : user_id})
-    del user_info["_id"]
+    del user_info["_id"] # Can't be jsonified -- remove
 
-    return jsonify(user_info)
+    return jsonify(user_info), 200
 
 
+"""
+Function: fetch_user_macros
 
-# Function: fetch_user_macros
-# Returns a Jsonified list of user daily goals [Calories, ]
+Grabs a user's calculated macronutrients given their info
 
-# Arguments: A user_id
+Arguments:
+user_id (int)
+
+Returns:
+A Jsonified Dict of user's macros (currently TDEE Calories, Protein, Fat, and Carbs)
+"""
 @goals_service.route('/api/users/goals/fetch_user_macros', methods = ["POST"])
 @auth.login_required
 def fetch_user_macros():
@@ -120,4 +140,4 @@ def fetch_user_macros():
         "fat" : fat_g,
         "carbs" : carbs_g
     }
-    return jsonify(return_dict)
+    return jsonify(return_dict), 200

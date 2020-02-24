@@ -11,6 +11,8 @@ food_service = Blueprint('food_service', __name__)
 client = pymongo.MongoClient("mongodb+srv://connor:connor@foodcluster-trclg.mongodb.net/test?retryWrites=true&w=majority")
 db = client.foods.food_data
 
+# Mapping of our restrictions set to food groups that must not be given
+# to a user with that restriction
 RESTRICTIONS_MAP = {
     "Vegan" : {"Sausages and Luncheon Meats", "Poultry Products", "Pork Products", "Lamb, Veal, and Game Products", "Finfish and Shellfish Products", "Fats and Oils", "Dairy and Egg Products", "Beef Products"},
     "Vegetarian" : {"Sausages and Luncheon Meats", "Poultry Products", "Pork Products", "Lamb, Veal, and Game Products", "Finfish and Shellfish Products", "Beef Products"},
@@ -21,8 +23,17 @@ RESTRICTIONS_MAP = {
     "Nut Allergy" : {"Legumes and Legume Products", "Nut and Seed Products"}
 }
 
-# Function: get_food()
-# Serves up nutrition info on food specified by id
+"""
+Function: get_food()
+
+Serves up nutrition info on food specified by a food_id
+
+Parameters to request:
+food_id (int) : food_id for a particular food
+
+Returns:
+results (JSON) : Simple dict of the food's attributes straight from MongoDB
+"""
 @food_service.route('/api/food/get_food', methods = ["POST"])
 def get_food():
     params = request.json
@@ -30,56 +41,68 @@ def get_food():
         return "Please include a food id", 400
     food_id = int(params["food_id"])
 
-    results = []
+    # Returns first food found or none
+    food = db.find_one({"food_id" : food_id})
+    del food["_id"]
 
-    for food in db.find({"food_id" : food_id}):
-        del food["_id"]
-        results.append(food)
-
-    return jsonify(results)
+    return jsonify(food), 200
 
 
 #################################################
 # Begin: Similarity AI functions
 
-# Function: find_scaled_similarity
+"""
+Function: find_scaled_similarity()
 
-# Returns cosine similarity including weights
+Returns cosine similarity including weights.
 
-# Includes additional argument "weights", an array-like that contains weights for the provided
-# nutrients
+Includes additional argument "weights",
+an array-like that contains weights for the provided nutrients
 
-# Reference: https://stackoverflow.com/questions/
-# 48581540/how-to-compute-weighted-cosine-similarity-between-two-vectores-in-python
+Parameters:
+food1 : Array-like (e.g. list) of desired macronutrients
+food2 : Array-like (e.g. list) of desired macronutrients in same order as food1
+weights: Array-like (e.g. list) of weighting for each macronutrient
 
+Returns:
+similarity (float) : weighted cosine similarity of two foods' macros
+
+Reference: https://stackoverflow.com/questions/48581540/how-to-compute-weighted-cosine-similarity-between-two-vectores-in-python
+"""
 def find_weighted_similarity(food1, food2, weights = None):
     if len(food1) != len(food2):
         return None
 
     return (1 - spatial.distance.cosine(food1, food2, w = weights))
 
+"""
+Function: get_important_macros()
 
-# Function: get_important_macros:
+Returns list of an food's most important macronutrients
 
-# Returns list of an food's most important macronutrients
+Arguments:
+food_dict: Dictionary object retrieved from Mongo for a food's nutrition values
+nutrients: List of keys of interest -- defaults to [protein, fat, carbs, calories]
 
-# Arguments:
-#     food_dict: Dictionary object retrieved from Mongo for a food's nutrition values
-#     nutrients: List of keys of interest -- defaults to [protein, fat, carbs, calories]
-
+Returns:
+list of macros for that food specified in the given order to nurtients argument
+"""
 def get_important_macros(food_dict, nutrients = ["Protein (g)", "Fat (g)", "Carbohydrates (g)", "Calories"]):
     return [food_dict[nutrient] for nutrient in nutrients]
 
 
+"""
+Function: findAllSimilarFoods()
 
-# Function: findAllSimilarFoods:
+Returns a list of (food, similarity, food group) tibbles of the most similar items to a given food
 
-# Returns a list of (food, similarity, food group) tibbles of the most similar items
-# to a given food
+Arguments:
+food1: food_id of the original food
 
-# Arguments:
-#    food1: Food of interest
-
+Returns:
+List of (food_id, food_name, similarity, food_group, calories) tuples in sorted order of Similarity
+to the food passed (first food is most similar -- the same food as food1)
+"""
 def findAllSimilarFoods(food1):
     similarFoods = []
     for x in db.find():
@@ -91,13 +114,20 @@ def findAllSimilarFoods(food1):
     return sorted(similarFoods, key = lambda tup: tup[2], reverse = True)
 
 
+"""
+Function: get_similar_foods
 
-# Function: get_similar_foods
-# Returns info on a few of the most similar foods to that provided by an id
-# Arguments:
-# food_id: int
-# servings: float
-# num_foods (optional): How many similar foods you would like returned
+Returns info on a few of the most similar foods to that provided by an id
+
+Arguments:
+food_id (int) : food_id of food desired for similarity
+servings (float) : Used to return how much of new food(s) to maintain caloric count
+num_foods (int) : How many similar foods you would like returned
+
+Returns:
+return_dict (JSON) : simple dict of food_id (int) : servings (float) pairs for the num_foods most similar foods,
+where each food is part of a different food group
+"""
 @food_service.route('/api/food/get_similar_foods', methods = ["POST"])
 def get_similar_foods():
     # Parses arguments
@@ -161,4 +191,4 @@ def get_similar_foods():
 
 
     # Returns a dict of food_id : servings
-    return jsonify(return_dict)
+    return jsonify(return_dict), 200
