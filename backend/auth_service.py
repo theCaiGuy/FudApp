@@ -1,4 +1,4 @@
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, current_app, request, jsonify
 from flask_httpauth import HTTPBasicAuth
 from itsdangerous import (TimedJSONWebSignatureSerializer
                           as Serializer, BadSignature, SignatureExpired)
@@ -23,27 +23,24 @@ def register_auth():
   new_user = {"username": username}
   new_user["password"] = hash_pwd(password)
   db.insert_one(new_user)
-  return jsonify({"username": username}, 201)
+  
+  token = get_token_private(username)
+  return jsonify({"token": token}, 201)
 
 @auth_service.route('/api/login', methods=['POST'])
 @auth.login_required
 def login_auth():
-  results = {"success": True}
-  return jsonify(results)
+  username = request.authorization['username']
+  password = request.authorization['password']
+  if username is None or password is None:
+    return "Need username and pwd for token", 401
+  token = get_token_private(username)
+  return jsonify({"token": token})
 
 @auth_service.route('/api/resource')
 @auth.login_required
 def get_resource():
   return jsonify({ 'data': 'Password test' })
-
-@auth_service.route('/api/token')
-@auth.login_required
-def get_auth_token():
-  username = request.authorization['username']
-  if username is None:
-    return "Need username/pwd for token", 401
-  token = generate_auth_token(request.authorization['username'])
-  return jsonify({ 'token': token.decode('ascii') })
 
 @auth.verify_password
 def verify_password(username_or_token, password):
@@ -56,6 +53,10 @@ def verify_password(username_or_token, password):
       return False
   return True
 
+def get_token_private(username):
+  token = generate_auth_token(username)
+  return token.decode('ascii')
+
 def hash_pwd(password):
   return pbkdf2_sha256.hash(password)
 
@@ -63,14 +64,14 @@ def verify_pwd(passwordA, passwordB):
   return pbkdf2_sha256.verify(passwordA, passwordB)
 
 def generate_auth_token(username, expiration = 1000):
-  s = Serializer(app.config['SECRET_KEY'], expires_in = expiration)
+  s = Serializer(current_app.config['SECRET_KEY'], expires_in = expiration)
   token = s.dumps({ 'username': username})
   print(token.decode('ascii'))
   return token
 
 def verify_auth_token(token):
   print(token)
-  s = Serializer(app.config['SECRET_KEY'])
+  s = Serializer(current_app.config['SECRET_KEY'])
   try:
     data = s.loads(token)
   except SignatureExpired:
