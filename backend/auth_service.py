@@ -12,10 +12,10 @@ auth = HTTPBasicAuth()
 client = pymongo.MongoClient("mongodb+srv://connor:connor@foodcluster-trclg.mongodb.net/test?retryWrites=true&w=majority")
 db = client.users.users_credentials
 
-@auth_service.route('/api/register', methods=['POST'])
+@auth_service.route('/api/users/register', methods=['POST'])
 def register_auth():
-  username = request.json.get('username')
-  password = request.json.get('password')
+  username = request.json['username']
+  password = request.json['password']
   if username is None or password is None:
     return "Please include a username and password", 400
   if db.find_one({"username": username}) is not None:
@@ -27,7 +27,7 @@ def register_auth():
   token = get_token_private(username)
   return jsonify({"token": token}, 201)
 
-@auth_service.route('/api/login', methods=['POST'])
+@auth_service.route('/api/users/login', methods=['POST'])
 @auth.login_required
 def login_auth():
   username = request.authorization['username']
@@ -37,10 +37,10 @@ def login_auth():
   token = get_token_private(username)
   return jsonify({"token": token})
 
-@auth_service.route('/api/resource')
+@auth_service.route('/api/users/auth_test', methods=['POST'])
 @auth.login_required
 def get_resource():
-  return jsonify({ 'data': 'Password test' })
+  return jsonify({ 'data': 'Auth success' })
 
 @auth.verify_password
 def verify_password(username_or_token, password):
@@ -80,4 +80,18 @@ def verify_auth_token(token):
     return None
   return data['username']
   
-  
+def get_user_from_request(req):
+  if req.authorization['password']:
+    print("PASSWD")
+    return req.authorization['username']
+  return verify_auth_token(req.authorization['username'])
+
+def get_id_from_username(username):
+  user = db.find_one({"username": username})
+  if user is not None:
+    return str(user["_id"])
+  else:
+    return None
+
+def get_id_from_request(req):
+  return get_id_from_username(get_user_from_request(req))

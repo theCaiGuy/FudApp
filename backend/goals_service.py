@@ -1,6 +1,8 @@
 from flask import Blueprint, request, jsonify
 import pymongo
 
+from auth_service import auth, get_id_from_request, get_id_from_username
+
 goals_service = Blueprint('goals_service', __name__)
 
 client = pymongo.MongoClient("mongodb+srv://connor:connor@foodcluster-trclg.mongodb.net/test?retryWrites=true&w=majority")
@@ -11,21 +13,23 @@ db = client.users.users_info
 # Sets preferences about user in user_info table
 
 # Arguments: A user_id
-@goals_service.route('/goals/set_user_info', methods = ["POST"])
+@goals_service.route('/api/users/goals/set_user_info', methods = ["POST"])
+@auth.login_required
 def set_user_info():
-    if not all(k in request.args for k in ("user_id", "age", "height", "weight", "sex", "activity", "goal")):
-        return "Error: Bad Request, missing fields. Please provide a user_id, age, height, weight, sex, activity level, and goal."
+    user_id = get_id_from_request(request)
+    params = request.json
+    if not all(k in params for k in ("age", "height", "weight", "sex", "activity", "goal")):
+        return "Please provide an age, height, weight, sex, activity level, and goal.", 400
 
-    user_id = int(request.args["user_id"])
     # Creates document for DB
     db_post = {
         "user_id" : user_id,
-        "age" : int(request.args["age"]),
-        "height_cm" : float(request.args["height"]),
-        "weight_kg" : float(request.args["weight"]),
-        "sex" : request.args["sex"],
-        "activity" : request.args["activity"],
-        "goal" : request.args["goal"]
+        "age" : int(params["age"]),
+        "height_cm" : float(params["height"]),
+        "weight_kg" : float(params["weight"]),
+        "sex" : params["sex"],
+        "activity" : params["activity"],
+        "goal" : params["goal"]
     }
 
     restrictions = {}
