@@ -1,17 +1,26 @@
+import os
+
 from flask import Flask
 from flask import request, jsonify
-from flask_httpauth import HTTPBasicAuth
-import os
+
+from auth_service import auth_service
+from food_service import food_service
+from goals_service import goals_service
+from plan_service import plan_service
+from user_history_service import user_history_service
+
 app = Flask(__name__)
-auth = HTTPBasicAuth()
 app.config['SECRET_KEY'] = os.urandom(12)
 
-import auth
-import food
-import plan
-import goals
-import user_history
+app.register_blueprint(auth_service)
+app.register_blueprint(food_service)
+app.register_blueprint(goals_service)
+app.register_blueprint(plan_service)
+app.register_blueprint(user_history_service)
 
 @app.route('/')
 def index():
   return '<h1>Welcome to the Fud Flask API</h1>'
+
+if __name__ == "__main__":
+  app.run(host="0.0.0.0", port=80)

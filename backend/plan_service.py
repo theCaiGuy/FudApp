@@ -1,10 +1,11 @@
-from app import app
-from flask import request, jsonify
+from flask import Blueprint, request, jsonify
 import pymongo
+
+plan_service = Blueprint('plan_service', __name__)
 
 # Function: get_daily_plan
 # Returns a daily_plan object to front end
-@app.route('/plan/get_daily_meals', methods = ["GET"])
+@plan_service.route('/plan/get_daily_meals', methods = ["GET"])
 def get_daily_meals():
     # Hard-coded example: replace with daily plan generator
     EXAMPLE_PLAN_BULK = {
