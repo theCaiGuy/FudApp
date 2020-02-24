@@ -5,8 +5,16 @@ from auth_service import auth, get_id_from_request
 
 plan_service = Blueprint('plan_service', __name__)
 
-# Function: get_daily_plan
-# Returns a daily_plan object to front end
+"""
+Function: get_daily_plan
+
+Returns a daily_plan object to front end. This object is a Dict with keys as meals,
+values as lists of meal objects (which themselves are dicts comntaining food info)
+
+Arguments:
+user_id (int)
+goal (string) : Either "Bulk", "Cut", or "Maintain" (deprecated)
+"""
 @plan_service.route('/api/users/plan/get_daily_meals', methods = ["POST"])
 @auth.login_required
 def get_daily_meals():
