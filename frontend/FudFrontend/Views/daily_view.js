@@ -15,7 +15,7 @@ import {
 } from 'react-native-elements'
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scrollview'
 import { API_PATH } from '../assets/constants'
-
+import {encode as btoa} from 'base-64'
 
 const MEALS = [
   'Breakfast',
@@ -98,21 +98,31 @@ export class DailyScreen extends React.Component {
   }
 
   componentDidMount() {
-    return AsyncStorage.getItem('user_goal').then((goal) => {
-      fetch(`http://${API_PATH}/plan/get_daily_meals?goal=${goal}`, {
-        method: 'GET',
+    return AsyncStorage.getItem('userToken').then((token) => {
+      let goal = "Cut";
+      fetch(`http://${API_PATH}/api/users/plan/get_daily_meals`, {
+        method: 'POST',
         headers: {
           Accept: 'application/json',
           'Content-Type': 'application/json',
+          'Authorization': `Basic ${btoa(`${token}:`)}`
         },
+        body: JSON.stringify({"goal": goal})
       })
-      .then((response) => response.json())
-      .then((responseJson) => {
-        this.setState({
-          DATA: responseJson,
-          loading: false
+      .then((response) => {
+        if (response.status === 401) {
+          AsyncStorage.removeItem('userToken').then(() => {
+            this.props.navigation.navigate('Auth');
+            return;
+          });
+        }
+        response.json().then((responseJson) => {
+          this.setState({
+            DATA: responseJson,
+            loading: false
+          });
+          console.log(`Recieved response ${JSON.stringify(responseJson)} for user_goal ${goal}`);
         });
-        console.log(`Recieved response ${JSON.stringify(responseJson)} for user_goal ${goal}`);
       })
     }).catch((error) => {
       console.error(error);

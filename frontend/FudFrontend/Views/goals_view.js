@@ -13,6 +13,7 @@ import {
   Input,
 } from 'react-native-elements'
 import { API_PATH } from '../assets/constants'
+import {encode as btoa} from 'base-64'
 
 
 const ACTIVITY_LEVELS = [
@@ -144,41 +145,62 @@ export class GoalsScreen extends React.Component {
           goals_set: true,
           loading: true,
         })
-        fetch(`http://${API_PATH}/goals/set_user_info?user_id=${this.state.user_id}&age=${this.state.age}&height=${this.state.height}&weight=${this.state.weight}&sex=${this.state.sex}&activity=${this.state.activity_level}&goal=${this.state.fitness_goal}`, {
-          method: 'POST',
-          headers: {
-            Accept: 'application/json',
-            'Content-Type': 'application/json',
-          },
-        })
-        .then((response) => {
-          console.log(JSON.stringify(response))
-        })
-        .catch((error) => {
-          console.error(error)
-        })
 
-        fetch(`http://${API_PATH}/goals/fetch_user_macros?user_id=${this.state.user_id}`, {
-          method: 'GET',
-          headers: {
-            Accept: 'application/json',
-            'Content-Type': 'application/json',
-          },
-        })
-        .then((response) => response.json())
-        .then((responseJson) => {
-          console.log(JSON.stringify(responseJson));
-          this.setState({
-            rec_carbs: responseJson.carbs,
-            rec_fat: responseJson.fat,
-            rec_protein: responseJson.protein,
-            rec_calories: responseJson.tdee,
-            loading: false,
-          })
-        })
-        .catch((error) => {
-          console.error(error)
-        })
+        (async () => {
+          try {
+            const token = await AsyncStorage.getItem("userToken");
+            const set_res = await fetch(`http://${API_PATH}/api/users/goals/set_user_info`, {
+              method: 'POST',
+              headers: {
+                Accept: 'application/json',
+                'Content-Type': 'application/json',
+                'Authorization': `Basic ${btoa(`${token}:`)}`
+              },
+              body: JSON.stringify({
+                "age": this.state.age,
+                "height": this.state.height,
+                "weight": this.state.weight,
+                "sex": this.state.sex,
+                "activity": this.state.activity_level,
+                "goal": this.state.fitness_goal,
+              })
+            });
+            if (set_res.status === 401) {
+              await AsyncStorage.removeItem('userToken').then(() => {
+                this.props.navigation.navigate('Auth');
+                return;
+              });
+            };
+  
+            console.log(JSON.stringify(response));
+  
+            const fetch_res = await fetch(`http://${API_PATH}/api/users/goals/fetch_user_macros`, {
+              method: 'POST',
+              headers: {
+                Accept: 'application/json',
+                'Content-Type': 'application/json',
+                'Authorization': `Basic ${btoa(`${token}:`)}`
+              },
+            });
+            if (fetch_res.status === 401) {
+              await AsyncStorage.removeItem('userToken').then(() => {
+                this.props.navigation.navigate('Auth');
+                return;
+              });
+            };
+            const content = await fetch_res.json();
+            console.log(JSON.stringify(content));
+            this.setState({
+              rec_carbs: content.carbs,
+              rec_fat: content.fat,
+              rec_protein: content.protein,
+              rec_calories: content.tdee,
+              loading: false,
+            });
+          } catch (err) {
+            console.error(err);
+          }
+        })();
       } else {
         console.log("Fields not filled")
         this.setState({fields_filled: false})

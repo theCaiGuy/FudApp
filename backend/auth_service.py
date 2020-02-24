@@ -16,6 +16,7 @@ db = client.users.users_credentials
 def register_auth():
   username = request.json['username']
   password = request.json['password']
+  print(username + " is being created")
   if username is None or password is None:
     return "Please include a username and password", 400
   if db.find_one({"username": username}) is not None:
@@ -25,7 +26,7 @@ def register_auth():
   db.insert_one(new_user)
   
   token = get_token_private(username)
-  return jsonify({"token": token}, 201)
+  return jsonify({"token": token}), 201
 
 @auth_service.route('/api/users/login', methods=['POST'])
 @auth.login_required

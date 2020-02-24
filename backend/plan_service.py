@@ -10,7 +10,7 @@ plan_service = Blueprint('plan_service', __name__)
 @plan_service.route('/api/users/plan/get_daily_meals', methods = ["POST"])
 @auth.login_required
 def get_daily_meals():
-    # Hard Coded logic
+    # Hard Coded logic, get rid of this eventually as we can get the plan from the user themself
     params = request.json
     if not params or "goal" not in params:
         return "Please include a nutrition goal", 400
