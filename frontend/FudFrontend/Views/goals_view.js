@@ -132,7 +132,7 @@ export class GoalsScreen extends React.Component {
       console.log(`user goal level set to ${GOALS[fitness_index]}`)
     }
 
-    calculatePlan () {
+    calculatePlan = async () => {
       height = this.state.height
       weight = this.state.weight
       age = this.state.age
@@ -140,67 +140,65 @@ export class GoalsScreen extends React.Component {
       weeks_to_goal = this.state.weeks_to_goal
       if (height && weight && age && kgs_to_gain && weeks_to_goal) {
         console.log("Great!")
-        this.setState({
+        await this.setState({
           fields_filled: true,
           goals_set: true,
           loading: true,
         })
 
-        (async () => {
-          try {
-            const token = await AsyncStorage.getItem("userToken");
-            const set_res = await fetch(`http://${API_PATH}/api/users/goals/set_user_info`, {
-              method: 'POST',
-              headers: {
-                Accept: 'application/json',
-                'Content-Type': 'application/json',
-                'Authorization': `Basic ${btoa(`${token}:`)}`
-              },
-              body: JSON.stringify({
-                "age": this.state.age,
-                "height": this.state.height,
-                "weight": this.state.weight,
-                "sex": this.state.sex,
-                "activity": this.state.activity_level,
-                "goal": this.state.fitness_goal,
-              })
+        try {
+          const token = await AsyncStorage.getItem("userToken");
+          const set_res = await fetch(`http://${API_PATH}/api/users/goals/set_user_info`, {
+            method: 'POST',
+            headers: {
+              Accept: 'application/json',
+              'Content-Type': 'application/json',
+              'Authorization': `Basic ${btoa(`${token}:`)}`
+            },
+            body: JSON.stringify({
+              "age": this.state.age,
+              "height": this.state.height,
+              "weight": this.state.weight,
+              "sex": this.state.sex,
+              "activity": this.state.activity_level,
+              "goal": this.state.fitness_goal,
+            })
+          });
+          if (set_res.status === 401) {
+            await AsyncStorage.removeItem('userToken').then(() => {
+              this.props.navigation.navigate('Auth');
+              return;
             });
-            if (set_res.status === 401) {
-              await AsyncStorage.removeItem('userToken').then(() => {
-                this.props.navigation.navigate('Auth');
-                return;
-              });
-            };
-  
-            console.log(JSON.stringify(response));
-  
-            const fetch_res = await fetch(`http://${API_PATH}/api/users/goals/fetch_user_macros`, {
-              method: 'POST',
-              headers: {
-                Accept: 'application/json',
-                'Content-Type': 'application/json',
-                'Authorization': `Basic ${btoa(`${token}:`)}`
-              },
+          };
+
+          console.log(JSON.stringify(set_res));
+
+          const fetch_res = await fetch(`http://${API_PATH}/api/users/goals/fetch_user_macros`, {
+            method: 'POST',
+            headers: {
+              Accept: 'application/json',
+              'Content-Type': 'application/json',
+              'Authorization': `Basic ${btoa(`${token}:`)}`
+            },
+          });
+          if (fetch_res.status === 401) {
+            await AsyncStorage.removeItem('userToken').then(() => {
+              this.props.navigation.navigate('Auth');
+              return;
             });
-            if (fetch_res.status === 401) {
-              await AsyncStorage.removeItem('userToken').then(() => {
-                this.props.navigation.navigate('Auth');
-                return;
-              });
-            };
-            const content = await fetch_res.json();
-            console.log(JSON.stringify(content));
-            this.setState({
-              rec_carbs: content.carbs,
-              rec_fat: content.fat,
-              rec_protein: content.protein,
-              rec_calories: content.tdee,
-              loading: false,
-            });
-          } catch (err) {
-            console.error(err);
-          }
-        })();
+          };
+          const content = await fetch_res.json();
+          console.log(JSON.stringify(content));
+          this.setState({
+            rec_carbs: content.carbs,
+            rec_fat: content.fat,
+            rec_protein: content.protein,
+            rec_calories: content.tdee,
+            loading: false,
+          });
+        } catch (err) {
+          console.error(err);
+        }
       } else {
         console.log("Fields not filled")
         this.setState({fields_filled: false})
