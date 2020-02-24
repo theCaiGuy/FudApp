@@ -251,6 +251,12 @@ export class DailyScreen extends React.Component {
               titleStyle={styles.nav_text}
             />
             <Button
+              title="User Profile"
+              onPress={this._goProfileAsync}
+              buttonStyle={styles.nav_button}
+              titleStyle={styles.nav_text}
+            />
+            <Button
               title="Sign Out of Füd"
               onPress={this._signOutAsync}
               buttonStyle={styles.sign_out_button}
@@ -271,6 +277,10 @@ export class DailyScreen extends React.Component {
 
     _goMonthAsync = async () => {
       this.props.navigation.navigate('Month')
+    }
+
+    _goProfileAsync = async () => {
+      this.props.navigation.navigate('Profile')
     }
 
     _signOutAsync = async () => {
