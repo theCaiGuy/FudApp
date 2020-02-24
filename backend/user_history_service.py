@@ -32,7 +32,7 @@ def fetch_user_history():
     user_info = db.find_one({"user_id" : user_id})
     del user_info["_id"]
 
-    return jsonify(user_info["history"]), 200
+    return jsonify(user_info["history"])
 
 
 """
@@ -75,7 +75,7 @@ def set_user_history():
 
     db.replace_one({"user_id" : user_id}, {"user_id" : user_id, "history" : curr_history}, upsert = True)
 
-    return "Success", 200
+    return "Success"
 
 
 """
@@ -109,4 +109,4 @@ def set_user_history_daily():
 
     db.replace_one({"user_id" : user_id}, {"user_id" : user_id, "history" : curr_history}, upsert = True)
 
-    return "Success", 200
+    return "Success"

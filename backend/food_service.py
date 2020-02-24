@@ -45,7 +45,7 @@ def get_food():
     food = db.find_one({"food_id" : food_id})
     del food["_id"]
 
-    return jsonify(food), 200
+    return jsonify(food)
 
 
 #################################################
@@ -191,4 +191,4 @@ def get_similar_foods():
 
 
     # Returns a dict of food_id : servings
-    return jsonify(return_dict), 200
+    return jsonify(return_dict)

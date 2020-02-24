@@ -52,7 +52,7 @@ def set_user_info():
     # db.insert_one(db_post)
     db.replace_one({"user_id" : user_id}, db_post, upsert = True)
 
-    return "Success", 200
+    return "Success"
 
 
 """
@@ -77,7 +77,7 @@ def fetch_user_info():
     user_info = db.find_one({"user_id" : user_id})
     del user_info["_id"] # Can't be jsonified -- remove
 
-    return jsonify(user_info), 200
+    return jsonify(user_info)
 
 
 """
@@ -140,4 +140,4 @@ def fetch_user_macros():
         "fat" : fat_g,
         "carbs" : carbs_g
     }
-    return jsonify(return_dict), 200
+    return jsonify(return_dict)
