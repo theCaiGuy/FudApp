@@ -1,9 +1,9 @@
-from app import app
-from flask import request, jsonify
+from flask import Blueprint, request, jsonify
 import pymongo
 
 from datetime import date
 
+user_history_service = Blueprint('user_history_service', __name__)
 
 client = pymongo.MongoClient("mongodb+srv://connor:connor@foodcluster-trclg.mongodb.net/test?retryWrites=true&w=majority")
 db = client.users.users_history
@@ -12,7 +12,7 @@ db = client.users.users_history
 # Gets history about a user
 
 # Arguments: A user_id
-@app.route('/history/fetch_user_history', methods = ["GET"])
+@user_history_service.route('/history/fetch_user_history', methods = ["GET"])
 def fetch_user_history():
     if "user_id" in request.args:
         user_id = int(request.args["user_id"])
@@ -30,7 +30,7 @@ def fetch_user_history():
 # Gets history about a user
 
 # Arguments: A user_id, food_id, servings
-@app.route('/history/set_user_history', methods = ["POST"])
+@user_history_service.route('/history/set_user_history', methods = ["POST"])
 def set_user_history():
     if "user_id" in request.args:
         user_id = int(request.args["user_id"])

@@ -1,10 +1,11 @@
-from app import app
-from flask import request, jsonify
+from flask import Blueprint, request, jsonify
 import pymongo
 
 # ML Libraries
 import numpy as np
 from scipy import spatial
+
+food_service = Blueprint('food_service', __name__)
 
 # Initializes mongo client for whole file to see
 client = pymongo.MongoClient("mongodb+srv://connor:connor@foodcluster-trclg.mongodb.net/test?retryWrites=true&w=majority")
@@ -22,7 +23,7 @@ RESTRICTIONS_MAP = {
 
 # Function: get_food()
 # Serves up nutrition info on food specified by id
-@app.route('/food/get_food', methods = ["POST"])
+@food_service.route('/food/get_food', methods = ["POST"])
 def get_food():
     if "food_id" in request.args:
         food_id = int(request.args["food_id"])
@@ -97,7 +98,7 @@ def findAllSimilarFoods(food1):
 # food_id: int
 # servings: float
 # num_foods (optional): How many similar foods you would like returned
-@app.route('/food/get_similar_foods', methods = ["POST"])
+@food_service.route('/food/get_similar_foods', methods = ["POST"])
 def get_similar_foods():
     # Parses arguments
     if "food_id" in request.args:

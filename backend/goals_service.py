@@ -1,7 +1,7 @@
-from app import app
-from flask import request, jsonify
+from flask import Blueprint, request, jsonify
 import pymongo
 
+goals_service = Blueprint('goals_service', __name__)
 
 client = pymongo.MongoClient("mongodb+srv://connor:connor@foodcluster-trclg.mongodb.net/test?retryWrites=true&w=majority")
 db = client.users.users_info
@@ -11,7 +11,7 @@ db = client.users.users_info
 # Sets preferences about user in user_info table
 
 # Arguments: A user_id
-@app.route('/goals/set_user_info', methods = ["POST"])
+@goals_service.route('/goals/set_user_info', methods = ["POST"])
 def set_user_info():
     if not all(k in request.args for k in ("user_id", "age", "height", "weight", "sex", "activity", "goal")):
         return "Error: Bad Request, missing fields. Please provide a user_id, age, height, weight, sex, activity level, and goal."
@@ -44,7 +44,7 @@ def set_user_info():
 # Gets preferences about user in user_info table
 
 # Arguments: A user_id
-@app.route('/goals/fetch_user_info', methods = ["GET"])
+@goals_service.route('/goals/fetch_user_info', methods = ["GET"])
 def fetch_user_info():
     if "user_id" in request.args:
         user_id = int(request.args["user_id"])
@@ -63,7 +63,7 @@ def fetch_user_info():
 # Returns a Jsonified list of user daily goals [Calories, ]
 
 # Arguments: A user_id
-@app.route('/goals/fetch_user_macros', methods = ["GET"])
+@goals_service.route('/goals/fetch_user_macros', methods = ["GET"])
 def fetch_user_macros():
     if "user_id" in request.args:
         user_id = int(request.args["user_id"])

@@ -1,15 +1,18 @@
-from app import app, auth
-from flask import request, jsonify
+from flask import Blueprint, request, jsonify
+from flask_httpauth import HTTPBasicAuth
 from itsdangerous import (TimedJSONWebSignatureSerializer
                           as Serializer, BadSignature, SignatureExpired)
 from itsdangerous import Signer
 from passlib.hash import pbkdf2_sha256
 import pymongo
 
+auth_service = Blueprint('auth_service', __name__)
+
+auth = HTTPBasicAuth()
 client = pymongo.MongoClient("mongodb+srv://connor:connor@foodcluster-trclg.mongodb.net/test?retryWrites=true&w=majority")
 db = client.users.users_credentials
 
-@app.route('/api/register', methods=['POST'])
+@auth_service.route('/api/register', methods=['POST'])
 def register_auth():
   username = request.json.get('username')
   password = request.json.get('password')
@@ -22,18 +25,18 @@ def register_auth():
   db.insert_one(new_user)
   return jsonify({"username": username}, 201)
 
-@app.route('/api/login', methods=['POST'])
+@auth_service.route('/api/login', methods=['POST'])
 @auth.login_required
 def login_auth():
   results = {"success": True}
   return jsonify(results)
 
-@app.route('/api/resource')
+@auth_service.route('/api/resource')
 @auth.login_required
 def get_resource():
   return jsonify({ 'data': 'Password test' })
 
-@app.route('/api/token')
+@auth_service.route('/api/token')
 @auth.login_required
 def get_auth_token():
   username = request.authorization['username']
