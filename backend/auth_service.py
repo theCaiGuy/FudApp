@@ -14,8 +14,8 @@ db = client.users.users_credentials
 
 @auth_service.route('/api/users/register', methods=['POST'])
 def register_auth():
-  username = request.json['username']
-  password = request.json['password']
+  username = request.json.get('username')
+  password = request.json.get('password')
   print(username + " is being created")
   if username is None or password is None:
     return "Please include a username and password", 400
@@ -31,8 +31,8 @@ def register_auth():
 @auth_service.route('/api/users/login', methods=['POST'])
 @auth.login_required
 def login_auth():
-  username = request.authorization['username']
-  password = request.authorization['password']
+  username = request.authorization.get('username')
+  password = request.authorization.get('password')
   if username is None or password is None:
     return "Need username and pwd for token", 401
   token = get_token_private(username)
