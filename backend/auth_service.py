@@ -1,4 +1,4 @@
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, current_app, request, jsonify
 from flask_httpauth import HTTPBasicAuth
 from itsdangerous import (TimedJSONWebSignatureSerializer
                           as Serializer, BadSignature, SignatureExpired)
@@ -12,10 +12,11 @@ auth = HTTPBasicAuth()
 client = pymongo.MongoClient("mongodb+srv://connor:connor@foodcluster-trclg.mongodb.net/test?retryWrites=true&w=majority")
 db = client.users.users_credentials
 
-@auth_service.route('/api/register', methods=['POST'])
+@auth_service.route('/api/users/register', methods=['POST'])
 def register_auth():
   username = request.json.get('username')
   password = request.json.get('password')
+  print(username + " is being created")
   if username is None or password is None:
     return "Please include a username and password", 400
   if db.find_one({"username": username}) is not None:
@@ -23,27 +24,24 @@ def register_auth():
   new_user = {"username": username}
   new_user["password"] = hash_pwd(password)
   db.insert_one(new_user)
-  return jsonify({"username": username}, 201)
+  
+  token = get_token_private(username)
+  return jsonify({"token": token}), 201
 
-@auth_service.route('/api/login', methods=['POST'])
+@auth_service.route('/api/users/login', methods=['POST'])
 @auth.login_required
 def login_auth():
-  results = {"success": True}
-  return jsonify(results)
+  username = request.authorization.get('username')
+  password = request.authorization.get('password')
+  if username is None or password is None:
+    return "Need username and pwd for token", 401
+  token = get_token_private(username)
+  return jsonify({"token": token})
 
-@auth_service.route('/api/resource')
+@auth_service.route('/api/users/auth_test', methods=['POST'])
 @auth.login_required
 def get_resource():
-  return jsonify({ 'data': 'Password test' })
-
-@auth_service.route('/api/token')
-@auth.login_required
-def get_auth_token():
-  username = request.authorization['username']
-  if username is None:
-    return "Need username/pwd for token", 401
-  token = generate_auth_token(request.authorization['username'])
-  return jsonify({ 'token': token.decode('ascii') })
+  return jsonify({ 'data': 'Auth success' })
 
 @auth.verify_password
 def verify_password(username_or_token, password):
@@ -56,6 +54,10 @@ def verify_password(username_or_token, password):
       return False
   return True
 
+def get_token_private(username):
+  token = generate_auth_token(username)
+  return token.decode('ascii')
+
 def hash_pwd(password):
   return pbkdf2_sha256.hash(password)
 
@@ -63,14 +65,14 @@ def verify_pwd(passwordA, passwordB):
   return pbkdf2_sha256.verify(passwordA, passwordB)
 
 def generate_auth_token(username, expiration = 1000):
-  s = Serializer(app.config['SECRET_KEY'], expires_in = expiration)
+  s = Serializer(current_app.config['SECRET_KEY'], expires_in = expiration)
   token = s.dumps({ 'username': username})
   print(token.decode('ascii'))
   return token
 
 def verify_auth_token(token):
   print(token)
-  s = Serializer(app.config['SECRET_KEY'])
+  s = Serializer(current_app.config['SECRET_KEY'])
   try:
     data = s.loads(token)
   except SignatureExpired:
@@ -79,4 +81,18 @@ def verify_auth_token(token):
     return None
   return data['username']
   
-  
+def get_user_from_request(req):
+  if req.authorization['password']:
+    print("PASSWD")
+    return req.authorization['username']
+  return verify_auth_token(req.authorization['username'])
+
+def get_id_from_username(username):
+  user = db.find_one({"username": username})
+  if user is not None:
+    return str(user["_id"])
+  else:
+    return None
+
+def get_id_from_request(req):
+  return get_id_from_username(get_user_from_request(req))

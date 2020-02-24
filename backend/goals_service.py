@@ -1,6 +1,8 @@
 from flask import Blueprint, request, jsonify
 import pymongo
 
+from auth_service import auth, get_id_from_request
+
 goals_service = Blueprint('goals_service', __name__)
 
 client = pymongo.MongoClient("mongodb+srv://connor:connor@foodcluster-trclg.mongodb.net/test?retryWrites=true&w=majority")
@@ -11,28 +13,34 @@ db = client.users.users_info
 # Sets preferences about user in user_info table
 
 # Arguments: A user_id
-@goals_service.route('/goals/set_user_info', methods = ["POST"])
+@goals_service.route('/api/users/goals/set_user_info', methods = ["POST"])
+@auth.login_required
 def set_user_info():
-    if not all(k in request.args for k in ("user_id", "age", "height", "weight", "sex", "activity", "goal")):
-        return "Error: Bad Request, missing fields. Please provide a user_id, age, height, weight, sex, activity level, and goal."
+    user_id = get_id_from_request(request)
+    if not user_id:
+        return "No user found", 400
+        
+    params = request.json
+    if not all(k in params for k in ("age", "height", "weight", "sex", "activity", "goal")):
+        return "Please provide an age, height, weight, sex, activity level, and goal.", 400
 
-    user_id = int(request.args["user_id"])
     # Creates document for DB
     db_post = {
         "user_id" : user_id,
-        "age" : int(request.args["age"]),
-        "height_cm" : float(request.args["height"]),
-        "weight_kg" : float(request.args["weight"]),
-        "sex" : request.args["sex"],
-        "activity" : request.args["activity"],
-        "goal" : request.args["goal"]
+        "age" : int(params["age"]),
+        "height_cm" : float(params["height"]),
+        "weight_kg" : float(params["weight"]),
+        "sex" : params["sex"],
+        "activity" : params["activity"],
+        "goal" : params["goal"]
     }
 
-    restrictions = {}
-    for curr_key in request.form:
-        restrictions[curr_key] = request.form[curr_key]
+    # THIS WILL NEED CHANGING, TODO
+    # restrictions = {}
+    # for curr_key in request.form:
+    #     restrictions[curr_key] = request.form[curr_key]
 
-    db_post["restrictions"] = restrictions
+    # db_post["restrictions"] = restrictions
 
     # db.insert_one(db_post)
     db.replace_one({"user_id" : user_id}, db_post, upsert = True)
@@ -44,12 +52,12 @@ def set_user_info():
 # Gets preferences about user in user_info table
 
 # Arguments: A user_id
-@goals_service.route('/goals/fetch_user_info', methods = ["GET"])
+@goals_service.route('/api/users/goals/fetch_user_info', methods = ["POST"])
+@auth.login_required
 def fetch_user_info():
-    if "user_id" in request.args:
-        user_id = int(request.args["user_id"])
-    else:
-        return "Error: No user id provided."
+    user_id = get_id_from_request(request)
+    if not user_id:
+        return "No user found", 400
 
     # Gets document from DB
     user_info = db.find_one({"user_id" : user_id})
@@ -63,18 +71,18 @@ def fetch_user_info():
 # Returns a Jsonified list of user daily goals [Calories, ]
 
 # Arguments: A user_id
-@goals_service.route('/goals/fetch_user_macros', methods = ["GET"])
+@goals_service.route('/api/users/goals/fetch_user_macros', methods = ["POST"])
+@auth.login_required
 def fetch_user_macros():
-    if "user_id" in request.args:
-        user_id = int(request.args["user_id"])
-    else:
-        return "Error: No user id provided."
+    user_id = get_id_from_request(request)
+    if not user_id:
+        return "No user found", 400
 
     user_info = None
     user_info = db.find_one({"user_id" : user_id})
 
     if user_info is None:
-        return "Error: User not in DB"
+        return "Error: User info not in DB", 400
 
     # Calculates TDEE
     user_tdee = (10.0 * user_info["weight_kg"] + 6.25 * user_info["height_cm"] - 5.0 * user_info["age"])

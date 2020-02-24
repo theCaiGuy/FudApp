@@ -23,12 +23,12 @@ RESTRICTIONS_MAP = {
 
 # Function: get_food()
 # Serves up nutrition info on food specified by id
-@food_service.route('/food/get_food', methods = ["POST"])
+@food_service.route('/api/food/get_food', methods = ["POST"])
 def get_food():
-    if "food_id" in request.args:
-        food_id = int(request.args["food_id"])
-    else:
-        return "Error: No food id provided."
+    params = request.json
+    if not params or "food_id" not in params:
+        return "Please include a food id", 400
+    food_id = int(params["food_id"])
 
     results = []
 
@@ -98,25 +98,23 @@ def findAllSimilarFoods(food1):
 # food_id: int
 # servings: float
 # num_foods (optional): How many similar foods you would like returned
-@food_service.route('/food/get_similar_foods', methods = ["POST"])
+@food_service.route('/api/food/get_similar_foods', methods = ["POST"])
 def get_similar_foods():
     # Parses arguments
-    if "food_id" in request.args:
-        food_id = int(request.args["food_id"])
-    else:
-        return "Error: No food id provided."
+    params = request.json
+    if not params or "food_id" not in params:
+        return "Please include a food id", 400
+    food_id = int(params["food_id"])
 
-    if "servings" in request.args:
-        servings = float(request.args["servings"])
-    else:
-        return "Error: No current servings provided"
+    if not params or "servings" not in params:
+        return "Please include the number of servings", 400
+    servings = float(params["servings"])
 
-    if "num_foods" in request.args:
-        num_foods = int(request.args["num_foods"])
-        if num_foods >= 15 or num_foods < 1:
-            return "Error: Invalid number of foods desired"
-    else:
-        num_foods = 5
+    if not params or "num_foods" not in params:
+        return "Please include the number of foods", 400
+    num_foods = int(params["num_foods"])
+    if num_foods >= 15 or num_foods < 1:
+        return "Please request 1-14 foods", 400
 
     # Restrictions in a decent format
     curr_restrictions = set()
