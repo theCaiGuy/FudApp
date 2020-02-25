@@ -30,7 +30,6 @@ not understand that the two are usually mutually exlucisve.
 (3) Add routing with user profile view.
 */
 
-
 const ACTIVITY_LEVELS = [
   'Sedentary',
   'Light',
@@ -51,6 +50,10 @@ const SEXES = [
   'F',
 ]
 
+const MEASUREMENTS = [
+  'Metric',
+  'Imperial',
+]
 
 function CalculationsComponent({
   fields_filled,
@@ -98,18 +101,21 @@ export class GoalsScreen extends React.Component {
     constructor(props) {
       super(props);
       this.state = {
-        fitness_goal: "Cut",
+        fitness_goal: null,
         activity_level: "Sedentary",
         sex: "NA",
         sex_index: 0,
         activity_index: 0,
         fitness_index: 0,
+        measurement_index: 0,
+        measurement_system: "Metric",
         height: null,
         weight: null,
         age: null,
         kgs_to_gain: null,
         weeks_to_goal: null,
         fields_filled: false,
+        page_loading: true,
         loading: false,
         goals_set: false,
         user_id: 1,
@@ -122,11 +128,82 @@ export class GoalsScreen extends React.Component {
       this.updateActivityIndex = this.updateActivityIndex.bind(this)
       this.updateFitnessIndex = this.updateFitnessIndex.bind(this)
       this.calculatePlan = this.calculatePlan.bind(this)
+      this.updateMeasurementIndex = this.updateMeasurementIndex.bind(this)
     }
 
     static navigationOptions = {
       title: 'Set Fitness Goals',
     };
+
+    componentDidMount() {
+      return AsyncStorage.getItem('userToken').then((token) => {
+        fetch(`http://${API_PATH}/api/users/goals/fetch_user_info`, {
+          method: 'POST',
+          headers: {
+            Accept: 'application/json',
+            'Content-Type': 'application/json',
+            'Authorization': `Basic ${btoa(`${token}:`)}`
+          },
+        })
+        .then((response) => {
+          if (response.status === 401) {
+            AsyncStorage.removeItem('userToken').then(() => {
+              this.props.navigation.navigate('Auth');
+              return;
+            });
+          }
+          if (response.status === 400) {
+            this.setState({
+              page_loading: false,
+            })
+            {/*
+              TODO: Handle 400 response better
+            */}
+            return;
+          }
+          if (response.status !== 200) {
+            this.setState({
+              page_loading: false,
+            })
+            {/*
+              TODO: Handle 400 response better
+            */}
+            return;
+          }
+          response.json().then((responseJson) => {
+            this.setState({
+              activity_level: responseJson['activity'],
+              age: responseJson['age'],
+              fitness_goal: responseJson['goal'],
+              height: responseJson['height_cm'],
+              sex: responseJson['sex'],
+              weight: responseJson['weight_kg'],
+              page_loading: false,
+              sex_index: SEXES.indexOf(responseJson['sex']),
+              fitness_index: GOALS.indexOf(responseJson['goal']),
+              activity_index: ACTIVITY_LEVELS.indexOf(responseJson['activity']),
+            });
+            console.log(`Recieved response ${JSON.stringify(responseJson)}`);
+
+            if (this.state.height && this.state.weight && this.state.age) {
+              this.setState({
+                fields_filled: true
+              })
+              this.calculatePlan()
+            }
+
+          });
+        })
+      }).catch((error) => {
+        console.error(error);
+      });
+    }
+
+    updateMeasurementIndex (measurement_index) {
+      this.setState({measurement_index})
+      this.setState({measurement_system: MEASUREMENTS[measurement_index]})
+      console.log(`user measurement set to ${MEASUREMENTS[measurement_index]}`)
+    }
 
     updateSexIndex (sex_index) {
       this.setState({sex_index});
@@ -148,13 +225,8 @@ export class GoalsScreen extends React.Component {
     }
 
     calculatePlan = async () => {
-      height = this.state.height
-      weight = this.state.weight
-      age = this.state.age
-      kgs_to_gain = this.state.kgs_to_gain
-      weeks_to_goal = this.state.weeks_to_goal
-      if (height && weight && age && kgs_to_gain && weeks_to_goal) {
-        console.log("Great!")
+      if (this.state.height && this.state.weight && this.state.age) {
+        console.log("All fields filled!")
         await this.setState({
           fields_filled: true,
           goals_set: true,
@@ -205,7 +277,7 @@ export class GoalsScreen extends React.Component {
           const content = await fetch_res.json();
           console.log(JSON.stringify(content));
           this.setState({
-            rec_carbs: content.carbs,
+            rec_carbs: content.carb,
             rec_fat: content.fat,
             rec_protein: content.protein,
             rec_calories: content.tdee,
@@ -224,37 +296,61 @@ export class GoalsScreen extends React.Component {
       const sex_buttons = ['Not Specified', 'Male', 'Female']
       const activity_buttons = ['1', '2', '3', '4', '5']
       const fitness_buttons = ['Fat Loss', 'Muscle Gain', 'Maintenance']
+      const measurement_buttons = ['Metric', 'Imperial']
+
+      if (this.state.page_loading) {
+        return (
+          <SafeAreaView style={styles.container}>
+            <Text style={styles.central_subheader_text}>Loading Fitness Goals...</Text>
+          </SafeAreaView>
+        )
+      }
 
       return (
         <SafeAreaView style={styles.container}>
           <KeyboardAwareScrollView>
             <View style={styles.container}>
 
-              <Input
-                label = 'Height'
-                labelStyle={styles.profile_text_input_label}
-                containerStyle={styles.profile_text_input}
-                placeholder = 'Your Height in Centimeters'
-                keyboardType='numeric'
-                onChangeText = {(text) => this.setState({height: text})}
+              <Text style={styles.left_align_subheader_text}>
+                Measurement Units
+              </Text>
+
+              <ButtonGroup
+                onPress={this.updateMeasurementIndex}
+                selectedIndex={this.state.measurement_index}
+                buttons={measurement_buttons}
+                containerStyle={styles.button_group_style}
+                selectedButtonStyle={styles.goal_selection_button}
               />
 
               <Input
-                label = 'Weight'
+                label = {(this.state.measurement_system == "Metric") ? "Height in Centimeters" : "Height in Inches"}
                 labelStyle={styles.profile_text_input_label}
                 containerStyle={styles.profile_text_input}
-                placeholder = 'Your Weight in Kilograms'
+                placeholder = 'Your Height'
+                keyboardType='numeric'
+                onChangeText = {(text) => this.setState({height: text})}
+                defaultValue={(this.state.height) ? String(this.state.height) : ""}
+              />
+
+              <Input
+                label = {(this.state.measurement_system == "Metric") ? "Weight in Kilograms" : "Weight in Pounds"}
+                labelStyle={styles.profile_text_input_label}
+                containerStyle={styles.profile_text_input}
+                placeholder = 'Your Weight'
                 keyboardType='numeric'
                 onChangeText = {(text) => this.setState({weight: text})}
+                defaultValue={(this.state.weight) ? String(this.state.weight) : ""}
               />
 
               <Input
                 label = 'Age'
                 labelStyle={styles.profile_text_input_label}
                 containerStyle={styles.profile_text_input}
-                placeholder = 'Your Age in Years'
+                placeholder = 'Your Age'
                 keyboardType='numeric'
                 onChangeText = {(text) => this.setState({age: text})}
+                defaultValue={(this.state.age) ? String(this.state.age) : ""}
               />
 
               <Text style={styles.left_align_subheader_text}>
@@ -293,7 +389,7 @@ export class GoalsScreen extends React.Component {
                 selectedButtonStyle={styles.goal_selection_button}
               />
 
-              <Input
+              {/* <Input
                 label = 'Number of kilograms to lose/gain'
                 labelStyle={styles.profile_text_input_label}
                 containerStyle={styles.profile_text_input}
@@ -309,7 +405,7 @@ export class GoalsScreen extends React.Component {
                 placeholder='Weeks to achieve goal'
                 keyboardType='numeric'
                 onChangeText = {(text) => this.setState({weeks_to_goal: text})}
-              />
+              /> */}
 
               <Button
                 title="Set Fitness Goals!"
