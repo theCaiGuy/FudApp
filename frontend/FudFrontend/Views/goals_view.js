@@ -101,7 +101,7 @@ export class GoalsScreen extends React.Component {
     constructor(props) {
       super(props);
       this.state = {
-        fitness_goal: null,
+        fitness_goal: "Cut",
         activity_level: "Sedentary",
         sex: "NA",
         sex_index: 0,
