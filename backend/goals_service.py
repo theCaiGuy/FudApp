@@ -78,11 +78,18 @@ Function: set_user_info
 
 Sets preferences about user in user_info table
 
-Arguments:
-user_id (int)
+Arguments (in request body):
+user_id (int),
+height (double) : in cm
+weight (double) : in kg
+sex (string) : "M" or "F"
+activity (string) : One of "Sedentary", "Light", "Moderate", "Heavy", or "Athlete"
+goal (string) : One of "Bulk", "Cut", or "Maintain"
+restrictions: list of restriction strings (e.g. ["Vegan", "Nut Allergy"]) -- empty denotes no restrictions
+
 
 Returns:
-"Success" string and code 200 -- indicating the user's info was updated in MongoDB
+"Success" string -- indicating the user's info was updated in MongoDB
 """
 @goals_service.route('/api/users/goals/set_user_info', methods = ["POST"])
 @auth.login_required
@@ -92,28 +99,21 @@ def set_user_info():
         return "No user found", 400
 
     params = request.json
-    if not all(k in params for k in ("age", "height", "weight", "sex", "activity", "goal")):
-        return "Please provide an age, height, weight, sex, activity level, and goal.", 400
+    if not all(k in params for k in ("age", "height", "weight", "sex", "activity", "goal", "restrictions")):
+        return "Please provide an age, height, weight, sex, activity level, goal, and restrictions list.", 400
 
     # Creates document for DB
     db_post = {
         "user_id" : user_id,
         "age" : int(params["age"]),
-        "height_cm" : float(params["height"]),
-        "weight_kg" : float(params["weight"]),
+        "height" : float(params["height"]),
+        "weight" : float(params["weight"]),
         "sex" : params["sex"],
         "activity" : params["activity"],
-        "goal" : params["goal"]
+        "goal" : params["goal"],
+        "restrictions" : params["restrictions"]
     }
 
-    # THIS WILL NEED CHANGING, TODO
-    # restrictions = {}
-    # for curr_key in request.form:
-    #     restrictions[curr_key] = request.form[curr_key]
-
-    # db_post["restrictions"] = restrictions
-
-    # db.insert_one(db_post)
     db.replace_one({"user_id" : user_id}, db_post, upsert = True)
 
     return "Success"
