@@ -1,7 +1,7 @@
 from flask import Blueprint, request, jsonify
 import pymongo
 
-from auth_service import auth, get_id_from_request
+from auth_service import verify_credentials, get_id_from_request
 
 goals_service = Blueprint('goals_service', __name__)
 
@@ -92,8 +92,10 @@ Returns:
 "Success" string -- indicating the user's info was updated in MongoDB
 """
 @goals_service.route('/api/users/goals/set_user_info', methods = ["POST"])
-@auth.login_required
 def set_user_info():
+    if not verify_credentials(request):
+        return jsonify({"err": "Unauthorized: Invalid or missing credentials"}), 401
+
     user_id = get_id_from_request(request)
     if not user_id:
         return "No user found", 400
@@ -135,8 +137,10 @@ Returns:
 JSON of user's data straight from MognoDB
 """
 @goals_service.route('/api/users/goals/fetch_user_info', methods = ["POST"])
-@auth.login_required
 def fetch_user_info():
+    if not verify_credentials(request):
+        return jsonify({"err": "Unauthorized: Invalid or missing credentials"}), 401
+
     user_id = get_id_from_request(request)
     if not user_id:
         return "No user found", 400
@@ -160,8 +164,10 @@ Returns:
 A Jsonified Dict of user's macros (currently TDEE Calories, Protein, Fat, and Carbs)
 """
 @goals_service.route('/api/users/goals/fetch_user_macros', methods = ["POST"])
-@auth.login_required
 def fetch_user_macros():
+    if not verify_credentials(request):
+        return jsonify({"err": "Unauthorized: Invalid or missing credentials"}), 401
+
     user_id = get_id_from_request(request)
     if not user_id:
         return "No user found", 400

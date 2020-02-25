@@ -3,7 +3,7 @@ import pymongo
 
 from datetime import date
 
-from auth_service import auth, get_id_from_request
+from auth_service import verify_credentials, get_id_from_request
 
 user_history_service = Blueprint('user_history_service', __name__)
 
@@ -22,8 +22,10 @@ Returns:
 Jsonified version of user_history dict straight from MongoDB
 """
 @user_history_service.route('/api/users/history/fetch_user_history', methods = ["POST"])
-@auth.login_required
 def fetch_user_history():
+    if not verify_credentials(request):
+        return jsonify({"err": "Unauthorized: Invalid or missing credentials"}), 401
+
     user_id = get_id_from_request(request)
     if not user_id:
         return "No user found", 400
@@ -51,8 +53,10 @@ Returns:
 Jsonified version of user_history dict straight from MongoDB
 """
 @user_history_service.route('/api/users/history/fetch_user_history_daily', methods = ["POST"])
-@auth.login_required
 def fetch_user_history_daily():
+    if not verify_credentials(request):
+        return jsonify({"err": "Unauthorized: Invalid or missing credentials"}), 401
+
     user_id = get_id_from_request(request)
     if not user_id:
         return "No user found", 400
@@ -87,8 +91,10 @@ food_id (string): the id of the food user just added -- string for key access in
 servings (float) : the number of servings of this food
 """
 @user_history_service.route('/api/users/history/set_user_history_food', methods = ["POST"])
-@auth.login_required
 def set_user_history_food():
+    if not verify_credentials(request):
+        return jsonify({"err": "Unauthorized: Invalid or missing credentials"}), 401
+
     user_id = get_id_from_request(request)
     if not user_id:
         return "No user found", 400
@@ -139,8 +145,10 @@ meal_name (str) : name of the meal (can be used to replace previous same meal)
 foods (dict) : maps food_id : servings -- note that food_id's are strings for JSON
 """
 @user_history_service.route('/api/users/history/set_user_history_meal', methods = ["POST"])
-@auth.login_required
 def set_user_history_meal():
+    if not verify_credentials(request):
+        return jsonify({"err": "Unauthorized: Invalid or missing credentials"}), 401
+
     user_id = get_id_from_request(request)
     if not user_id:
         return "No user found", 400
@@ -181,8 +189,10 @@ date (str) : string of the date desired, format YYYY-MM-DD
 day_history (dict) : Dict that maps food_ids (str) to servings (float) -- string food_ids for JSON
 """
 @user_history_service.route('/api/users/history/set_user_history_daily', methods = ["POST"])
-@auth.login_required
 def set_user_history_daily():
+    if not verify_credentials(request):
+        return jsonify({"err": "Unauthorized: Invalid or missing credentials"}), 401
+
     user_id = get_id_from_request(request)
     if not user_id:
         return "No user found", 400
@@ -219,8 +229,10 @@ user_id (int)
 history (dict) : Full history object (see documentation) -- note everything but lowest (serving) level is string for keys
 """
 @user_history_service.route('/api/users/history/set_user_history_total', methods = ["POST"])
-@auth.login_required
 def set_user_history_total():
+    if not verify_credentials(request):
+        return jsonify({"err": "Unauthorized: Invalid or missing credentials"}), 401
+
     user_id = get_id_from_request(request)
     if not user_id:
         return "No user found", 400
