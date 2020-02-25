@@ -18,6 +18,17 @@ import { API_PATH } from '../assets/constants'
 import {encode as btoa} from 'base-64'
 
 
+/*
+The opening view for the app if the user hasn't already logged in before
+Provides routes for user to sign in w/ existing credentials, or sign up
+for a new Füd account
+
+TODO:
+Notify user if account information is incorrect
+Forgot Password
+*/
+
+
 export class SignInScreen extends React.Component {
   static navigationOptions = {
     headerShown: false,
