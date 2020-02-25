@@ -164,8 +164,8 @@ export class DailyScreen extends React.Component {
     });
   }
 
-  openUpdateOverlay(meal_to_edit, food_to_edit, food_to_edit_name) {
-    this.setState({
+  openUpdateOverlay = async (meal_to_edit, food_to_edit, food_to_edit_name) => {
+    await this.setState({
       overlay_visible: true,
       meal_to_edit: meal_to_edit,
       food_to_edit: food_to_edit,
@@ -173,12 +173,12 @@ export class DailyScreen extends React.Component {
     })
   }
 
-  updateIngredient(updatedFood) {
+  updateIngredient = async (updatedFood) => {
     meal_to_edit = this.state.meal_to_edit
     food_to_edit = this.state.food_to_edit
     var data = {... this.state.DATA}
     data[meal_to_edit][food_to_edit]["Food Name"] = updatedFood
-    this.setState({
+    await this.setState({
       overlay_visible: false,
       DATA: data
     })
