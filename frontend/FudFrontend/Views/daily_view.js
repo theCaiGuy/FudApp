@@ -111,19 +111,7 @@ export class DailyScreen extends React.Component {
       meal_to_edit: "Breakfast",
       food_to_edit: 0,
       food_to_edit_name: null,
-      DATA: {
-        "Breakfast" : [
-            {
-                "food_id" : 69,
-                "Food Name" : "Nothing",
-                "Calories" : 69,
-                "Protein (g)" : 420,
-                "Fat (g)" : 6.9,
-                "Carbs (g)" : 4.20,
-                "Servings" : 69
-            },
-        ],
-      },
+      DATA: null,
       loading: true,
 
     };
@@ -231,6 +219,7 @@ export class DailyScreen extends React.Component {
                   </Text>
                   <View>
                     {
+                      (this.state.DATA) ? (
                       Object.keys(this.state.DATA[this.state.meal_to_edit][this.state.food_to_edit]).map((fact, i) => (
                         <ListItem
                           key={i}
@@ -239,6 +228,11 @@ export class DailyScreen extends React.Component {
                           topDivider={i === 0}
                         />
                       ))
+                      ) : (
+                        <View>
+                          <Text style={styles.central_subheader_text}>Data Not Loaded</Text>
+                        </View>
+                      )
                     }
                   </View>
                   <Text style={styles.left_align_subheader_text}>

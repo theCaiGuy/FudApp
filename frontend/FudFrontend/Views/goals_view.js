@@ -194,7 +194,8 @@ export class GoalsScreen extends React.Component {
               sex_index: SEXES.indexOf(responseJson['sex']),
               fitness_index: GOALS.indexOf(responseJson['goal']),
               activity_index: ACTIVITY_LEVELS.indexOf(responseJson['activity']),
-              dietary_restrictions: responseJson['restrictions'],
+              dietary_restrictions: (responseJson['restrictions']) ? responseJson['restrictions'] : [],
+              measurement_system: (responseJson['measurement_system']) ? responseJson['measurement_system'] : 'Metric',
             });
             console.log(`Recieved response ${JSON.stringify(responseJson)}`);
 
@@ -295,6 +296,7 @@ export class GoalsScreen extends React.Component {
               "activity": this.state.activity_level,
               "goal": this.state.fitness_goal,
               "restrictions": this.state.dietary_restrictions,
+              "measurement_system": this.state.measurement_system,
             })
           });
           if (set_res.status === 401) {
