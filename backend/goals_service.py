@@ -33,7 +33,7 @@ def calculate_tdee_macros(user_info = None):
         return None
 
     # Calculates TDEE
-    user_tdee = (10.0 * user_info["weight_kg"] + 6.25 * user_info["height_cm"] - 5.0 * user_info["age"])
+    user_tdee = (10.0 * user_info["weight"] + 6.25 * user_info["height"] - 5.0 * user_info["age"])
     if user_info["sex"] == "M":
         user_tdee += 5.0
     else:
@@ -78,11 +78,18 @@ Function: set_user_info
 
 Sets preferences about user in user_info table
 
-Arguments:
-user_id (int)
+Arguments (in request body):
+user_id (int),
+height (double) : in cm
+weight (double) : in kg
+sex (string) : "M" or "F"
+activity (string) : One of "Sedentary", "Light", "Moderate", "Heavy", or "Athlete"
+goal (string) : One of "Bulk", "Cut", or "Maintain"
+restrictions: list of restriction strings (e.g. ["Vegan", "Nut Allergy"]) -- empty denotes no restrictions
+
 
 Returns:
-"Success" string and code 200 -- indicating the user's info was updated in MongoDB
+"Success" string -- indicating the user's info was updated in MongoDB
 """
 @goals_service.route('/api/users/goals/set_user_info', methods = ["POST"])
 def set_user_info():
@@ -101,21 +108,18 @@ def set_user_info():
     db_post = {
         "user_id" : user_id,
         "age" : int(params["age"]),
-        "height_cm" : float(params["height"]),
-        "weight_kg" : float(params["weight"]),
+        "height" : float(params["height"]),
+        "weight" : float(params["weight"]),
         "sex" : params["sex"],
         "activity" : params["activity"],
         "goal" : params["goal"]
     }
 
-    # THIS WILL NEED CHANGING, TODO
-    # restrictions = {}
-    # for curr_key in request.form:
-    #     restrictions[curr_key] = request.form[curr_key]
+    if "restrictions" in params:
+        db_post["restrictions"] = params["restrictions"]
+    else:
+        db_post["restrictions"] = []
 
-    # db_post["restrictions"] = restrictions
-
-    # db.insert_one(db_post)
     db.replace_one({"user_id" : user_id}, db_post, upsert = True)
 
     return "Success"
