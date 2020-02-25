@@ -1,7 +1,7 @@
 from flask import Blueprint, request, jsonify
 import pymongo
 
-from auth_service import auth, get_id_from_request
+from auth_service import verify_credentials, get_id_from_request
 
 plan_service = Blueprint('plan_service', __name__)
 
@@ -16,8 +16,10 @@ user_id (int)
 goal (string) : Either "Bulk", "Cut", or "Maintain" (deprecated)
 """
 @plan_service.route('/api/users/plan/get_daily_meals', methods = ["POST"])
-@auth.login_required
 def get_daily_meals():
+    if not verify_credentials(request):
+        return jsonify({"err": "Unauthorized: Invalid or missing credentials"}), 401
+
     # Hard Coded logic, get rid of this eventually as we can get the plan from the user themself
     params = request.json
     if not params or "goal" not in params:
