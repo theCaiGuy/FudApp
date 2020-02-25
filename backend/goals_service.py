@@ -33,7 +33,7 @@ def calculate_tdee_macros(user_info = None):
         return None
 
     # Calculates TDEE
-    user_tdee = (10.0 * user_info["weight_kg"] + 6.25 * user_info["height_cm"] - 5.0 * user_info["age"])
+    user_tdee = (10.0 * user_info["weight"] + 6.25 * user_info["height"] - 5.0 * user_info["age"])
     if user_info["sex"] == "M":
         user_tdee += 5.0
     else:
