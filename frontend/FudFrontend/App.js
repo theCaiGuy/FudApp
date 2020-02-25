@@ -16,6 +16,18 @@ import { UserProfileScreen } from './Views/user_profile_view'
 
 // Adapted from https://snack.expo.io/@react-navigation/auth-flow-v3
 
+/*
+This file sets the routes for stack navigation for the application
+
+AppStack contains the homepage, weekly and monthly views, along with the user profile screen
+
+AuthStack handles user authentication with SignIn and SignUp pages
+
+PreferencesStack allows the user to set their profile preferences
+
+A switch navigator handles navigation between the three stacks and checks for user authorization
+*/
+
 const AppStack = createStackNavigator(
   { 
     Home: DailyScreen, 
