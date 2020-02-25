@@ -15,6 +15,21 @@ import {
 import { API_PATH } from '../assets/constants'
 import {encode as btoa} from 'base-64'
 
+/*
+This view lets users enter information about their current physical
+state/health, and then enter specific fat loss or muscle gain goals with
+a specific timeline. The app then uses API calls to calculate exactly how
+many calories (and more specifically, how many grams of protein, fat, carbs)
+the user should eat per day on average in order to reach their goal within the
+specified timeline.
+
+TODO:
+(1) Make the fat loss / muscle gain goal picking section clearer; some users might
+not understand that the two are usually mutually exlucisve.
+(2) Allow for imperial system inputs.
+(3) Add routing with user profile view.
+*/
+
 
 const ACTIVITY_LEVELS = [
   'Sedentary',
