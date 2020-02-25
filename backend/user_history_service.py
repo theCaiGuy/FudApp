@@ -53,8 +53,10 @@ Returns:
 Jsonified version of user_history dict straight from MongoDB
 """
 @user_history_service.route('/api/users/history/fetch_user_history_daily', methods = ["POST"])
-@auth.login_required
 def fetch_user_history_daily():
+    if not verify_credentials(request):
+        return jsonify({"err": "Unauthorized: Invalid or missing credentials"}), 401
+
     user_id = get_id_from_request(request)
     if not user_id:
         return "No user found", 400
@@ -88,17 +90,11 @@ prev_food_id (string) : the id of the food to replace (if not in params, adds ne
 food_id (string): the id of the food user just added -- string for key access in history JSON
 servings (float) : the number of servings of this food
 """
-<<<<<<< HEAD
-@user_history_service.route('/api/users/history/set_user_history', methods = ["POST"])
-def set_user_history():
+@user_history_service.route('/api/users/history/set_user_history_food', methods = ["POST"])
+def set_user_history_food():
     if not verify_credentials(request):
         return jsonify({"err": "Unauthorized: Invalid or missing credentials"}), 401
 
-=======
-@user_history_service.route('/api/users/history/set_user_history_food', methods = ["POST"])
-@auth.login_required
-def set_user_history_food():
->>>>>>> dc39da92a94594292403904adffaac2572a38365
     user_id = get_id_from_request(request)
     if not user_id:
         return "No user found", 400
@@ -149,8 +145,10 @@ meal_name (str) : name of the meal (can be used to replace previous same meal)
 foods (dict) : maps food_id : servings -- note that food_id's are strings for JSON
 """
 @user_history_service.route('/api/users/history/set_user_history_meal', methods = ["POST"])
-@auth.login_required
 def set_user_history_meal():
+    if not verify_credentials(request):
+        return jsonify({"err": "Unauthorized: Invalid or missing credentials"}), 401
+
     user_id = get_id_from_request(request)
     if not user_id:
         return "No user found", 400
@@ -231,8 +229,10 @@ user_id (int)
 history (dict) : Full history object (see documentation) -- note everything but lowest (serving) level is string for keys
 """
 @user_history_service.route('/api/users/history/set_user_history_total', methods = ["POST"])
-@auth.login_required
 def set_user_history_total():
+    if not verify_credentials(request):
+        return jsonify({"err": "Unauthorized: Invalid or missing credentials"}), 401
+
     user_id = get_id_from_request(request)
     if not user_id:
         return "No user found", 400
