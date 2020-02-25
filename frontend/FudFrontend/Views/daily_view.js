@@ -217,7 +217,7 @@ export class DailyScreen extends React.Component {
                     dishes={this.state.DATA[meal]}
                     key={i}
                     ingredientChange={this.openUpdateOverlay}
-                    animationSpeed={i + 1}
+                    animationSpeed={i}
                   />
                 ))
               }
