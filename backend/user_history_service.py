@@ -30,9 +30,47 @@ def fetch_user_history():
 
     # Gets document from DB
     user_info = db.find_one({"user_id" : user_id})
-    del user_info["_id"]
+    if user_info:
+        del user_info["_id"]
+    else:
+        return "No user found in DB", 400
 
     return jsonify(user_info["history"])
+
+
+"""
+Function: fetch_user_history_daily
+
+Gets history about a user for a specific day
+
+Arguments:
+user_id (int)
+date (str) : Format YYYY-MM-DD
+
+Returns:
+Jsonified version of user_history dict straight from MongoDB
+"""
+@user_history_service.route('/api/users/history/fetch_user_history_daily', methods = ["POST"])
+@auth.login_required
+def fetch_user_history_daily():
+    user_id = get_id_from_request(request)
+    if not user_id:
+        return "No user found", 400
+
+    params = request.json
+    if not params or "date" not in params:
+        return "Please include a date", 400
+    curr_date = str(params["date"])
+
+    # Gets document from DB
+    user_info = db.find_one({"user_id" : user_id})
+    if not user_info:
+        return "No user found in DB", 400
+
+    if curr_date not in user_info["history"]:
+        return "Date not in user's history", 400
+
+    return jsonify(user_info["history"][curr_date])
 
 
 """

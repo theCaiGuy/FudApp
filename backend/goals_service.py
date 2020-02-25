@@ -33,7 +33,7 @@ def calculate_tdee_macros(user_info = None):
         return None
 
     # Calculates TDEE
-    user_tdee = (10.0 * user_info["weight_kg"] + 6.25 * user_info["height_cm"] - 5.0 * user_info["age"])
+    user_tdee = (10.0 * user_info["weight"] + 6.25 * user_info["height"] - 5.0 * user_info["age"])
     if user_info["sex"] == "M":
         user_tdee += 5.0
     else:
@@ -99,8 +99,8 @@ def set_user_info():
         return "No user found", 400
 
     params = request.json
-    if not all(k in params for k in ("age", "height", "weight", "sex", "activity", "goal", "restrictions")):
-        return "Please provide an age, height, weight, sex, activity level, goal, and restrictions list.", 400
+    if not all(k in params for k in ("age", "height", "weight", "sex", "activity", "goal")):
+        return "Please provide an age, height, weight, sex, activity level, and goal.", 400
 
     # Creates document for DB
     db_post = {
@@ -110,9 +110,13 @@ def set_user_info():
         "weight" : float(params["weight"]),
         "sex" : params["sex"],
         "activity" : params["activity"],
-        "goal" : params["goal"],
-        "restrictions" : params["restrictions"]
+        "goal" : params["goal"]
     }
+
+    if "restrictions" in params:
+        db_post["restrictions"] = params["restrictions"]
+    else:
+        db_post["restrictions"] = []
 
     db.replace_one({"user_id" : user_id}, db_post, upsert = True)
 
