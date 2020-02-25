@@ -1,11 +1,29 @@
-from app import app
-from flask import request, jsonify
+from flask import Blueprint, request, jsonify
 import pymongo
 
-# Function: get_daily_plan
-# Returns a daily_plan object to front end
-@app.route('/plan/get_daily_meals', methods = ["GET"])
+from auth_service import auth, get_id_from_request
+
+plan_service = Blueprint('plan_service', __name__)
+
+"""
+Function: get_daily_plan
+
+Returns a daily_plan object to front end. This object is a Dict with keys as meals,
+values as lists of meal objects (which themselves are dicts comntaining food info)
+
+Arguments:
+user_id (int)
+goal (string) : Either "Bulk", "Cut", or "Maintain" (deprecated)
+"""
+@plan_service.route('/api/users/plan/get_daily_meals', methods = ["POST"])
+@auth.login_required
 def get_daily_meals():
+    # Hard Coded logic, get rid of this eventually as we can get the plan from the user themself
+    params = request.json
+    if not params or "goal" not in params:
+        return "Please include a nutrition goal", 400
+    goal = params["goal"]
+
     # Hard-coded example: replace with daily plan generator
     EXAMPLE_PLAN_BULK = {
         "Breakfast" : [
@@ -210,12 +228,6 @@ def get_daily_meals():
             },
         ]
     }
-
-    # Hard Coded logic
-    if "goal" in request.args:
-        goal = request.args["goal"]
-    else:
-        return "Error: No nutrition goal provided."
 
     ideal_plan = None
 

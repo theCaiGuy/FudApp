@@ -12,7 +12,17 @@ import {
 } from 'react-native-elements'
 import { styles } from '../Styles/styles'
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scrollview'
+import { API_PATH } from '../assets/constants'
 
+/*
+This view lets users enter information about their dietary restrictions and
+high-level protein, fat, and carb preferences.
+
+TODO:
+(1) Actually incorporate their restrictions and preferences into the
+AI recommendation engine.
+(2) Add routing with user profile view. 
+*/
 
 const PROTEIN_DATA = [
   {
@@ -267,7 +277,7 @@ export class PreferencesScreen extends React.Component {
               onPress={this._generateMealsAsync}
               buttonStyle={styles.sign_in_button}
               titleStyle={styles.title}
-            />          
+            />
           </KeyboardAwareScrollView>
         </SafeAreaView>
       );

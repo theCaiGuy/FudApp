@@ -14,11 +14,22 @@ import {
   Input,
 } from 'react-native-elements'
 import Icon from 'react-native-vector-icons/FontAwesome';
+import { API_PATH } from '../assets/constants'
+import {encode as btoa} from 'base-64'
+
 
 export class SignInScreen extends React.Component {
   static navigationOptions = {
     headerShown: false,
   };
+
+  constructor(props) {
+    super(props);
+    this.state = {
+      username: null,
+      password: null
+    };
+  }
 
   render() {
     return (
@@ -30,7 +41,7 @@ export class SignInScreen extends React.Component {
           />
           <Input
             containerStyle={styles.signin_text_input}
-            placeholder="Your Email"
+            placeholder="Your Username"
             autoCorrect={false}
             autoCapitalize='none'
             containerStyle={styles.profile_text_input}
@@ -43,6 +54,7 @@ export class SignInScreen extends React.Component {
                 style={{marginHorizontal: 10}}
               />
             }
+            onChangeText = {(text) => this.setState({username: text})}
           />
 
           <Input
@@ -59,6 +71,7 @@ export class SignInScreen extends React.Component {
                 style={{marginHorizontal: 10}}
               />
             }
+            onChangeText = {(text) => this.setState({password: text})}
           />
 
           <Button
@@ -86,8 +99,31 @@ export class SignInScreen extends React.Component {
   }
 
   _signInAsync = async () => {
-    await AsyncStorage.setItem('userToken', 'abc');
-    this.props.navigation.navigate('App');
+    let username = this.state.username
+    let password = this.state.password
+    console.log("Attempting signin with user " + username + " and password " + password);
+
+    await AsyncStorage.removeItem('userToken');
+    try {
+      const res = await fetch(`http://${API_PATH}/api/users/login`, {
+        method: 'POST',
+        headers: {
+          Accept: 'application/json',
+          'Content-Type': 'application/json',
+          'Authorization': `Basic ${btoa(`${username}:${password}`)}`
+        },
+      });
+      if (res.status === 401) {
+        // someone should display login failed here
+        return;
+      };
+      const content = await res.json();
+      console.log(JSON.stringify(content));
+      await AsyncStorage.setItem('userToken', content.token)
+      this.props.navigation.navigate('App');
+    } catch (err) {
+      console.error(err);
+    }
   };
 
   _signUpAsync = async () => {

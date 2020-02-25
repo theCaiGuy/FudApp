@@ -12,6 +12,7 @@ import { AuthLoadingScreen, SignInScreen } from './Views/sign_in_view'
 import { SignUpScreen } from './Views/sign_up_view'
 import { DailyScreen } from './Views/daily_view'
 import { MonthScreen } from './Views/monthly_view'
+import { UserProfileScreen } from './Views/user_profile_view'
 
 // Adapted from https://snack.expo.io/@react-navigation/auth-flow-v3
 
@@ -20,6 +21,7 @@ const AppStack = createStackNavigator(
     Home: DailyScreen, 
     Week: WeekScreen, 
     Month: MonthScreen,
+    Profile: UserProfileScreen,
   },
   {
     defaultNavigationOptions: {

@@ -12,6 +12,16 @@ import {
 import { styles } from '../Styles/styles'
 import CalendarPicker from 'react-native-calendar-picker';
 import * as Progress from 'react-native-progress';
+import { API_PATH } from '../assets/constants'
+
+/*
+This view is a Calendar view that lets the user look at their meal plan for any
+given day.
+
+TODO:
+Integrate with backend via API calls to actually fetch the user history, as
+opposed to using hard-coded model data.
+*/
 
 // HARD CODED DATA
 // THIS SHOULD EVENTUALLY COME FROM OUR API
