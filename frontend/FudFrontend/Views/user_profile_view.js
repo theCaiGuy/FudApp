@@ -20,7 +20,7 @@ export class UserProfileScreen extends React.Component {
     constructor(props) {
       super(props);
       this.state = {
-        user_id: None
+        user_id: null,
       };
     }
 
