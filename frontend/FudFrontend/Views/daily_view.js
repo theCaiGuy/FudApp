@@ -1,5 +1,6 @@
-import React, { Component } from 'react';
+import React, { Component, useState, useEffect } from 'react';
 import {
+  Animated,
   AsyncStorage,
   Text,
   SafeAreaView,
@@ -52,26 +53,45 @@ function MealComponent({
   name,
   dishes,
   ingredientChange,
+  animationSpeed,
 }) {
-  return (
-    <Card
-      title={name}
-      titleStyle={styles.left_align_subheader_text}
-      dividerStyle={{width: 0}}
-    >
+  const [fadeAnim] = useState(new Animated.Value(0))  // Initial value for opacity: 0
+
+  React.useEffect(() => {
+    Animated.timing(
+      fadeAnim,
       {
-        dishes.map((dish, i) => (
-          <ListItem
-            key={i}
-            title={dish["Food Name"]}
-            bottomDivider
-            topDivider={i === 0}
-            chevron
-            onPress={ingredientChange.bind(this, name, i, dish["Food Name"])}
-          />
-        ))
+        toValue: 1,
+        duration: 1000 * animationSpeed,
       }
-    </Card>
+    ).start();
+  }, [])
+
+  return (
+    <Animated.View
+      style={{
+        opacity: fadeAnim
+      }}
+    >
+      <Card
+        title={name}
+        titleStyle={styles.left_align_subheader_text}
+        dividerStyle={{width: 0}}
+      >
+        {
+          dishes.map((dish, i) => (
+            <ListItem
+              key={i}
+              title={dish["Food Name"]}
+              bottomDivider
+              topDivider={i === 0}
+              chevron
+              onPress={ingredientChange.bind(this, name, i, dish["Food Name"])}
+            />
+          ))
+        }
+      </Card>
+    </Animated.View>
   );
 }
 
@@ -197,6 +217,7 @@ export class DailyScreen extends React.Component {
                     dishes={this.state.DATA[meal]}
                     key={i}
                     ingredientChange={this.openUpdateOverlay}
+                    animationSpeed={i + 1}
                   />
                 ))
               }
@@ -253,12 +274,12 @@ export class DailyScreen extends React.Component {
               buttonStyle={styles.nav_button}
               titleStyle={styles.nav_text}
             />
-            <Button
+            {/* <Button
               title="Weekly View"
               onPress={this._goWeekAsync}
               buttonStyle={styles.nav_button}
               titleStyle={styles.nav_text}
-            />
+            /> */}
             <Button
               title="Monthly View"
               onPress={this._goMonthAsync}
