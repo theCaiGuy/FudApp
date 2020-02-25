@@ -17,6 +17,21 @@ import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scrollview'
 import { API_PATH } from '../assets/constants'
 import {encode as btoa} from 'base-64'
 
+
+/*
+This view contains the user's meal plan for the current date
+(TODO: make this page date agnostic w/ date passed in)
+
+On loading the page, request the user's daily meal plan and
+create onscreen cards for each meal. Allows the user to click
+on each food item to see nutrition information and select 
+similar alternate foods
+
+Navigate from this page to the User Profile page to view user
+settings, adjust settings, and log out
+*/
+
+
 const MEALS = [
   'Breakfast',
   'Lunch',

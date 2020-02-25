@@ -13,6 +13,19 @@ import {
 import { API_PATH } from '../assets/constants'
 
 
+/*
+This view contains fields for the user to enter account information to 
+create a new account. Requires Name, Username, Password x2
+Hits api/users/register endpoint to register a new user, moves
+user onto setting goals and preferences
+
+TODO: 
+If account already exists then tell the user
+Require certain chars for password
+Make sure all fields are filled before allowing user to submit info to backend
+*/
+
+
 export class SignUpScreen extends React.Component {
   static navigationOptions = {
     headerShown: false,
