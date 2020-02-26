@@ -19,7 +19,7 @@ user_id (int),
 measurement_system (string) : One of "Metric" or "Imperial"
 height (double) : in cm for Metric, inches for Imperial
 weight (double) : in kg fo Metric, lbs for Imperial
-sex (string) : "M" or "F"
+sex (string) : "M" or "F" or "NA"
 activity (string) : One of "Sedentary", "Light", "Moderate", "Heavy", or "Athlete"
 goal (string) : One of "Bulk", "Cut", or "Maintain"
 weight_to_change (double) : How many units of weight they want to adjust (positive value)
@@ -36,12 +36,11 @@ def calculate_tdee_macros(user_info = None):
         return None
 
     user_system = user_info["measurement_system"]
+    user_weight = user_info["weight"]
+    user_height = user_info["height"]
     if user_system == "Imperial":
-        user_weight = user_info["weight"] * 0.4536
-        user_height = user_info["height"] * 2.54
-    else:
-        user_weight = user_info["weight"]
-        user_height = user_info["height"]
+        user_weight *= 0.4536
+        user_height *= 2.54
 
     # Calculates TDEE
     user_tdee = (10.0 * user_weight + 6.25 * user_height - 5.0 * user_info["age"])
@@ -61,12 +60,6 @@ def calculate_tdee_macros(user_info = None):
         user_tdee += 1250.0
     elif user_activity == "Athlete":
         user_tdee += 1600.0
-
-    # user_goal = user_info["goal"]
-    # if user_goal == "Bulk":
-    #     user_tdee += 500
-    # elif user_goal == "Cut":
-    #     user_tdee -= 500
 
     user_goal = user_info["goal"]
     user_factor = 0.0 # for maintaining users
