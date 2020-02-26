@@ -1,5 +1,6 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
+  Animated,
   AsyncStorage,
   SafeAreaView,
   Text,
@@ -10,8 +11,10 @@ import { styles } from '../Styles/styles'
 import {
   Button,
   ButtonGroup,
+  Card,
   CheckBox,
   Input,
+  ListItem,
 } from 'react-native-elements'
 import { API_PATH } from '../assets/constants'
 import {encode as btoa} from 'base-64'
@@ -27,7 +30,7 @@ specified timeline.
 TODO:
 (1) Make the fat loss / muscle gain goal picking section clearer; some users might
 not understand that the two are usually mutually exlucisve.
-(2) Allow for imperial system inputs.
+(2) Allow for imperial system inputs. DONE (on frontend)
 (3) Add routing with user profile view.
 */
 
@@ -63,7 +66,7 @@ const DIETARY_RESTRICTIONS = [
   'No Red Meat',
   'No Pork',
   'No Beef',
-  'Peanut Free',
+  'Nut Allergy',
 ]
 
 function CalculationsComponent({
@@ -86,24 +89,49 @@ function CalculationsComponent({
     );
   }
 
+  const [fadeAnim] = useState(new Animated.Value(0))  // Initial value for opacity: 0
+
+  React.useEffect(() => {
+    Animated.timing(
+      fadeAnim,
+      {
+        toValue: 1,
+        duration: 1000,
+      }
+    ).start();
+  }, [])
+
   return(
-    <View>
-      <Text style={styles.left_align_subheader_text}>
-        Calculations:
-      </Text>
-      <Text style={styles.left_align_subheader_text}>
-        {"Calories per day: " + Math.round(calories)}
-      </Text>
-      <Text style={styles.left_align_subheader_text}>
-        {"Carbs per day: " + Math.round(carbs) + " g"}
-      </Text>
-      <Text style={styles.left_align_subheader_text}>
-        {"Fats per day: " + Math.round(fat) + " g"}
-      </Text>
-      <Text style={styles.left_align_subheader_text}>
-        {"Protein per day: " + Math.round(protein) + " g"}
-      </Text>
-    </View>
+    <Animated.View
+      style={{
+        opacity: fadeAnim,
+        marginBottom: 15,
+      }}
+    >
+      <Card
+        title={"Your Calculations:"}
+        titleStyle={styles.left_align_subheader_text}
+        dividerStyle={{width: 0}}
+      >
+        <ListItem
+          title={"Calories per day: " + Math.round(calories)}
+          bottomDivider
+          topDivider
+        />
+        <ListItem
+          title={"Carbs per day: " + Math.round(carbs) + " g"}
+          bottomDivider
+        />
+        <ListItem
+          title={"Fats per day: " + Math.round(fat) + " g"}
+          bottomDivider
+        />
+        <ListItem
+          title={"Protein per day: " + Math.round(protein) + " g"}
+          bottomDivider
+        />
+      </Card>
+    </Animated.View>
   );
 }
 
@@ -120,8 +148,8 @@ export class GoalsScreen extends React.Component {
         fitness_index: 0,
         measurement_index: 0,
         measurement_system: "Metric",
-        height: null,
-        weight: null,
+        height: 0,
+        weight: 0,
         age: null,
         kgs_to_gain: null,
         weeks_to_goal: null,
@@ -135,6 +163,8 @@ export class GoalsScreen extends React.Component {
         rec_protein: null,
         rec_calories: null,
         dietary_restrictions: [],
+        weight_to_change: null,
+        weeks_to_goal: null,
       };
       this.updateSexIndex = this.updateSexIndex.bind(this)
       this.updateActivityIndex = this.updateActivityIndex.bind(this)
@@ -196,10 +226,12 @@ export class GoalsScreen extends React.Component {
               activity_index: ACTIVITY_LEVELS.indexOf(responseJson['activity']),
               dietary_restrictions: (responseJson['restrictions']) ? responseJson['restrictions'] : [],
               measurement_system: (responseJson['measurement_system']) ? responseJson['measurement_system'] : 'Metric',
+              weight_to_change: (responseJson['weight_to_change']) ? responseJson['weight_to_change'] : 0,
+              weeks_to_goal: (responseJson['weeks_to_goal']) ? responseJson['weeks_to_goal'] : 0,
             });
             console.log(`Recieved response ${JSON.stringify(responseJson)}`);
 
-            if (this.state.height && this.state.weight && this.state.age) {
+            if (this.state.height && this.state.weight && this.state.age && (!this.state.fitness_goal !== "Maintain" && this.state.weight_to_change && this.state.weeks_to_goal || this.state.fitness_goal === "Maintain")) {
               this.setState({
                 fields_filled: true
               })
@@ -213,23 +245,27 @@ export class GoalsScreen extends React.Component {
       });
     }
 
-    updateMeasurementIndex (measurement_index, height, weight) {
-      height = this.state.height
-      weight = this.state.weight
-      if (height && weight) {
-        if (MEASUREMENTS[measurement_index] == "Imperial" && this.state.measurement_system == "Metric") {
-          this.setState({
-            height: Math.round(height * 0.39370),
-            weight: Math.round(weight * 2.20462),
-          })
-        }
-        if (MEASUREMENTS[measurement_index] == "Metric" && this.state.measurement_system == "Imperial") {
-          this.setState({
-            height: Math.round(height * 2.54),
-            weight: Math.round(weight * 0.453592),
-          })
-        }
+    updateMeasurementIndex (measurement_index) {
+      let height = this.state.height
+      let weight = this.state.weight
+      let weight_to_change = this.state.weight_to_change
+      console.log( `Old Heignt: ${height}, Old Weight: ${weight}, Old Weight Change: ${weight_to_change}`)
+
+      if (MEASUREMENTS[measurement_index] == "Imperial" && this.state.measurement_system == "Metric") {
+        this.setState({
+          height: Math.round(height * 0.39370),
+          weight: Math.round(weight * 2.20462),
+          weight_to_change: Math.round(weight_to_change * 2.20462),
+        })
       }
+      if (MEASUREMENTS[measurement_index] == "Metric" && this.state.measurement_system == "Imperial") {
+        this.setState({
+          height: Math.round(height * 2.54),
+          weight: Math.round(weight * 0.453592),
+          weight_to_change: Math.round(weight_to_change * 0.453592)
+        })
+      }
+      
       this.setState({measurement_index})
       this.setState({measurement_system: MEASUREMENTS[measurement_index]})
       console.log(`user measurement set to ${MEASUREMENTS[measurement_index]}`)
@@ -250,6 +286,12 @@ export class GoalsScreen extends React.Component {
     updateFitnessIndex (fitness_index) {
       this.setState({fitness_index});
       this.setState({fitness_goal: GOALS[fitness_index]})
+      if (GOALS[fitness_index] == "Maintain") {
+        this.setState({
+          weight_to_change: 0,
+          weeks_to_goal: 0
+        })
+      }
       AsyncStorage.setItem('user_goal', GOALS[fitness_index])
       console.log(`user goal level set to ${GOALS[fitness_index]}`)
     }
@@ -271,11 +313,10 @@ export class GoalsScreen extends React.Component {
     }
 
     calculatePlan = async () => {
-      if (this.state.height && this.state.weight && this.state.age) {
+      if (this.state.height && this.state.weight && this.state.age && (this.state.fitness_goal !== "Maintain" && this.state.weight_to_change && this.state.weeks_to_goal || this.state.fitness_goal === "Maintain")) {
         console.log("All fields filled!")
         await this.setState({
           fields_filled: true,
-          goals_set: true,
           loading: true,
         })
 
@@ -297,6 +338,8 @@ export class GoalsScreen extends React.Component {
               "goal": this.state.fitness_goal,
               "restrictions": this.state.dietary_restrictions,
               "measurement_system": this.state.measurement_system,
+              "weight_to_change": this.state.weight_to_change,
+              "weeks_to_goal": this.state.weeks_to_goal,
             })
           });
           if (set_res.status === 401) {
@@ -330,6 +373,7 @@ export class GoalsScreen extends React.Component {
             rec_protein: content.protein,
             rec_calories: content.tdee,
             loading: false,
+            goals_set: true,
           });
         } catch (err) {
           console.error(err);
@@ -340,11 +384,57 @@ export class GoalsScreen extends React.Component {
       }
     }
 
+    _setFudPrefsAsync = async () => {
+      if (this.state.height && this.state.weight && this.state.age && (this.state.fitness_goal !== "Maintain" && this.state.weight_to_change && this.state.weeks_to_goal || this.state.fitness_goal === "Maintain")) {
+        console.log("All fields filled!")
+        await this.setState({
+          fields_filled: true,
+        })
+
+        try {
+          const token = await AsyncStorage.getItem("userToken");
+          const set_res = await fetch(`http://${API_PATH}/api/users/goals/set_user_info`, {
+            method: 'POST',
+            headers: {
+              Accept: 'application/json',
+              'Content-Type': 'application/json',
+              'Authorization': `Basic ${btoa(`${token}:`)}`
+            },
+            body: JSON.stringify({
+              "age": this.state.age,
+              "height": this.state.height,
+              "weight": this.state.weight,
+              "sex": this.state.sex,
+              "activity": this.state.activity_level,
+              "goal": this.state.fitness_goal,
+              "restrictions": this.state.dietary_restrictions,
+              "measurement_system": this.state.measurement_system,
+              "weight_to_change": this.state.weight_to_change,
+              "weeks_to_goal": this.state.weeks_to_goal,
+            })
+          });
+          if (set_res.status === 401) {
+            await AsyncStorage.removeItem('userToken').then(() => {
+              this.props.navigation.navigate('Auth');
+              return;
+            });
+          };
+
+          console.log(JSON.stringify(set_res));
+          this.props.navigation.navigate('Prefs');
+        } catch (err) {
+          console.error(err);
+        }
+      } else {
+        console.log("Fields not filled")
+        this.setState({fields_filled: false})
+      }
+    };
+
     render() {
       const sex_buttons = ['Not Specified', 'Male', 'Female']
       const activity_buttons = ['1', '2', '3', '4', '5']
       const fitness_buttons = ['Fat Loss', 'Muscle Gain', 'Maintenance']
-      const measurement_buttons = ['Metric', 'Imperial']
 
       if (this.state.page_loading) {
         return (
@@ -366,7 +456,7 @@ export class GoalsScreen extends React.Component {
               <ButtonGroup
                 onPress={this.updateMeasurementIndex}
                 selectedIndex={this.state.measurement_index}
-                buttons={measurement_buttons}
+                buttons={MEASUREMENTS}
                 containerStyle={styles.button_group_style}
                 selectedButtonStyle={styles.goal_selection_button}
               />
@@ -377,7 +467,7 @@ export class GoalsScreen extends React.Component {
                 containerStyle={styles.profile_text_input}
                 placeholder = 'Your Height'
                 keyboardType='numeric'
-                onChangeText = {(text) => this.setState({height: text})}
+                onChangeText = {(text) => this.setState({height: (text) ? text : 0})}
                 defaultValue={(this.state.height) ? String(this.state.height) : ""}
               />
 
@@ -387,7 +477,7 @@ export class GoalsScreen extends React.Component {
                 containerStyle={styles.profile_text_input}
                 placeholder = 'Your Weight'
                 keyboardType='numeric'
-                onChangeText = {(text) => this.setState({weight: text})}
+                onChangeText = {(text) => this.setState({weight: (text) ? text : 0})}
                 defaultValue={(this.state.weight) ? String(this.state.weight) : ""}
               />
 
@@ -437,23 +527,62 @@ export class GoalsScreen extends React.Component {
                 selectedButtonStyle={styles.goal_selection_button}
               />
 
-              {/* <Input
-                label = 'Number of kilograms to lose/gain'
-                labelStyle={styles.profile_text_input_label}
-                containerStyle={styles.profile_text_input}
-                placeholder='Kilograms to lose/gain'
-                keyboardType='numeric'
-                onChangeText = {(text) => this.setState({kgs_to_gain: text})}
-              />
+              <View>
+                {
+                  (this.state.fitness_goal === "Cut" || this.state.fitness_goal == "Bulk") ? (
+                    <View>
+                      <Input
+                        label = {
+                          (this.state.measurement_system === "Metric" && this.state.fitness_goal === "Bulk") ? "Kilograms to gain"
+                          : (this.state.measurement_system === "Imperial" && this.state.fitness_goal === "Bulk") ? "Pounds to gain"
+                          : (this.state.measurement_system === "Metric" && this.state.fitness_goal === "Cut") ? "Kilograms to lose"
+                          : "Pounds to lose"
+                        }
+                        labelStyle={styles.profile_text_input_label}
+                        containerStyle={styles.profile_text_input}
+                        placeholder='Desired weight change'
+                        keyboardType='numeric'
+                        onChangeText = {(text) => this.setState({weight_to_change: text})}
+                        defaultValue={(this.state.weight_to_change) ? String(this.state.weight_to_change) : ""}
+                      />
 
-              <Input
-                label = 'Number of weeks to achieve goal'
-                labelStyle={styles.profile_text_input_label}
-                containerStyle={styles.profile_text_input}
-                placeholder='Weeks to achieve goal'
-                keyboardType='numeric'
-                onChangeText = {(text) => this.setState({weeks_to_goal: text})}
-              /> */}
+                      <Input
+                        label = 'Weeks to achieve goal'
+                        labelStyle={styles.profile_text_input_label}
+                        containerStyle={styles.profile_text_input}
+                        placeholder='Weeks to achieve goal'
+                        keyboardType='numeric'
+                        onChangeText = {(text) => this.setState({weeks_to_goal: text})}
+                        defaultValue={(this.state.weeks_to_goal) ? String(this.state.weeks_to_goal) : ""}
+                      />
+                    </View>
+                  ) : (
+                    <View/>
+                  )
+                }
+              </View>
+
+              <View>
+                {
+                  (
+                    this.state.weight_to_change 
+                    && this.state.weeks_to_goal 
+                    && this.state.measurement_system === "Metric" 
+                    && (this.state.weight_to_change / this.state.weeks_to_goal > 1)
+                  ) ? (
+                    <Text style={styles.satisfy_requirements_text}>{`Warning: Please consult a doctor before attempting to ${(this.state.fitness_goal === "Bulk") ? "gain" : "lose"} more than 1 kg per week as this may be detrimental to your health`}</Text>
+                  ) : (
+                    this.state.weight_to_change 
+                    && this.state.weeks_to_goal 
+                    && this.state.measurement_system === "Imperial" 
+                    && (this.state.weight_to_change / this.state.weeks_to_goal > 2)
+                  ) ? (
+                    <Text style={styles.satisfy_requirements_text}>{`Warning: Please consult a doctor before attempting to ${(this.state.fitness_goal === "Bulk") ? "gain" : "lose"} more than 2 lbs per week as this may be detrimental to your health`}</Text>
+                  ) : (
+                    <View />
+                  )
+                }
+              </View>
 
               <Text style={styles.left_align_subheader_text}>Dietary Restrictions</Text>
 
@@ -499,9 +628,5 @@ export class GoalsScreen extends React.Component {
         </SafeAreaView>
       );
     }
-
-    _setFudPrefsAsync = () => {
-      this.props.navigation.navigate('Prefs');
-    };
 
   }
