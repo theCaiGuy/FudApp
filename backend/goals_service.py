@@ -69,7 +69,9 @@ def calculate_tdee_macros(user_info = None):
         user_factor = -1.0
 
     # E.g. if 10 lbs in 10 weeks -- 500 calorie change
-    user_ratio = (user_info["weight_to_change"] / user_info["weeks_to_goal"]) * 500.0
+    user_ratio = 0
+    if not user_info["weeks_to_goal"] <= 0:
+        user_ratio = (user_info["weight_to_change"] / user_info["weeks_to_goal"]) * 500.0
 
     user_tdee += (user_ratio * user_factor)
 
