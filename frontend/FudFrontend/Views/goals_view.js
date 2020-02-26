@@ -148,8 +148,8 @@ export class GoalsScreen extends React.Component {
         fitness_index: 0,
         measurement_index: 0,
         measurement_system: "Metric",
-        height: null,
-        weight: null,
+        height: 0,
+        weight: 0,
         age: null,
         kgs_to_gain: null,
         weeks_to_goal: null,
@@ -249,22 +249,23 @@ export class GoalsScreen extends React.Component {
       let height = this.state.height
       let weight = this.state.weight
       let weight_to_change = this.state.weight_to_change
-      if (height && weight && weight_to_change) {
-        if (MEASUREMENTS[measurement_index] == "Imperial" && this.state.measurement_system == "Metric") {
-          this.setState({
-            height: Math.round(height * 0.39370),
-            weight: Math.round(weight * 2.20462),
-            weight_to_change: Math.round(weight_to_change * 2.20462),
-          })
-        }
-        if (MEASUREMENTS[measurement_index] == "Metric" && this.state.measurement_system == "Imperial") {
-          this.setState({
-            height: Math.round(height * 2.54),
-            weight: Math.round(weight * 0.453592),
-            weight_to_change: Math.round(weight_to_change * 0.453592)
-          })
-        }
+      console.log( `Old Heignt: ${height}, Old Weight: ${weight}, Old Weight Change: ${weight_to_change}`)
+
+      if (MEASUREMENTS[measurement_index] == "Imperial" && this.state.measurement_system == "Metric") {
+        this.setState({
+          height: Math.round(height * 0.39370),
+          weight: Math.round(weight * 2.20462),
+          weight_to_change: Math.round(weight_to_change * 2.20462),
+        })
       }
+      if (MEASUREMENTS[measurement_index] == "Metric" && this.state.measurement_system == "Imperial") {
+        this.setState({
+          height: Math.round(height * 2.54),
+          weight: Math.round(weight * 0.453592),
+          weight_to_change: Math.round(weight_to_change * 0.453592)
+        })
+      }
+      
       this.setState({measurement_index})
       this.setState({measurement_system: MEASUREMENTS[measurement_index]})
       console.log(`user measurement set to ${MEASUREMENTS[measurement_index]}`)
@@ -466,7 +467,7 @@ export class GoalsScreen extends React.Component {
                 containerStyle={styles.profile_text_input}
                 placeholder = 'Your Height'
                 keyboardType='numeric'
-                onChangeText = {(text) => this.setState({height: text})}
+                onChangeText = {(text) => this.setState({height: (text) ? text : 0})}
                 defaultValue={(this.state.height) ? String(this.state.height) : ""}
               />
 
@@ -476,7 +477,7 @@ export class GoalsScreen extends React.Component {
                 containerStyle={styles.profile_text_input}
                 placeholder = 'Your Weight'
                 keyboardType='numeric'
-                onChangeText = {(text) => this.setState({weight: text})}
+                onChangeText = {(text) => this.setState({weight: (text) ? text : 0})}
                 defaultValue={(this.state.weight) ? String(this.state.weight) : ""}
               />
 
@@ -534,12 +535,12 @@ export class GoalsScreen extends React.Component {
                         label = {
                           (this.state.measurement_system === "Metric" && this.state.fitness_goal === "Bulk") ? "Kilograms to gain"
                           : (this.state.measurement_system === "Imperial" && this.state.fitness_goal === "Bulk") ? "Pounds to gain"
-                          : (this.state.measurement_system === "Metric" && this.state.fitness_goal === "Cut") ? "Kiliograms to lose"
+                          : (this.state.measurement_system === "Metric" && this.state.fitness_goal === "Cut") ? "Kilograms to lose"
                           : "Pounds to lose"
                         }
                         labelStyle={styles.profile_text_input_label}
                         containerStyle={styles.profile_text_input}
-                        placeholder='Kilograms to lose/gain'
+                        placeholder='Desired weight change'
                         keyboardType='numeric'
                         onChangeText = {(text) => this.setState({weight_to_change: text})}
                         defaultValue={(this.state.weight_to_change) ? String(this.state.weight_to_change) : ""}
