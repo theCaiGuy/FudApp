@@ -15,12 +15,15 @@ Function: calculate_tdee_macros
 Calculates key macros for a given user
 
 Arguments: A dict (user_info) mapping ->
-age (int) : in years
-height (double) : in cm
-weight (double) : in kg
-sex (string) : "M" or "F"
+user_id (int),
+measurement_system (string) : One of "Metric" or "Imperial"
+height (double) : in cm for Metric, inches for Imperial
+weight (double) : in kg fo Metric, lbs for Imperial
+sex (string) : "M" or "F" or "NA"
+activity (string) : One of "Sedentary", "Light", "Moderate", "Heavy", or "Athlete"
 goal (string) : One of "Bulk", "Cut", or "Maintain"
-activity(string) : One of "Sedentary", "Light", "Moderate", "Heavy", or "Athlete"
+weight_to_change (double) : How many units of weight they want to adjust (positive value)
+weeks_to_goal (integer) : How many weeks to accomplish goal (positive value)
 
 Returns: A dict (macros) mapping ->
 tdee (double) : tdee Calories
@@ -32,8 +35,15 @@ def calculate_tdee_macros(user_info = None):
     if not user_info:
         return None
 
+    user_system = user_info["measurement_system"]
+    user_weight = user_info["weight"]
+    user_height = user_info["height"]
+    if user_system == "Imperial":
+        user_weight *= 0.4536
+        user_height *= 2.54
+
     # Calculates TDEE
-    user_tdee = (10.0 * user_info["weight"] + 6.25 * user_info["height"] - 5.0 * user_info["age"])
+    user_tdee = (10.0 * user_weight + 6.25 * user_height - 5.0 * user_info["age"])
     if user_info["sex"] == "M":
         user_tdee += 5.0
     else:
@@ -52,10 +62,16 @@ def calculate_tdee_macros(user_info = None):
         user_tdee += 1600.0
 
     user_goal = user_info["goal"]
+    user_factor = 0.0 # for maintaining users
     if user_goal == "Bulk":
-        user_tdee += 500
+        user_factor = 1.0
     elif user_goal == "Cut":
-        user_tdee -= 500
+        user_factor = -1.0
+
+    # E.g. if 10 lbs in 10 weeks -- 500 calorie change
+    user_ratio = (user_info["weight_to_change"] / user_info["weeks_to_goal"]) * 500.0
+
+    user_tdee += (user_ratio * user_factor)
 
     # Assuming 30/35/35 protein/fats/carbs ratio in terms of calories
     protein_g = (0.3 * user_tdee) / 4.0
@@ -80,11 +96,14 @@ Sets preferences about user in user_info table
 
 Arguments (in request body):
 user_id (int),
-height (double) : in cm
-weight (double) : in kg
+measurement_system (string) : One of "Metric" or "Imperial"
+height (double) : in cm for Metric, inches for Imperial
+weight (double) : in kg fo Metric, lbs for Imperial
 sex (string) : "M" or "F"
 activity (string) : One of "Sedentary", "Light", "Moderate", "Heavy", or "Athlete"
 goal (string) : One of "Bulk", "Cut", or "Maintain"
+weight_to_change (double) : How many units of weight they want to adjust (positive value)
+weeks_to_goal (integer) : How many weeks to accomplish goal (positive value)
 restrictions: list of restriction strings (e.g. ["Vegan", "Nut Allergy"]) -- empty denotes no restrictions
 
 
@@ -101,18 +120,21 @@ def set_user_info():
         return "No user found", 400
 
     params = request.json
-    if not all(k in params for k in ("age", "height", "weight", "sex", "activity", "goal")):
-        return "Please provide an age, height, weight, sex, activity level, and goal.", 400
+    if not all(k in params for k in ("age", "height", "weight", "sex", "activity", "goal", "measurement_system", "weight_to_change", "weeks_to_goal")):
+        return "Please provide an age, height, weight, sex, activity level, goal, measurement_system, weight_to_change, and weeks_to_goal.", 400
 
     # Creates document for DB
     db_post = {
         "user_id" : user_id,
+        "measurement_system" : params["measurement_system"],
         "age" : int(params["age"]),
         "height" : float(params["height"]),
         "weight" : float(params["weight"]),
         "sex" : params["sex"],
         "activity" : params["activity"],
-        "goal" : params["goal"]
+        "goal" : params["goal"],
+        "weight_to_change" : float(params["weight_to_change"]),
+        "weeks_to_goal" : float(params["weeks_to_goal"])
     }
 
     if "restrictions" in params:
@@ -134,7 +156,7 @@ Arguments:
 user_id (int)
 
 Returns:
-JSON of user's data straight from MognoDB
+JSON of user's data straight from MongoDB
 """
 @goals_service.route('/api/users/goals/fetch_user_info', methods = ["POST"])
 def fetch_user_info():
