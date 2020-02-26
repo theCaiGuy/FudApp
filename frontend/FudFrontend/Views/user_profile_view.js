@@ -12,6 +12,7 @@ import {
   ButtonGroup,
   Input,
 } from 'react-native-elements'
+import FlipToggle from 'react-native-flip-toggle-button'
 import { API_PATH } from '../assets/constants'
 import {encode as btoa} from 'base-64'
 
@@ -23,7 +24,7 @@ This will also be the page from which users can sign out of the app.
 
 TODO:
 (1) Determine a clear flow with the rest of the app.
-(2) Figure out all the routing. 
+(2) Figure out all the routing.
 */
 
 export class UserProfileScreen extends React.Component {
@@ -31,6 +32,7 @@ export class UserProfileScreen extends React.Component {
       super(props);
       this.state = {
         user_id: null,
+        toggle: false,
       };
     }
 
@@ -41,10 +43,67 @@ export class UserProfileScreen extends React.Component {
           <KeyboardAwareScrollView>
             <View style={styles.container}>
                 <Text style={styles.central_header_text}>User Profile Page</Text>
+
+                <Button
+                  title="Account Info"
+                  onPress={this._editAccountInfoAsync}
+                  buttonStyle={styles.nav_button}
+                  titleStyle={styles.central_subheader_text}
+                />
+
+                <Button
+                  title="Physical Goals and Dietary Restrictions"
+                  onPress={this._editGoalsAsync}
+                  buttonStyle={styles.nav_button}
+                  titleStyle={styles.central_subheader_text}
+                />
+
+                <Button
+                  title="Food Preferences"
+                  onPress={this._editPreferencesAsync}
+                  buttonStyle={styles.nav_button}
+                  titleStyle={styles.central_subheader_text}
+                />
+
+                <Text style={styles.left_align_subheader_text}>Color Scheme</Text>
+                <FlipToggle
+                  value={this.state.toggle}
+                  buttonWidth={200}
+                  buttonHeight={50}
+                  buttonRadius={50}
+
+                  onLabel={'Dark Mode'}
+                  offLabel={'Light Mode'}
+                  buttonOnColor={'#3b821b'}
+                  buttonOffColor={'#3b821b'}
+                  sliderOnColor={'#ffffff'}
+                  sliderOffColor={'#ffffff'}
+                  labelStyle={{ color: '#ffffff' }}
+                  onToggle={(newState) => {
+                    console.log(`toggle is ${this.state.toggle ? `off, light mode` : `on, dark mode`}`);
+                    this.setState({toggle: this.state.toggle ? false : true});
+                  }}
+                  onToggleLongPress={() => {
+                    console.log('toggle long pressed!');
+                  }}
+                />
+
             </View>
           </KeyboardAwareScrollView>
         </SafeAreaView>
       );
     }
+
+    _editAccountInfoAsync = () => {
+      this.props.navigation.navigate('EditAccountInfo');
+    };
+
+    _editGoalsAsync = () => {
+      this.props.navigation.navigate('EditGoals');
+    };
+
+    _editPreferencesAsync = () => {
+      this.props.navigation.navigate('EditPrefs');
+    };
 
   }
