@@ -162,8 +162,8 @@ export class DailyScreen extends React.Component {
   }
 
   updateIngredient = async (updatedFood) => {
-    meal_to_edit = this.state.meal_to_edit
-    food_to_edit = this.state.food_to_edit
+    let meal_to_edit = this.state.meal_to_edit
+    let food_to_edit = this.state.food_to_edit
     var data = {... this.state.DATA}
     data[meal_to_edit][food_to_edit]["Food Name"] = updatedFood
     await this.setState({
