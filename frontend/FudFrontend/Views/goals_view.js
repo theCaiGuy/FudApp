@@ -10,6 +10,7 @@ import { styles } from '../Styles/styles'
 import {
   Button,
   ButtonGroup,
+  CheckBox,
   Input,
 } from 'react-native-elements'
 import { API_PATH } from '../assets/constants'
@@ -53,6 +54,16 @@ const SEXES = [
 const MEASUREMENTS = [
   'Metric',
   'Imperial',
+]
+
+const DIETARY_RESTRICTIONS = [
+  'Vegan',
+  'Vegetarian',
+  'Pescatarian',
+  'No Red Meat',
+  'No Pork',
+  'No Beef',
+  'Peanut Free',
 ]
 
 function CalculationsComponent({
@@ -123,6 +134,7 @@ export class GoalsScreen extends React.Component {
         rec_fat: null,
         rec_protein: null,
         rec_calories: null,
+        dietary_restrictions: [],
       };
       this.updateSexIndex = this.updateSexIndex.bind(this)
       this.updateActivityIndex = this.updateActivityIndex.bind(this)
@@ -175,13 +187,15 @@ export class GoalsScreen extends React.Component {
               activity_level: responseJson['activity'],
               age: responseJson['age'],
               fitness_goal: responseJson['goal'],
-              height: responseJson['height_cm'],
+              height: responseJson['height'],
               sex: responseJson['sex'],
-              weight: responseJson['weight_kg'],
+              weight: responseJson['weight'],
               page_loading: false,
               sex_index: SEXES.indexOf(responseJson['sex']),
               fitness_index: GOALS.indexOf(responseJson['goal']),
               activity_index: ACTIVITY_LEVELS.indexOf(responseJson['activity']),
+              dietary_restrictions: (responseJson['restrictions']) ? responseJson['restrictions'] : [],
+              measurement_system: (responseJson['measurement_system']) ? responseJson['measurement_system'] : 'Metric',
             });
             console.log(`Recieved response ${JSON.stringify(responseJson)}`);
 
@@ -199,7 +213,23 @@ export class GoalsScreen extends React.Component {
       });
     }
 
-    updateMeasurementIndex (measurement_index) {
+    updateMeasurementIndex (measurement_index, height, weight) {
+      height = this.state.height
+      weight = this.state.weight
+      if (height && weight) {
+        if (MEASUREMENTS[measurement_index] == "Imperial" && this.state.measurement_system == "Metric") {
+          this.setState({
+            height: Math.round(height * 0.39370),
+            weight: Math.round(weight * 2.20462),
+          })
+        }
+        if (MEASUREMENTS[measurement_index] == "Metric" && this.state.measurement_system == "Imperial") {
+          this.setState({
+            height: Math.round(height * 2.54),
+            weight: Math.round(weight * 0.453592),
+          })
+        }
+      }
       this.setState({measurement_index})
       this.setState({measurement_system: MEASUREMENTS[measurement_index]})
       console.log(`user measurement set to ${MEASUREMENTS[measurement_index]}`)
@@ -222,6 +252,22 @@ export class GoalsScreen extends React.Component {
       this.setState({fitness_goal: GOALS[fitness_index]})
       AsyncStorage.setItem('user_goal', GOALS[fitness_index])
       console.log(`user goal level set to ${GOALS[fitness_index]}`)
+    }
+
+    updateDietaryRestrictions (restriction) {
+      let restrictions = [...this.state.dietary_restrictions];
+      if (restrictions.includes(restriction)) {
+        restrictions.splice( restrictions.indexOf(restriction), 1 )
+        this.setState({
+          dietary_restrictions: restrictions
+        });
+      } else {
+        restrictions.push(restriction)
+        this.setState({
+          dietary_restrictions: restrictions
+        })
+      }
+      console.log(`user dietary restrictions set to [${restrictions}]`)
     }
 
     calculatePlan = async () => {
@@ -249,6 +295,8 @@ export class GoalsScreen extends React.Component {
               "sex": this.state.sex,
               "activity": this.state.activity_level,
               "goal": this.state.fitness_goal,
+              "restrictions": this.state.dietary_restrictions,
+              "measurement_system": this.state.measurement_system,
             })
           });
           if (set_res.status === 401) {
@@ -407,6 +455,22 @@ export class GoalsScreen extends React.Component {
                 onChangeText = {(text) => this.setState({weeks_to_goal: text})}
               /> */}
 
+              <Text style={styles.left_align_subheader_text}>Dietary Restrictions</Text>
+
+              <View>
+                {
+                  DIETARY_RESTRICTIONS.map((l, i) => (
+                    <CheckBox
+                      title={l}
+                      checked={this.state.dietary_restrictions.includes(l)}
+                      checkedColor='#3b821b'
+                      onPress={this.updateDietaryRestrictions.bind(this, l)}
+                      key={i}
+                    />
+                  ))
+                }
+              </View>
+
               <Button
                 title="Set Fitness Goals!"
                 onPress={this.calculatePlan}
@@ -422,7 +486,6 @@ export class GoalsScreen extends React.Component {
                 carbs = {this.state.rec_carbs}
                 protein = {this.state.rec_protein}
               />
-
 
               <Button
                 title="Looks Good to Me!"

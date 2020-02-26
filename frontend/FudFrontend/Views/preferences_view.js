@@ -123,21 +123,6 @@ export class PreferencesScreen extends React.Component {
     };
   }
 
-  updateDietaryRestrictions (restriction) {
-    let restrictions = [...this.state.dietary_restrictions];
-    if (restrictions.includes(restriction)) {
-      restrictions.splice( restrictions.indexOf(restriction), 1 )
-      this.setState({
-        dietary_restrictions: restrictions
-      });
-    } else {
-      restrictions.push(restriction)
-      this.setState({
-        dietary_restrictions: restrictions
-      })
-    }
-  }
-
   updateProteinPrefs (protein) {
     let protein_prefs = [...this.state.protein_prefs];
     if (protein_prefs.includes(protein)) {
@@ -188,41 +173,10 @@ export class PreferencesScreen extends React.Component {
   };
 
     render() {
-      const dietary_restrictions = [
-        'Vegan',
-        'Vegetarian',
-        'Pescatarian',
-        'No Red Meat',
-        'No Pork',
-        'No Beef',
-        'Peanut Free',
-      ]
 
       return (
         <SafeAreaView style={styles.container}>
           <KeyboardAwareScrollView>
-            <Text style={styles.left_align_subheader_text}>Dietary Restrictions</Text>
-
-            <View>
-              {
-                dietary_restrictions.map((l, i) => (
-                  <CheckBox
-                    title={l}
-                    checked={this.state.protein_prefs.includes(l)}
-                    checkedColor='#3b821b'
-                    onPress={this.updateProteinPrefs.bind(this, l)}
-                    key={i}
-                  />
-                ))
-              }
-            </View>
-
-            <Input
-              label = 'Allergens'
-              labelStyle={styles.profile_text_input_label}
-              containerStyle={styles.profile_text_input}
-              placeholder='Comma-separated list'
-            />
 
             <Text style={styles.left_align_subheader_text}>Protein Preferences</Text>
 
