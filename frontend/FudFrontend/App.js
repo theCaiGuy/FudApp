@@ -1,7 +1,7 @@
 import React from 'react';
-import { 
-  createSwitchNavigator, 
-  createAppContainer 
+import {
+  createSwitchNavigator,
+  createAppContainer
 } from 'react-navigation'
 import { createStackNavigator } from 'react-navigation-stack';
 
@@ -13,6 +13,10 @@ import { SignUpScreen } from './Views/sign_up_view'
 import { DailyScreen } from './Views/daily_view'
 import { MonthScreen } from './Views/monthly_view'
 import { UserProfileScreen } from './Views/user_profile_view'
+import { EditAccountInfoScreen } from './Views/edit_account_info_view'
+import { EditGoalsScreen } from './Views/edit_goals_view'
+import { EditPreferencesScreen } from './Views/edit_preferences_view'
+import { ChangePasswordScreen } from './Views/change_password_view'
 
 // Adapted from https://snack.expo.io/@react-navigation/auth-flow-v3
 
@@ -29,11 +33,15 @@ A switch navigator handles navigation between the three stacks and checks for us
 */
 
 const AppStack = createStackNavigator(
-  { 
-    Home: DailyScreen, 
-    Week: WeekScreen, 
+  {
+    Home: DailyScreen,
+    Week: WeekScreen,
     Month: MonthScreen,
     Profile: UserProfileScreen,
+    EditAccountInfo: EditAccountInfoScreen,
+    EditGoals: EditGoalsScreen,
+    EditPrefs: EditPreferencesScreen,
+    ChangePass: ChangePasswordScreen,
   },
   {
     defaultNavigationOptions: {
@@ -49,7 +57,7 @@ const AppStack = createStackNavigator(
 );
 
 const AuthStack = createStackNavigator(
-  { 
+  {
     SignIn: SignInScreen,
     SignUp: SignUpScreen,
   },
@@ -90,8 +98,8 @@ export default createAppContainer(
     {
       initialRouteName: 'AuthLoading',
       defaultNavigationOptions: {
-        cardStyle: { 
-          backgroundColor: '#fff' 
+        cardStyle: {
+          backgroundColor: '#fff'
         },
         headerStyle: {
           shadowRadius: 0,
