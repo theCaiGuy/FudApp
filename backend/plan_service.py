@@ -225,9 +225,7 @@ def reformatDay(meal1, meal2, meal3):
 #     template: List of food groups specifying what food groups the meal should contain
 def generateMeal(template):
     meal = []
-    currTemplate = template.copy()
-    for idx in range(len(currTemplate)):
-        group = currTemplate[idx]
+    for group in template:
         for x in db.find({'Food Group' : group}):
             meal.append([x['Food Name'], get_important_macros(x), x['food_id']])
             break

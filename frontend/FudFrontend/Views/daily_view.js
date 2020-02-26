@@ -37,7 +37,7 @@ const MEALS = [
   'Breakfast',
   'Lunch',
   'Dinner',
-  'Snacks',
+  // 'Snacks',
 ]
 
 const ALTERNATE_INGREDIENTS = [
@@ -221,12 +221,16 @@ export class DailyScreen extends React.Component {
                     {
                       (this.state.DATA) ? (
                       Object.keys(this.state.DATA[this.state.meal_to_edit][this.state.food_to_edit]).map((fact, i) => (
-                        <ListItem
-                          key={i}
-                          title={fact + ": " + this.state.DATA[this.state.meal_to_edit][this.state.food_to_edit][fact]}
-                          bottomDivider
-                          topDivider={i === 0}
-                        />
+                        (fact !== "Food Name" && fact !== "food_id") ? (
+                          <ListItem
+                            key={i}
+                            title={`${fact}: ${Math.round(this.state.DATA[this.state.meal_to_edit][this.state.food_to_edit][fact])}`}
+                            bottomDivider
+                            topDivider={i === 0}
+                          />
+                        ) : (
+                          <View key={i}/>
+                        )
                       ))
                       ) : (
                         <View>
