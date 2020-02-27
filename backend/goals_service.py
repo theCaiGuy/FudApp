@@ -171,8 +171,10 @@ def fetch_user_info():
 
     # Gets document from DB
     user_info = db.find_one({"user_id" : user_id})
-    del user_info["_id"] # Can't be jsonified -- remove
+    if not user_info:
+        return "User not in DB", 400
 
+    del user_info["_id"] # Can't be jsonified -- remove
     return jsonify(user_info)
 
 
