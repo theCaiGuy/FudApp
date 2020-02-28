@@ -55,7 +55,7 @@ def get_food():
 # Begin: Similarity AI functions
 
 """
-Function: find_scaled_similarity()
+Function: find_weighted_similarity()
 
 Returns cosine similarity including weights.
 
@@ -112,9 +112,10 @@ def findAllSimilarFoods(food1):
         otherFood = get_important_macros(x)
         similarity = find_weighted_similarity(food1, otherFood)
         if similarity >= 0.80:
-            similarFoods.append((x['food_id'], x['Food Name'], similarity, x["Food Group"], float(x["Calories"])))
+            similarFoods.append((x['food_id'], similarity, x["Food Group"], float(x["Calories"])))
 
-    return sorted(similarFoods, key = lambda tup: tup[2], reverse = True)
+    return sorted(similarFoods, key = lambda tup: tup[1], reverse = True)
+
 
 
 """
@@ -147,8 +148,8 @@ def get_similar_foods():
     if not params or "num_foods" not in params:
         return "Please include the number of foods", 400
     num_foods = int(params["num_foods"])
-    if num_foods >= 15 or num_foods < 1:
-        return "Please request 1-14 foods", 400
+    if num_foods >= 15 or num_foods < 3:
+        return "Please request 3-14 foods", 400
 
     # Restrictions in a decent format
     curr_restrictions = set()
@@ -175,11 +176,11 @@ def get_similar_foods():
     fgs = set()
     return_dict = {}
     for next_food in best_matches:
-        if next_food[3] in fgs or next_food[0] == food_id or next_food[3] in curr_restrictions:
+        if next_food[2] in fgs or next_food[0] == food_id or next_food[2] in curr_restrictions:
             continue
         else:
             # Determines new servings for consistent calories
-            num_cals = next_food[4]
+            num_cals = next_food[3]
             if num_cals <= 0:
                 new_servings = 1
             else:
@@ -188,7 +189,7 @@ def get_similar_foods():
 
             return_dict[next_food[0]] = new_servings
 
-            fgs.add(next_food[3])
+            fgs.add(next_food[2])
             fg_counter += 1
             if fg_counter >= num_foods:
                 break
@@ -209,7 +210,7 @@ Arguments:
 user_id : provided via auth
 food_id (int) : food_id of food desired for similarity
 servings (float) : Used to return how much of new food(s) to maintain caloric count
-num_foods (int) : How many similar foods you would like returned
+num_foods (int) : How many similar foods you would like returned (minimum of 3, max of 14)
 
 Returns:
 return_dict (JSON) : simple dict of food_id (int) : servings (float) pairs for the num_foods most similar foods,
@@ -239,7 +240,7 @@ def get_similar_foods_user():
         return "Please include the number of foods", 400
     num_foods = int(params["num_foods"])
     if num_foods >= 15 or num_foods < 1:
-        return "Please request 1-14 foods", 400
+        return "Please request 3-14 foods", 400
 
     user_info = user_db.find_one({"user_id" : user_id})
     if not user_info:
@@ -260,6 +261,7 @@ def get_similar_foods_user():
         return "Error: improper food id provided"
 
     num_cals_orig = float(curr_food["Calories"])
+    orig_group = curr_food["Food Group"]
 
     nutritional_atts = get_important_macros(curr_food)
     best_matches = findAllSimilarFoods(nutritional_atts)
@@ -269,26 +271,32 @@ def get_similar_foods_user():
 
 
     # Loops over food groups -- excludes those in restrictions set
-    fg_counter = 0
-    fgs = set()
+    # Will take at most this many items in same group
+    num_same_group = 3
+    food_counter = 0
+    fgs = { orig_group : 0 }
     return_dict = {}
     for next_food in best_matches:
-        if next_food[3] in fgs or next_food[0] == food_id or next_food[3] in curr_restrictions:
+        next_group = next_food[2]
+        if (next_group in fgs and (next_group != orig_group or (next_group == orig_group and fgs[next_group] >= num_same_group))) or next_food[0] == food_id or next_group in curr_restrictions:
             continue
         else:
             # Determines new servings for consistent calories
-            num_cals = next_food[4]
-            if num_cals <= 0:
-                new_servings = 1
-            else:
+            num_cals = next_food[3]
+            new_servings = 1
+            if num_cals > 0:
                 cal_ratio = num_cals_orig / num_cals
                 new_servings = cal_ratio * servings
 
             return_dict[next_food[0]] = new_servings
 
-            fgs.add(next_food[3])
-            fg_counter += 1
-            if fg_counter >= num_foods:
+            # fgs.add(next_food[2])
+            if next_group in fgs:
+                fgs[next_group] += 1
+            else:
+                fgs[next_group] = 1
+            food_counter += 1
+            if food_counter >= num_foods:
                 break
 
 
