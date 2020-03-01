@@ -4,6 +4,7 @@ from itsdangerous import (TimedJSONWebSignatureSerializer
 from itsdangerous import Signer
 from passlib.hash import pbkdf2_sha256
 import pymongo
+from bson.objectid import ObjectId
 
 auth_service = Blueprint('auth_service', __name__)
 
@@ -14,12 +15,22 @@ db = client.users.users_credentials
 def register_auth():
   username = request.json.get('username')
   password = request.json.get('password')
+  name = request.json.get('name')
+  email = request.json.get('email')
   print(username + " is being created")
-  if not username or not password:
-    return "Please include a username and password", 400
+  if not username:
+    return "Please include a username", 400
+  if not password:
+    return "Please include a password", 400
+  if not name:
+    return "Please include a name", 400
+  if not email:
+    return "Please include a email", 400
   if db.find_one({"username": username}) is not None:
-    return "Cannot overwrite existing user", 400
-  new_user = {"username": username}
+    return "Please pick a unique username", 400
+  if db.find_one({"email": email}) is not None:
+    return "Please pick a unique email", 400
+  new_user = {"username": username, "email": email, "name": name}
   new_user["password"] = hash_pwd(password)
   db.insert_one(new_user)
   
@@ -36,6 +47,104 @@ def login_auth():
     return jsonify({"err": "Invalid credentials"}), 401
   token = get_token_private(username)
   return jsonify({"token": token})
+
+@auth_service.route('/api/users/change_name', methods=['POST'])
+def change_name():
+  if not verify_credentials(request):
+    return "Unauthorized: Invalid or missing credentials", 401
+
+  user_id = get_id_from_request(request)
+  if not user_id:
+    return "No user found", 400
+  
+  params = request.json
+  if not params or "name" not in params:
+    return "Please include a new name", 400
+  name = params.get("name")
+
+  db.update_one({'_id': ObjectId(user_id)}, {"$set": {"name": name}})
+  return '', 204
+
+@auth_service.route('/api/users/change_email', methods=['POST'])
+def change_email():
+  if not verify_credentials(request):
+    return "Unauthorized: Invalid or missing credentials", 401
+
+  user_id = get_id_from_request(request)
+  if not user_id:
+    return "No user found", 400
+  
+  params = request.json
+  if not params or "email" not in params:
+    return "Please include a new email", 400
+  email = params.get("email")
+
+  db.update_one({'_id': ObjectId(user_id)}, {"$set": {"email": email}})
+  return '', 204
+
+@auth_service.route('/api/users/change_password', methods=['POST'])
+def change_password():
+  if not verify_credentials(request):
+    return "Unauthorized: Invalid or missing credentials", 401
+
+  username = get_username_from_request(request)
+  user_id = get_id_from_request(request)
+  if not user_id:
+    return "No user found", 400
+  
+  params = request.json
+  if not params or "old_password" not in params:
+    return "Please include the user's old password", 400
+  old_password = params.get("old_password")
+  if not verify_password(username, old_password):
+    return "Incorrect old password supplied", 400
+  
+  if "new_password" not in params:
+    return "Please include the user's new password", 400
+  password = params.get("new_password")
+  password_hash = hash_pwd(password)
+
+  db.update_one({'_id': ObjectId(user_id)}, {"$set": {"password": password_hash}})
+  return '', 204
+
+@auth_service.route('/api/users/get_name', methods=['POST'])
+def get_name():
+  if not verify_credentials(request):
+    return "Unauthorized: Invalid or missing credentials", 401
+
+  user = get_user_from_request(request)
+  if not user:
+    return "No user found", 400
+  
+  if not user['name']:
+    return "INVALID STATE: user has no name", 400
+  return jsonify({"name": user['name']})
+
+@auth_service.route('/api/users/get_email', methods=['POST'])
+def get_email():
+  if not verify_credentials(request):
+    return "Unauthorized: Invalid or missing credentials", 401
+
+  user = get_user_from_request(request)
+  if not user:
+    return "No user found", 400
+  
+  if not user['email']:
+    return "INVALID STATE: user has no email", 400
+  return jsonify({"email": user['email']})
+
+@auth_service.route('/api/users/get_username', methods=['POST'])
+def get_username():
+  if not verify_credentials(request):
+    return "Unauthorized: Invalid or missing credentials", 401
+
+  user = get_user_from_request(request)
+  if not user:
+    return "No user found", 400
+  
+  if not user['username']:
+    return "INVALID STATE: user has no username", 400
+  return jsonify({"username": user['username']})
 
 @auth_service.route('/api/users/auth_test', methods=['POST'])
 def get_resource():
@@ -95,7 +204,7 @@ def generate_auth_token(username, expiration = 1000):
   token = s.dumps({ 'username': username})
   return token
   
-def get_user_from_request(req):
+def get_username_from_request(req):
   if req.authorization['password']:
     return req.authorization['username']
   return decrypt_auth_token(req.authorization['username'])
@@ -108,4 +217,7 @@ def get_id_from_username(username):
     return None
 
 def get_id_from_request(req):
-  return get_id_from_username(get_user_from_request(req))
+  return get_id_from_username(get_username_from_request(req))
+
+def get_user_from_request(req):
+  return db.find_one({"username": get_username_from_request(req)})

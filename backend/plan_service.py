@@ -30,7 +30,6 @@ def get_daily_meals():
     params = request.json
 
     user_id = get_id_from_request(request)
-    # user_id = 1
     if not user_id:
         return "No user found", 400
 

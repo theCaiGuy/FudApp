@@ -35,6 +35,7 @@ export class SignUpScreen extends React.Component {
     super(props);
     this.state = {
       name: null,
+      email: null,
       username: null,
       password: null,
       passwordCpy: null
@@ -59,6 +60,17 @@ export class SignUpScreen extends React.Component {
             containerStyle={styles.profile_text_input}
             labelStyle={styles.profile_text_input_label}
             onChangeText = {(text) => this.setState({name: text})}
+          />
+
+          <Input
+            label="What is your email?"
+            containerStyle={styles.signin_text_input}
+            placeholder="Your Email"
+            autoCorrect={false}
+            autoCapitalize='none'
+            containerStyle={styles.profile_text_input}
+            labelStyle={styles.profile_text_input_label}
+            onChangeText = {(text) => this.setState({email: text})}
           />
 
           <Input
@@ -113,7 +125,8 @@ export class SignUpScreen extends React.Component {
       // passwords aren't the same, display error later
       return
     }
-    let name = this.state.name // save this eventually
+    let name = this.state.name
+    let email = this.state.email
     console.log("Attempting signup with user " + username + " and password " + password);
 
     await AsyncStorage.removeItem('userToken');
@@ -126,7 +139,9 @@ export class SignUpScreen extends React.Component {
         },
         body: JSON.stringify({
           "username": username,
-          "password": password
+          "password": password,
+          "email": email,
+          "name": name
         })
       });
       const content = await res.json();
