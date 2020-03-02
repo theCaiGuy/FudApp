@@ -1,5 +1,6 @@
 from flask import Blueprint, request, jsonify
 import pymongo
+import re
 
 # ML Libraries
 import numpy as np
@@ -49,6 +50,61 @@ def get_food():
     del food["_id"]
 
     return jsonify(food)
+
+
+"""
+Function: get_foods_keyword_user()
+
+Returns list of foods items (in full) that match a user's keyword search
+
+Parameters:
+user_id (int) : Done via UAuth -- ensures search only returns foods out of restrictions!
+query (string) : keyword user enters in search, will ignore case here
+
+Returns
+results (JSON) : List of food items (which are dicts of food attributes)
+"""
+@food_service.route('/api/food/get_foods_keyword_user', methods = ["POST"])
+def get_foods_keyword_user():
+    # Handles Auth at the front
+    if not verify_credentials(request):
+        return jsonify({"err": "Unauthorized: Invalid or missing credentials"}), 401
+
+    user_id = get_id_from_request(request)
+    if not user_id:
+        return "No user found", 400
+
+    # Parses arguments
+    params = request.json
+    if not params or "query" not in params:
+        return "Please include a search query", 400
+
+    user_query = str(params["query"])
+
+    # Fetches user restrictions from DB
+    user_info = user_db.find_one({"user_id" : user_id})
+    if not user_info:
+        return "No user found in DB", 400
+
+    # Uses set unions to find all of user's restrictions, which will be
+    # empty if user has no restrictions
+    curr_restrictions = set()
+    user_restrictions = user_info["restrictions"]
+    if user_restrictions:
+        for restriction in user_restrictions:
+            curr_groups = RESTRICTIONS_MAP[restriction]
+            curr_restrictions = curr_restrictions.union(curr_groups)
+
+    food_regx = re.compile(user_query, re.IGNORECASE)
+
+    return_list = []
+    for next_food in db.find({"Food Name" : food_regx}):
+        if next_food["Food Group"] not in curr_restrictions:
+            del next_food["_id"]
+            return_list.append(next_food)
+
+    return jsonify(return_list)
+
 
 
 #################################################
