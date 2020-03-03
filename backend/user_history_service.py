@@ -147,7 +147,7 @@ prev_food_id (string) : the id of the food to remove -- string for key access in
 @user_history_service.route('/api/users/history/delete_user_history_food', methods = ["POST"])
 def delete_user_history_food():
     if not verify_credentials(request):
-        return jsonify({"err": "Unauthorized: Invalid or missing credentials"}), 401
+        return "Unauthorized: Invalid or missing credentials", 401
 
     user_id = get_id_from_request(request)
     if not user_id:
@@ -174,7 +174,7 @@ def delete_user_history_food():
 
     db.replace_one({"user_id" : user_id}, {"user_id" : user_id, "history" : curr_history}, upsert = True)
 
-    return "Success"
+    return '', 204
 
 
 """
