@@ -134,6 +134,50 @@ def set_user_history_food():
 
 
 """
+Function: delete_user_history_food
+
+Deletes history about a user -- removing the food on the date and meal given
+
+Arguments:
+user_id (int)
+date (string) : format YYYY-MM-DD for date of item to adjust
+meal (string) : string of the meal food is being replaced in
+prev_food_id (string) : the id of the food to remove -- string for key access in history JSON
+"""
+@user_history_service.route('/api/users/history/delete_user_history_food', methods = ["POST"])
+def delete_user_history_food():
+    if not verify_credentials(request):
+        return jsonify({"err": "Unauthorized: Invalid or missing credentials"}), 401
+
+    user_id = get_id_from_request(request)
+    if not user_id:
+        return "No user found", 400
+
+    params = request.json
+    if not params or not all(k in params for k in ("prev_food_id", "date", "meal")):
+        return "Please provide prev_food_id, date, meal for removal.", 400
+
+    prev_food_id = str(params["prev_food_id"])
+    curr_date = str(params["date"])
+    curr_meal = str(params["meal"])
+
+    curr_doc = db.find_one({"user_id" : user_id})
+
+    # This code is complex -- handles missing date, meal name, etc.
+    if curr_doc:
+        curr_history = curr_doc["history"]
+        if curr_date in curr_history:
+            if curr_meal in curr_history[curr_date]:
+                if prev_food_id in curr_history[curr_date][curr_meal]:
+                    del curr_history[curr_date][curr_meal][prev_food_id]
+
+
+    db.replace_one({"user_id" : user_id}, {"user_id" : user_id, "history" : curr_history}, upsert = True)
+
+    return "Success"
+
+
+"""
 Function: set_user_history_meal
 
 Sets history about a user -- updating one meal at a time
