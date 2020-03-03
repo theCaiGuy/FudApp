@@ -24,7 +24,7 @@ Jsonified version of user_history dict straight from MongoDB
 @user_history_service.route('/api/users/history/fetch_user_history', methods = ["POST"])
 def fetch_user_history():
     if not verify_credentials(request):
-        return jsonify({"err": "Unauthorized: Invalid or missing credentials"}), 401
+        return "Unauthorized: Invalid or missing credentials", 401
 
     user_id = get_id_from_request(request)
     if not user_id:
@@ -55,7 +55,7 @@ Jsonified version of user_history dict straight from MongoDB
 @user_history_service.route('/api/users/history/fetch_user_history_daily', methods = ["POST"])
 def fetch_user_history_daily():
     if not verify_credentials(request):
-        return jsonify({"err": "Unauthorized: Invalid or missing credentials"}), 401
+        return "Unauthorized: Invalid or missing credentials", 401
 
     user_id = get_id_from_request(request)
     if not user_id:
@@ -93,7 +93,7 @@ servings (float) : the number of servings of this food
 @user_history_service.route('/api/users/history/set_user_history_food', methods = ["POST"])
 def set_user_history_food():
     if not verify_credentials(request):
-        return jsonify({"err": "Unauthorized: Invalid or missing credentials"}), 401
+        return "Unauthorized: Invalid or missing credentials", 401
 
     user_id = get_id_from_request(request)
     if not user_id:
@@ -130,7 +130,7 @@ def set_user_history_food():
 
     db.replace_one({"user_id" : user_id}, {"user_id" : user_id, "history" : curr_history}, upsert = True)
 
-    return "Success"
+    return '', 204
 
 
 """
@@ -147,7 +147,7 @@ foods (dict) : maps food_id : servings -- note that food_id's are strings for JS
 @user_history_service.route('/api/users/history/set_user_history_meal', methods = ["POST"])
 def set_user_history_meal():
     if not verify_credentials(request):
-        return jsonify({"err": "Unauthorized: Invalid or missing credentials"}), 401
+        return "err": "Unauthorized: Invalid or missing credentials", 401
 
     user_id = get_id_from_request(request)
     if not user_id:
@@ -175,7 +175,7 @@ def set_user_history_meal():
 
     db.replace_one({"user_id" : user_id}, {"user_id" : user_id, "history" : curr_history}, upsert = True)
 
-    return "Success"
+    return '', 204
 
 
 """
@@ -191,7 +191,7 @@ day_history (dict) : Dict that maps food_ids (str) to servings (float) -- string
 @user_history_service.route('/api/users/history/set_user_history_daily', methods = ["POST"])
 def set_user_history_daily():
     if not verify_credentials(request):
-        return jsonify({"err": "Unauthorized: Invalid or missing credentials"}), 401
+        return "Unauthorized: Invalid or missing credentials", 401
 
     user_id = get_id_from_request(request)
     if not user_id:
@@ -216,7 +216,7 @@ def set_user_history_daily():
 
     db.replace_one({"user_id" : user_id}, {"user_id" : user_id, "history" : curr_history}, upsert = True)
 
-    return "Success"
+    return '', 204
 
 
 """
@@ -231,7 +231,7 @@ history (dict) : Full history object (see documentation) -- note everything but 
 @user_history_service.route('/api/users/history/set_user_history_total', methods = ["POST"])
 def set_user_history_total():
     if not verify_credentials(request):
-        return jsonify({"err": "Unauthorized: Invalid or missing credentials"}), 401
+        return "Unauthorized: Invalid or missing credentials", 401
 
     user_id = get_id_from_request(request)
     if not user_id:
@@ -245,4 +245,4 @@ def set_user_history_total():
 
     db.replace_one({"user_id" : user_id}, {"user_id" : user_id, "history" : history}, upsert = True)
 
-    return "Success"
+    return '', 204

@@ -115,7 +115,7 @@ Returns:
 @goals_service.route('/api/users/goals/set_user_info', methods = ["POST"])
 def set_user_info():
     if not verify_credentials(request):
-        return jsonify({"err": "Unauthorized: Invalid or missing credentials"}), 401
+        return "Unauthorized: Invalid or missing credentials", 401
 
     user_id = get_id_from_request(request)
     if not user_id:
@@ -146,7 +146,7 @@ def set_user_info():
 
     db.replace_one({"user_id" : user_id}, db_post, upsert = True)
 
-    return "Success"
+    return '', 204
 
 
 """
@@ -163,7 +163,7 @@ JSON of user's data straight from MongoDB
 @goals_service.route('/api/users/goals/fetch_user_info', methods = ["POST"])
 def fetch_user_info():
     if not verify_credentials(request):
-        return jsonify({"err": "Unauthorized: Invalid or missing credentials"}), 401
+        return "Unauthorized: Invalid or missing credentials", 401
 
     user_id = get_id_from_request(request)
     if not user_id:
@@ -192,7 +192,7 @@ A Jsonified Dict of user's macros (currently TDEE Calories, Protein, Fat, and Ca
 @goals_service.route('/api/users/goals/fetch_user_macros', methods = ["POST"])
 def fetch_user_macros():
     if not verify_credentials(request):
-        return jsonify({"err": "Unauthorized: Invalid or missing credentials"}), 401
+        return "Unauthorized: Invalid or missing credentials", 401
 
     user_id = get_id_from_request(request)
     if not user_id:

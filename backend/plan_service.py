@@ -26,7 +26,7 @@ goal (string) : Either "Bulk", "Cut", or "Maintain" (deprecated)
 @plan_service.route('/api/users/plan/get_daily_meals', methods = ["POST"])
 def get_daily_meals():
     if not verify_credentials(request):
-        return jsonify({"err": "Unauthorized: Invalid or missing credentials"}), 401
+        return "Unauthorized: Invalid or missing credentials", 401
     params = request.json
 
     user_id = get_id_from_request(request)
