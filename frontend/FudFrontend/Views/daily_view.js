@@ -147,6 +147,7 @@ export class DailyScreen extends React.Component {
       error: false,
       SEARCH_RESULTS: null,
       search_loading: false,
+      query: null,
     };
     this.openInfoOverlay = this.openInfoOverlay.bind(this)
     this.updateFood = this.updateFood.bind(this)
@@ -287,7 +288,9 @@ export class DailyScreen extends React.Component {
     })
   }
 
-  searchFood = async (query) => {
+  searchFood = async () => {
+    let query = this.state.query
+
     await this.setState({
       search_loading: true
     })
@@ -525,7 +528,8 @@ export class DailyScreen extends React.Component {
                       style={{marginHorizontal: 10}}
                     />
                   }
-                  onEndEditing = {(text) => this.searchFood(text)}
+                  onChangeText = {(text) => this.setState({query: text})}
+                  onEndEditing = {(text) => this.searchFood()}
                 />
 
                 <View>
