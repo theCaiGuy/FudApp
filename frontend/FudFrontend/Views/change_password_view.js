@@ -89,15 +89,48 @@ export class ChangePasswordScreen extends React.Component {
       let new_password = this.state.new_password;
       let new_password_copy = this.state.new_password_copy;
 
-      //TODO: CHECK IF CURRENT PASSWORD IS CORRECT BEFORE CREATING NEW PASSOWRD
-
       if (new_password !== new_password_copy) {
         // new passwords aren't the same, display error later
-        console.log("new passwords don't match: " + new_password + " vs. " + new_password_copy)
-        return
+        console.log("new passwords don't match: " + new_password + " vs. " + new_password_copy);
+        return;
       }
-
-      return
+      return AsyncStorage.getItem('userToken').then((token) => {
+        fetch(`http://${API_PATH}/api/users/change_password`, {
+          method: 'POST',
+          headers: {
+            Accept: 'application/json',
+            'Content-Type': 'application/json',
+            'Authorization': `Basic ${btoa(`${token}:`)}`
+          },
+          body: JSON.stringify({
+            "old_password": current_password,
+            "new_password": new_password,
+          })
+        })
+        .then((response) => {
+          if (response.status === 401) {
+            AsyncStorage.removeItem('userToken').then(() => {
+              this.props.navigation.navigate('Auth');
+              return;
+            });
+          }
+          if (response.status === 400) {
+            {/*
+              TODO: Handle 400 response better
+            */}
+            return;
+          }
+          if (response.status !== 204) {
+            {/*
+              TODO: Handle 204 response better
+            */}
+            return;
+          }
+          console.log("Successful password change from " + current_password + " to " + new_password);
+          this.props.navigation.navigate('Profile');
+        })
+      }).catch((error) => {
+        console.error(error);
+      });
     };
-
   }
