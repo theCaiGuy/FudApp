@@ -8,6 +8,8 @@ goals_service = Blueprint('goals_service', __name__)
 client = pymongo.MongoClient("mongodb+srv://connor:connor@foodcluster-trclg.mongodb.net/test?retryWrites=true&w=majority")
 db = client.users.users_info
 
+db_user_history = client.users.users_history
+
 
 """
 Function: calculate_tdee_macros
@@ -145,6 +147,10 @@ def set_user_info():
         db_post["restrictions"] = []
 
     db.replace_one({"user_id" : user_id}, db_post, upsert = True)
+
+    #create user history object
+    new_history = {"user_id": user_id, "history": {}}
+    db_user_history.insert_one(new_history)
 
     return "Success"
 

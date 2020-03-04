@@ -1,5 +1,6 @@
 from flask import Blueprint, request, jsonify
 import pymongo
+import random
 
 from goals_service import calculate_tdee_macros
 
@@ -12,6 +13,8 @@ db = client.foods.food_data
 
 client_user = pymongo.MongoClient("mongodb+srv://connor:connor@foodcluster-trclg.mongodb.net/test?retryWrites=true&w=majority")
 db_user = client_user.users.users_info
+
+db_user_history = client_user.users.users_history
 
 """
 Function: get_daily_plan
@@ -36,6 +39,37 @@ def get_daily_meals():
 
     #DAILY PLAN GENERATOR
     dailyPlan = generateDailyMeals(user_id, "sample date")
+
+    #save to date in user_history db
+    user_history = db_user_history.find_one({"user_id" : user_id})
+    #go through daily plan for bfast, lunch, dinner, snacks, and one by one add
+    dateObject = {}
+    #Breakfast
+    breakfastObject = {}
+    breakfast = dailyPlan["Breakfast"]
+    for food in breakfast:
+        breakfastObject[str(food["food_id"])] = round(food["Servings"],1)
+    dateObject["Breakfast"] = breakfastObject
+    #Lunch
+    lunchObject = {}
+    lunch = dailyPlan["Lunch"]
+    for food in lunch:
+        lunchObject[str(food["food_id"])] = round(food["Servings"],1)
+    dateObject["Lunch"] = lunchObject
+    #Dinner
+    dinnerObject = {}
+    dinner = dailyPlan["Dinner"]
+    for food in dinner:
+        dinnerObject[str(food["food_id"])] = round(food["Servings"],1)
+    dateObject["Dinner"] = dinnerObject
+    #Snacks
+    dateObject["Snacks"] = {}
+
+    #add to user_history    
+    currHistoryObject = user_history["history"]
+    currHistoryObject["2020-03-04"] = dateObject #hardcoded date for now b/c frontend isn't passing in date
+    db_user_history.update_one({"user_id" : user_id}, {"$set": {"history" : currHistoryObject}})
+
     print(dailyPlan)
     return jsonify(dailyPlan)
 
@@ -52,19 +86,63 @@ def get_daily_meals():
 #     date: date for which the meals are to be created
 def generateDailyMeals(user_id, date):
     #get macros
+    proteinGroups = ["Sausages and Luncheon Meats", 
+                    "Poultry Products",
+                    "Pork Products",
+                    "Legumes and Legume Products",
+                    "Lamb, Veal, and Game Products",
+                    "Finfish and Shellfish Products",
+                    "Dairy and Egg Products",
+                    "Beef Products"]
+    fatGroups = ["Nut and Seed Products",
+                    "Fats and Oils"]
+    carbGroups = ["Vegetables and Vegetable Products",
+                     "Sweets",
+                     "Fruits and Fruit Juices",
+                     "Cereal Grains and Pasta",
+                     "Breakfast Cereals"]
+    RESTRICTIONS_MAP = {
+    "Vegan" : {"Sausages and Luncheon Meats", "Poultry Products", "Pork Products", "Lamb, Veal, and Game Products", "Finfish and Shellfish Products", "Fats and Oils", "Dairy and Egg Products", "Beef Products"},
+    "Vegetarian" : {"Sausages and Luncheon Meats", "Poultry Products", "Pork Products", "Lamb, Veal, and Game Products", "Finfish and Shellfish Products", "Beef Products"},
+    "Pescatarian" : {"Sausages and Luncheon Meats", "Poultry Products", "Pork Products", "Lamb, Veal, and Game Products", "Beef Products"},
+    "No Red Meat" : {"Sausages and Luncheon Meats", "Lamb, Veal, and Game Products", "Beef Products"},
+    "No Pork" : {"Pork Products"},
+    "No Beef" : {"Beef Products"},
+    "Nut Allergy" : {"Legumes and Legume Products", "Nut and Seed Products"}
+    }
     user_info = db_user.find_one({"user_id" : user_id})
+
+    #CALCULATE TEMPLATES BASED ON RESTRICTIONS
+    restrictions = user_info['restrictions']
+    if len(restrictions)==0: #no restrictions
+        myProtein = proteinGroups.copy()
+        myFat = fatGroups.copy()
+        myCarb = carbGroups.copy()
+    else: #has restrictions
+        myProtein = proteinGroups.copy()
+        myCarb = carbGroups.copy()
+        myFat = fatGroups.copy()
+        for restriction in restrictions:
+            #protein
+            for food in proteinGroups:
+                if food in RESTRICTIONS_MAP[restriction]: #bad food
+                    myProtein.remove(food)
+            #carbs
+            for food in carbGroups:
+                if food in RESTRICTIONS_MAP[restriction]: #bad food
+                    myCarb.remove(food)
+            #fat
+            for food in fatGroups:
+                if food in RESTRICTIONS_MAP[restriction]: #bad food
+                    myFat.remove(food)
+
     macros = calculate_tdee_macros(user_info)
     calories = macros["tdee"]
-    mealTemplate1 = ["Sausages and Luncheon Meats",
-    "Breakfast Cereals",
-    "Fruits and Fruit Juices"]
-    mealTemplate2 = ["Poultry Products",
-    "Dairy and Egg Products",
-    "Fats and Oils"]
-    mealTemplate3 = ["Beef Products",
-    "Legumes and Legume Products",
-    "Vegetables and Vegetable Products"]
-    #save to date in db
+    #mealTemplate1
+    mealTemplate1 = [random.choice(myProtein), random.choice(myCarb), random.choice(myFat)]
+    mealTemplate2 = [random.choice(myProtein), random.choice(myCarb), random.choice(myFat)]
+    mealTemplate3 = [random.choice(myProtein), random.choice(myCarb), random.choice(myFat)]
+
     return generateDailyMeals_Cals(calories, mealTemplate1, mealTemplate2, mealTemplate3)
 
 
@@ -209,6 +287,7 @@ def reformatDay(meal1, meal2, meal3):
         foodDict['Servings'] = food[1][4]
         foodList.append(foodDict)
     dailyPlan['Dinner'] = foodList
+    dailyPlan['Snacks'] = []
     return dailyPlan
 
 
@@ -225,9 +304,15 @@ def reformatDay(meal1, meal2, meal3):
 def generateMeal(template):
     meal = []
     for group in template:
-        for x in db.find({'Food Group' : group}):
-            meal.append([x['Food Name'], get_important_macros(x), x['food_id']])
-            break
+        matches = db.find({'Food Group' : group})
+        length = matches.count()
+        randomNumber = random.randint(1,length)
+        count = 1
+        for x in matches:
+            if count==randomNumber:
+                meal.append([x['Food Name'], get_important_macros(x), x['food_id']])
+                break
+            count+=1
 #     print(meal)
     return meal
 
