@@ -173,88 +173,6 @@ def findAllSimilarFoods(food1):
     return sorted(similarFoods, key = lambda tup: tup[1], reverse = True)
 
 
-
-"""
-Function: get_similar_foods
-
-Returns info on a few of the most similar foods to that provided by an id. This function does not
-take into account a user's history or restrictions
-
-Arguments:
-food_id (int) : food_id of food desired for similarity
-servings (float) : Used to return how much of new food(s) to maintain caloric count
-num_foods (int) : How many similar foods you would like returned
-
-Returns:
-return_dict (JSON) : simple dict of food_id (int) : servings (float) pairs for the num_foods most similar foods,
-where each food is part of a different food group
-"""
-@food_service.route('/api/food/get_similar_foods', methods = ["POST"])
-def get_similar_foods():
-    # Parses arguments
-    params = request.json
-    if not params or "food_id" not in params:
-        return "Please include a food id", 400
-    food_id = int(params["food_id"])
-
-    if not params or "servings" not in params:
-        return "Please include the number of servings", 400
-    servings = float(params["servings"])
-
-    if not params or "num_foods" not in params:
-        return "Please include the number of foods", 400
-    num_foods = int(params["num_foods"])
-    if num_foods >= 15 or num_foods < 3:
-        return "Please request 3-14 foods", 400
-
-    # Restrictions in a decent format
-    curr_restrictions = set()
-    for restriction in request.form:
-        curr_groups = RESTRICTIONS_MAP[restriction]
-        curr_restrictions = curr_restrictions.union(curr_groups)
-
-    # Finds the nearest foods
-    curr_food = db.find_one({"food_id" : food_id})
-    if curr_food is None:
-        return "Error: improper food id provided"
-
-    num_cals_orig = float(curr_food["Calories"])
-
-    nutritional_atts = get_important_macros(curr_food)
-    best_matches = findAllSimilarFoods(nutritional_atts)
-
-    if best_matches is None:
-        return "Error: improper food id provided"
-
-
-    # Loops over food groups
-    fg_counter = 0
-    fgs = set()
-    return_dict = {}
-    for next_food in best_matches:
-        if next_food[2] in fgs or next_food[0] == food_id or next_food[2] in curr_restrictions:
-            continue
-        else:
-            # Determines new servings for consistent calories
-            num_cals = next_food[3]
-            if num_cals <= 0:
-                new_servings = 1
-            else:
-                cal_ratio = num_cals_orig / num_cals
-                new_servings = cal_ratio * servings
-
-            return_dict[next_food[0]] = new_servings
-
-            fgs.add(next_food[2])
-            fg_counter += 1
-            if fg_counter >= num_foods:
-                break
-
-
-    # Returns a dict of food_id : servings
-    return jsonify(return_dict)
-
-
 """
 Function: get_similar_foods_user
 
@@ -350,7 +268,7 @@ def get_similar_foods_user():
             if not full_food:
                 continue
             del full_food["_id"]
-            full_food["servings"] = new_servings
+            full_food["Servings"] = new_servings
             return_list.append(full_food)
 
             # fgs.add(next_food[2])
