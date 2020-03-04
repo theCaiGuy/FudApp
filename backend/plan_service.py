@@ -117,35 +117,42 @@ def generateDailyMeals(user_id, date):
     user_info = db_user.find_one({"user_id" : user_id})
 
     #CALCULATE TEMPLATES BASED ON RESTRICTIONS
+    print(proteinGroups)
     restrictions = user_info['restrictions']
-    if len(restrictions)==0: #no restrictions
-        myProtein = proteinGroups.copy()
-        myFat = fatGroups.copy()
-        myCarb = carbGroups.copy()
-    else: #has restrictions
-        myProtein = proteinGroups.copy()
-        myCarb = carbGroups.copy()
-        myFat = fatGroups.copy()
+    if len(restrictions)!=0: #has restrictions
         for restriction in restrictions:
             #protein
-            for food in proteinGroups:
+            i = 0
+            while i < len(proteinGroups):
+                food = proteinGroups[i]
                 if food in RESTRICTIONS_MAP[restriction]: #bad food
-                    myProtein.remove(food)
+                    proteinGroups.remove(food)
+                else:
+                    i+=1
             #carbs
-            for food in carbGroups:
+            i = 0
+            while i < len(carbGroups):
+                food = carbGroups[i]
                 if food in RESTRICTIONS_MAP[restriction]: #bad food
-                    myCarb.remove(food)
+                    carbGroups.remove(food)
+                else:
+                    i+=1
             #fat
-            for food in fatGroups:
+            i = 0
+            while i < len(fatGroups):
+                food = fatGroups[i]
                 if food in RESTRICTIONS_MAP[restriction]: #bad food
-                    myFat.remove(food)
+                    fatGroups.remove(food)
+                else:
+                    i+=1
 
+    print(proteinGroups)
     macros = calculate_tdee_macros(user_info)
     calories = macros["tdee"]
-    #mealTemplate1
-    mealTemplate1 = [random.choice(myProtein), random.choice(myCarb), random.choice(myFat)]
-    mealTemplate2 = [random.choice(myProtein), random.choice(myCarb), random.choice(myFat)]
-    mealTemplate3 = [random.choice(myProtein), random.choice(myCarb), random.choice(myFat)]
+    
+    mealTemplate1 = [random.choice(proteinGroups), random.choice(carbGroups), random.choice(fatGroups)]
+    mealTemplate2 = [random.choice(proteinGroups), random.choice(carbGroups), random.choice(fatGroups)]
+    mealTemplate3 = [random.choice(proteinGroups), random.choice(carbGroups), random.choice(fatGroups)]
 
     return generateDailyMeals_Cals(calories, mealTemplate1, mealTemplate2, mealTemplate3)
 
