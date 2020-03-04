@@ -331,7 +331,8 @@ def get_similar_foods_user():
     num_same_group = 3
     food_counter = 0
     fgs = { orig_group : 0 }
-    return_dict = {}
+    # return_dict = {}
+    return_list = []
     for next_food in best_matches:
         next_group = next_food[2]
         if (next_group in fgs and (next_group != orig_group or (next_group == orig_group and fgs[next_group] >= num_same_group))) or next_food[0] == food_id or next_group in curr_restrictions:
@@ -344,7 +345,13 @@ def get_similar_foods_user():
                 cal_ratio = num_cals_orig / num_cals
                 new_servings = cal_ratio * servings
 
-            return_dict[next_food[0]] = new_servings
+            # return_dict[next_food[0]] = new_servings
+            full_food = db.find_one({"food_id" : next_food[0]})
+            if not full_food:
+                continue
+            del full_food["_id"]
+            full_food["servings"] = new_servings
+            return_list.append(full_food)
 
             # fgs.add(next_food[2])
             if next_group in fgs:
@@ -357,4 +364,4 @@ def get_similar_foods_user():
 
 
     # Returns a dict of food_id : servings
-    return jsonify(return_dict)
+    return jsonify(return_list)
