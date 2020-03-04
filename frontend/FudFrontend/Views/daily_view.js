@@ -40,19 +40,27 @@ const MEALS = [
   // 'Snacks',
 ]
 
-const ALTERNATE_INGREDIENTS = [
-  'Papaya',
-  'Sausage Egg McMuffin',
-  'Durian',
-  'Tequila',
-  '24oz. Monster Energy',
+const NUTRITION_INFO = [
+  'Calories',
+  'Carbohydrates (g)',
+  'Fat (g)',
+  'Protein (g)',
+  'servings',
 ]
+
+const FACT_MAP = {
+  'Calories' : 'Calories',
+  'Carbohydrates (g)': 'Carb',
+  'Fat (g)': 'Fat',
+  'Protein (g)': 'Protein',
+  'servings': 'Servings',
+}
 
 
 function MealComponent({
   name,
   dishes,
-  ingredientChange,
+  foodChange,
   animationSpeed,
 }) {
   const [fadeAnim] = useState(new Animated.Value(0))  // Initial value for opacity: 0
@@ -86,7 +94,12 @@ function MealComponent({
               bottomDivider
               topDivider={i === 0}
               chevron
-              onPress={ingredientChange.bind(this, name, i, dish["Food Name"])}
+              onPress={
+                ("Servings" in dish) ? 
+                foodChange.bind(this, name, i, dish["Food Name"], dish["food_id"], dish["Servings"])
+                :
+                foodChange.bind(this, name, i, dish["Food Name"], dish["food_id"], dish["servings"])
+              }
             />
           ))
         }
@@ -112,16 +125,19 @@ export class DailyScreen extends React.Component {
       food_to_edit: 0,
       food_to_edit_name: null,
       DATA: null,
+      ALTERNATE_FOODS: null,
       loading: true,
-
+      error: false,
     };
     this.openUpdateOverlay = this.openUpdateOverlay.bind(this)
-    this.updateIngredient = this.updateIngredient.bind(this)
+    this.updateFood = this.updateFood.bind(this)
     this.quitOverlay = this.quitOverlay.bind(this)
+    this.deleteFood = this.deleteFood.bind(this)
   }
 
   componentDidMount() {
     return AsyncStorage.getItem('userToken').then((token) => {
+      console.log(`Basic ${btoa(`${token}:`)}`)
       let goal = "Cut";
       fetch(`http://${API_PATH}/api/users/plan/get_daily_meals`, {
         method: 'POST',
@@ -149,26 +165,78 @@ export class DailyScreen extends React.Component {
       })
     }).catch((error) => {
       console.error(error);
+      this.setState({
+        error: true,
+        loading: false,
+      })
     });
   }
 
-  openUpdateOverlay = async (meal_to_edit, food_to_edit, food_to_edit_name) => {
+  openUpdateOverlay = async (meal_to_edit, food_to_edit, food_to_edit_name, food_id, food_servings) => {
     await this.setState({
       overlay_visible: true,
       meal_to_edit: meal_to_edit,
       food_to_edit: food_to_edit,
       food_to_edit_name: food_to_edit_name,
+      ALTERNATE_FOODS: null,
     })
+    return AsyncStorage.getItem('userToken').then((token) => {
+      fetch(`http://${API_PATH}/api/food/get_similar_foods_user`, {
+        method: 'POST',
+        headers: {
+          Accept: 'application/json',
+          'Content-Type': 'application/json',
+          'Authorization': `Basic ${btoa(`${token}:`)}`
+        },
+        body: JSON.stringify({
+          "food_id": food_id,
+          "servings": food_servings,
+          "num_foods": 10,
+        })
+      })
+      .then((response) => {
+        if (response.status === 401) {
+          AsyncStorage.removeItem('userToken').then(() => {
+            this.props.navigation.navigate('Auth');
+            return;
+          });
+        }
+        response.json().then((responseJson) => {
+          this.setState({
+            ALTERNATE_FOODS: responseJson,
+          });
+          console.log(`Recieved response ${JSON.stringify(responseJson)}`);
+        });
+      })
+    }).catch((error) => {
+      console.error(error);
+      this.setState({
+        error: true
+      })
+    });
   }
 
-  updateIngredient = async (updatedFood) => {
+  updateFood = async (updatedFood) => {
     let meal_to_edit = this.state.meal_to_edit
     let food_to_edit = this.state.food_to_edit
     var data = {... this.state.DATA}
-    data[meal_to_edit][food_to_edit]["Food Name"] = updatedFood
+    data[meal_to_edit][food_to_edit] = updatedFood
     await this.setState({
       overlay_visible: false,
       DATA: data
+    })
+  }
+
+  /*
+    NOTE: IMPLEMENT THIS when user histories become a thing
+  */
+
+  deleteFood = async () => {
+    let meal_to_edit = this.state.meal_to_edit
+    let food_to_edit = this.state.food_to_edit
+    var data = {... this.state.DATA}
+    await this.setState({
+      overlay_visible: false,
     })
   }
 
@@ -188,9 +256,33 @@ export class DailyScreen extends React.Component {
         return(
           <SafeAreaView style={styles.container}>
             <Text style={styles.central_subheader_text}>Loading Füd plan...</Text>
+            <Button
+              title="Return to Sign In"
+              onPress={this._signOutAsync}
+              buttonStyle={styles.sign_out_button}
+              titleStyle={styles.nav_text}
+            />
           </SafeAreaView>
         )
       }
+
+      /*
+      NOTE: THIS ISN'T WORKING RIGHT NOW
+      */
+      if (this.state.error) {
+        return(
+          <SafeAreaView style={styles.container}>
+            <Text style={styles.central_subheader_text}>An error was encountered</Text>
+            <Button
+              title="Return to Sign In"
+              onPress={this._signOutAsync}
+              buttonStyle={styles.sign_out_button}
+              titleStyle={styles.nav_text}
+            />
+          </SafeAreaView>
+        )
+      }
+
       return (
         <SafeAreaView style={styles.container}>
           <KeyboardAwareScrollView>
@@ -204,34 +296,43 @@ export class DailyScreen extends React.Component {
                     name={meal}
                     dishes={this.state.DATA[meal]}
                     key={i}
-                    ingredientChange={this.openUpdateOverlay}
+                    foodChange={this.openUpdateOverlay}
                     animationSpeed={i}
                   />
                 ))
               }
             </View>
 
-            <Overlay isVisible={this.state.overlay_visible}>
+            <Overlay 
+              isVisible={this.state.overlay_visible}
+              onBackdropPress={this.quitOverlay}
+            >
               <View>
                 <KeyboardAwareScrollView>
+                  
                   <Text style={styles.left_align_subheader_text}>
                     {"Nutrition Facts: " + this.state.food_to_edit_name}
                   </Text>
+
+                  {/*
+                    Nutrition Facts 
+                  */}
                   <View>
                     {
                       (this.state.DATA) ? (
-                      Object.keys(this.state.DATA[this.state.meal_to_edit][this.state.food_to_edit]).map((fact, i) => (
-                        (fact !== "Food Name" && fact !== "food_id") ? (
+                        NUTRITION_INFO.map((fact, i) => (
                           <ListItem
                             key={i}
-                            title={`${fact}: ${Math.round(this.state.DATA[this.state.meal_to_edit][this.state.food_to_edit][fact])}`}
+                            title={
+                              ('servings' in this.state.DATA[this.state.meal_to_edit][this.state.food_to_edit]) ?
+                              `${fact.charAt(0).toUpperCase() + fact.substring(1)}: ${this.state.DATA[this.state.meal_to_edit][this.state.food_to_edit][fact].toFixed(1)}`
+                              :
+                              `${fact.charAt(0).toUpperCase() + fact.substring(1)}: ${this.state.DATA[this.state.meal_to_edit][this.state.food_to_edit][FACT_MAP[fact]].toFixed(1)}`
+                            }
                             bottomDivider
                             topDivider={i === 0}
                           />
-                        ) : (
-                          <View key={i}/>
-                        )
-                      ))
+                        ))
                       ) : (
                         <View>
                           <Text style={styles.central_subheader_text}>Data Not Loaded</Text>
@@ -239,23 +340,46 @@ export class DailyScreen extends React.Component {
                       )
                     }
                   </View>
+
+                  {/*
+                    Alternate Foods
+                  */}
                   <Text style={styles.left_align_subheader_text}>
                     {"Don't like " + this.state.food_to_edit_name + "? Try something similar!"}
                   </Text>
                   <View>
                     {
-                      ALTERNATE_INGREDIENTS.map((food, i) => (
-                        <ListItem
-                          key={i}
-                          title={food}
-                          bottomDivider
-                          topDivider={i === 0}
-                          chevron
-                          onPress={this.updateIngredient.bind(this, food)}
-                        />
-                      ))
+                      (this.state.ALTERNATE_FOODS) ? (
+                        this.state.ALTERNATE_FOODS.map((food, i) => (
+                          <ListItem
+                            key={i}
+                            title={food["Food Name"]}
+                            bottomDivider
+                            topDivider={i === 0}
+                            chevron
+                            onPress={this.updateFood.bind(this, food)}
+                          />
+                        ))
+                      ) : (
+                        <View>
+                          <Text style={styles.central_subheader_text}>Loading...</Text>
+                        </View>
+                      )
                     }
                   </View>
+
+                  {/*
+                    NOTE: This button currently doesn't do anything. Implement it when user histories
+                    become a thing and you can refresh the data.
+                  */}
+                  
+                  <Button
+                    title="Delete This Item"
+                    onPress={this.deleteFood}
+                    buttonStyle={styles.sign_out_button}
+                    titleStyle={styles.nav_text}
+                  />
+
                   <Button
                     title="Close"
                     onPress={this.quitOverlay}
@@ -272,30 +396,35 @@ export class DailyScreen extends React.Component {
               buttonStyle={styles.nav_button}
               titleStyle={styles.nav_text}
             />
+
             {/* <Button
               title="Weekly View"
               onPress={this._goWeekAsync}
               buttonStyle={styles.nav_button}
               titleStyle={styles.nav_text}
             /> */}
+
             <Button
               title="Monthly View"
               onPress={this._goMonthAsync}
               buttonStyle={styles.nav_button}
               titleStyle={styles.nav_text}
             />
+
             <Button
               title="User Profile"
               onPress={this._goProfileAsync}
               buttonStyle={styles.nav_button}
               titleStyle={styles.nav_text}
             />
+
             <Button
               title="Sign Out of Füd"
               onPress={this._signOutAsync}
               buttonStyle={styles.sign_out_button}
               titleStyle={styles.nav_text}
             />
+
           </KeyboardAwareScrollView>
         </SafeAreaView>
       );

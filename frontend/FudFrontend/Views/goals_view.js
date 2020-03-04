@@ -422,7 +422,7 @@ export class GoalsScreen extends React.Component {
           };
 
           console.log(JSON.stringify(set_res));
-          this.props.navigation.navigate('Prefs');
+          this.props.navigation.navigate('App');
         } catch (err) {
           console.error(err);
         }
