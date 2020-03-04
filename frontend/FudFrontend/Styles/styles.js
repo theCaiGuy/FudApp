@@ -60,6 +60,9 @@ const styles = StyleSheet.create({
     signin_text_input: { 
       marginVertical: 20,
     },
+    search_text_input: { 
+      marginVertical: 5,
+    },
     profile_text_input_label: {
       color: 'black',
       fontSize: 16,
@@ -170,6 +173,14 @@ const styles = StyleSheet.create({
       marginHorizontal: 16,
       alignItems: 'center',
     },
+    overlay_bottom_button: {
+      backgroundColor: '#3b821b',
+      padding: 10,
+      marginBottom: 10,
+      marginHorizontal: 16,
+      alignItems: 'center',
+      bottom: 0,
+    },
     sign_out_button: {
       backgroundColor: 'red',
       padding: 10,
@@ -189,7 +200,11 @@ const styles = StyleSheet.create({
       marginBottom: 5,
       marginHorizontal: 10,
       color: 'red',
-    }
+    },
+    servings_slider: {
+      marginHorizontal: 10,
+      marginVertical: 5,
+    },
   });
 
 export { styles }
