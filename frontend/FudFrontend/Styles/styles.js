@@ -200,7 +200,11 @@ const styles = StyleSheet.create({
       marginBottom: 5,
       marginHorizontal: 10,
       color: 'red',
-    }
+    },
+    servings_slider: {
+      marginHorizontal: 10,
+      marginVertical: 5,
+    },
   });
 
 export { styles }

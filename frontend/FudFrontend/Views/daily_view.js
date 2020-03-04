@@ -13,7 +13,7 @@ import {
   Input,
   ListItem,
   Overlay,
-  colors,
+  Slider,
 } from 'react-native-elements'
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scrollview'
 import Icon from 'react-native-vector-icons/FontAwesome';
@@ -91,34 +91,44 @@ function MealComponent({
       >
         {
           dishes.map((dish, i) => (
-            <ListItem
-              key={i}
-              title={
-                ("Servings" in dish) ?
-                `${dish["Food Name"]}, ${dish["Servings"].toFixed(1)} servings`
-                : ("servings" in dish) ?
-                `${dish["Food Name"]}, ${dish["servings"].toFixed(1)} servings`
-                :
-                `${dish["Food Name"]}, 1 serving`
-              }
-              bottomDivider
-              topDivider={i === 0}
-              chevron
-              onPress={
-                ("Servings" in dish) ? 
-                foodChange.bind(this, name, i, dish["Food Name"], dish["food_id"], dish["Servings"])
-                :
-                foodChange.bind(this, name, i, dish["Food Name"], dish["food_id"], dish["servings"])
-              }
-            />
+            <View key ={i}>
+              <ListItem
+                key={i}
+                title={
+                  ("Servings" in dish) ?
+                  `${dish["Food Name"]}, ${dish["Servings"].toFixed(1)} servings`
+                  : ("servings" in dish) ?
+                  `${dish["Food Name"]}, ${dish["servings"].toFixed(1)} servings`
+                  :
+                  `${dish["Food Name"]}, 1 serving`
+                }
+                bottomDivider
+                topDivider={i === 0}
+                chevron
+                onPress={
+                  ("Servings" in dish) ? 
+                  foodChange.bind(this, name, i, dish["Food Name"], dish["food_id"], dish["Servings"])
+                  :
+                  foodChange.bind(this, name, i, dish["Food Name"], dish["food_id"], dish["servings"])
+                }
+              />
+              <View>
+                {
+                  (i === dishes.length - 1) ? (
+                    <Button
+                      title={`Add Food to ${name}`}
+                      onPress={foodAdd.bind(this, name)}
+                      buttonStyle={styles.nav_button}
+                      titleStyle={styles.nav_text}
+                    />
+                  ) : (
+                    <View/>
+                  )
+                }
+              </View>
+            </View>
           ))
         }
-        <Button
-          title={`Add Food to ${name}`}
-          onPress={foodAdd.bind(this, name)}
-          buttonStyle={styles.nav_button}
-          titleStyle={styles.nav_text}
-        />
       </Card>
     </Animated.View>
   );
@@ -148,6 +158,8 @@ export class DailyScreen extends React.Component {
       SEARCH_RESULTS: null,
       search_loading: false,
       query: null,
+      add_servings: 1,
+      selected_add_food: null,
     };
     this.openInfoOverlay = this.openInfoOverlay.bind(this)
     this.updateFood = this.updateFood.bind(this)
@@ -157,6 +169,7 @@ export class DailyScreen extends React.Component {
     this.quitAddFoodOverlay = this.quitAddFoodOverlay.bind(this)
     this.searchFood = this.searchFood.bind(this)
     this.addNewFood = this.addNewFood.bind(this)
+    this.selectNewFood = this.selectNewFood.bind(this)
   }
 
   componentDidMount() {
@@ -273,6 +286,8 @@ export class DailyScreen extends React.Component {
       meal_to_edit: meal_to_edit,
       add_food_overlay_visible: true,
       SEARCH_RESULTS: null,
+      add_servings: 1,
+      selected_add_food: null,
     })
   }
 
@@ -329,21 +344,31 @@ export class DailyScreen extends React.Component {
     });
   }
 
-  addNewFood = async (newFood) => {
+  addNewFood = async () => {
+    if (this.state.selected_add_food) {
+      await this.setState({
+        add_food_overlay_visible: false,
+        loading: true
+      })
+      let meal_to_edit = this.state.meal_to_edit
+      var data = {... this.state.DATA}
+      let selected_add_food = this.state.selected_add_food
+      selected_add_food["Servings"] = this.state.add_servings
+      data[meal_to_edit].push(selected_add_food)
+      await this.setState({
+        DATA: data
+      })
+      await this.setState({
+        loading: false,
+      })
+      console.log(this.state.DATA)
+    }
+  }
+
+  selectNewFood = async (newFood) => {
     await this.setState({
-      add_food_overlay_visible: false,
-      loading: true
+      selected_add_food: newFood,
     })
-    let meal_to_edit = this.state.meal_to_edit
-    var data = {... this.state.DATA}
-    data[meal_to_edit].push(newFood)
-    await this.setState({
-      DATA: data
-    })
-    await this.setState({
-      loading: false,
-    })
-    console.log(newFood)
   }
 
   static navigationOptions = {
@@ -518,7 +543,6 @@ export class DailyScreen extends React.Component {
 
                 <Input
                   containerStyle={styles.search_text_input}
-                  placeholder="Search"
                   labelStyle={styles.profile_text_input_label}
                   leftIcon={
                     <Icon
@@ -555,7 +579,7 @@ export class DailyScreen extends React.Component {
                             bottomDivider
                             topDivider={i === 0}
                             chevron
-                            onPress={this.addNewFood.bind(this, food)}
+                            onPress={this.selectNewFood.bind(this, food)}
                           />
                         ))
                       ) : (
@@ -565,12 +589,40 @@ export class DailyScreen extends React.Component {
                   </View>
                 </KeyboardAwareScrollView>
 
-                <Button
-                  title="Close"
-                  onPress={this.quitAddFoodOverlay}
-                  buttonStyle={styles.overlay_bottom_button}
-                  titleStyle={styles.nav_text}
+                <Text style={styles.left_align_subheader_text}>
+                  {`${this.state.add_servings.toFixed(1)} servings of ${(this.state.selected_add_food) ? this.state.selected_add_food["Food Name"] : ""}`}
+                </Text>
+
+                <Slider
+                  value={this.state.add_servings}
+                  minimumValue={0.1}
+                  maximumValue={5}
+                  thumbTintColor={"#3b821b"}
+                  style={styles.servings_slider}
+                  onValueChange={value => this.setState({ add_servings: value })}
                 />
+
+                <View>
+                  {
+                    (this.state.selected_add_food) ? (
+                      <Button
+                        title="Add Food"
+                        onPress={this.addNewFood}
+                        buttonStyle={styles.overlay_bottom_button}
+                        titleStyle={styles.nav_text}
+                      />
+                    ) : (
+                      <Button
+                        title="Cancel"
+                        onPress={this.quitAddFoodOverlay}
+                        buttonStyle={styles.overlay_bottom_button}
+                        titleStyle={styles.nav_text}
+                      />
+                    )
+                  }
+                </View>
+
+                
 
               </View>
             </Overlay>
