@@ -10,11 +10,13 @@ import { styles } from '../Styles/styles'
 import {
   Button,
   Card,
+  Input,
   ListItem,
   Overlay,
   colors,
 } from 'react-native-elements'
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scrollview'
+import Icon from 'react-native-vector-icons/FontAwesome';
 import { API_PATH } from '../assets/constants'
 import {encode as btoa} from 'base-64'
 
@@ -62,6 +64,7 @@ function MealComponent({
   dishes,
   foodChange,
   animationSpeed,
+  foodAdd,
 }) {
   const [fadeAnim] = useState(new Animated.Value(0))  // Initial value for opacity: 0
 
@@ -103,6 +106,12 @@ function MealComponent({
             />
           ))
         }
+        <Button
+          title={`Add Food to ${name}`}
+          onPress={foodAdd.bind(this, name)}
+          buttonStyle={styles.nav_button}
+          titleStyle={styles.nav_text}
+        />
       </Card>
     </Animated.View>
   );
@@ -116,10 +125,11 @@ export class DailyScreen extends React.Component {
     var dd = String(today.getDate()).padStart(2, '0');
     var mm = String(today.getMonth() + 1).padStart(2, '0'); //January is 0!
     var yyyy = today.getFullYear();
-    curr_date = yyyy + '-' + mm + '-' + dd
+    let curr_date = yyyy + '-' + mm + '-' + dd
 
     this.state = {
-      overlay_visible: false,
+      info_overlay_visible: false,
+      add_food_overlay_visible: false,
       date: curr_date,
       meal_to_edit: "Breakfast",
       food_to_edit: 0,
@@ -128,11 +138,16 @@ export class DailyScreen extends React.Component {
       ALTERNATE_FOODS: null,
       loading: true,
       error: false,
+      SEARCH_RESULTS: null,
     };
-    this.openUpdateOverlay = this.openUpdateOverlay.bind(this)
+    this.openInfoOverlay = this.openInfoOverlay.bind(this)
     this.updateFood = this.updateFood.bind(this)
-    this.quitOverlay = this.quitOverlay.bind(this)
+    this.quitInfoOverlay = this.quitInfoOverlay.bind(this)
     this.deleteFood = this.deleteFood.bind(this)
+    this.openAddOverlay = this.openAddOverlay.bind(this)
+    this.quitAddFoodOverlay = this.quitAddFoodOverlay.bind(this)
+    this.searchFood = this.searchFood.bind(this)
+    this.addNewFood = this.addNewFood.bind(this)
   }
 
   componentDidMount() {
@@ -172,9 +187,9 @@ export class DailyScreen extends React.Component {
     });
   }
 
-  openUpdateOverlay = async (meal_to_edit, food_to_edit, food_to_edit_name, food_id, food_servings) => {
+  openInfoOverlay = async (meal_to_edit, food_to_edit, food_to_edit_name, food_id, food_servings) => {
     await this.setState({
-      overlay_visible: true,
+      info_overlay_visible: true,
       meal_to_edit: meal_to_edit,
       food_to_edit: food_to_edit,
       food_to_edit_name: food_to_edit_name,
@@ -222,7 +237,7 @@ export class DailyScreen extends React.Component {
     var data = {... this.state.DATA}
     data[meal_to_edit][food_to_edit] = updatedFood
     await this.setState({
-      overlay_visible: false,
+      info_overlay_visible: false,
       DATA: data
     })
   }
@@ -236,13 +251,72 @@ export class DailyScreen extends React.Component {
     let food_to_edit = this.state.food_to_edit
     var data = {... this.state.DATA}
     await this.setState({
-      overlay_visible: false,
+      info_overlay_visible: false,
     })
   }
 
-  quitOverlay () {
+  openAddOverlay = async (meal_to_edit) => {
+    await this.setState({
+      meal_to_edit: meal_to_edit,
+      add_food_overlay_visible: true,
+      SEARCH_RESULTS: null,
+    })
+  }
+
+  quitInfoOverlay () {
     this.setState({
-      overlay_visible: false,
+      info_overlay_visible: false,
+    })
+  }
+
+  quitAddFoodOverlay () {
+    this.setState({
+      add_food_overlay_visible: false,
+    })
+  }
+
+  searchFood = async (query) => {
+    return AsyncStorage.getItem('userToken').then((token) => {
+      fetch(`http://${API_PATH}/api/food/get_foods_keyword_user`, {
+        method: 'POST',
+        headers: {
+          Accept: 'application/json',
+          'Content-Type': 'application/json',
+          'Authorization': `Basic ${btoa(`${token}:`)}`
+        },
+        body: JSON.stringify({
+          "query" : query,
+        })
+      })
+      .then((response) => {
+        if (response.status === 401) {
+          AsyncStorage.removeItem('userToken').then(() => {
+            this.props.navigation.navigate('Auth');
+            return;
+          });
+        }
+        response.json().then((responseJson) => {
+          this.setState({
+            SEARCH_RESULTS: responseJson,
+          });
+          console.log(`Recieved response ${JSON.stringify(responseJson)}`);
+        });
+      })
+    }).catch((error) => {
+      console.error(error);
+      this.setState({
+        error: true
+      })
+    });
+  }
+
+  addNewFood = async (newFood) => {
+    let meal_to_edit = this.state.meal_to_edit
+    var data = {... this.state.DATA}
+    data[meal_to_edit].push(newFood)
+    await this.setState({
+      add_food_overlay_visible: false,
+      DATA: data
     })
   }
 
@@ -289,6 +363,10 @@ export class DailyScreen extends React.Component {
             <Text style={styles.central_header_text}>Your Füd Plan</Text>
             <Text style={styles.central_subheader_text}>{this.state.date}</Text>
 
+            {/*
+              Generate a card for each meal. See: MealComponent
+            */}
+
             <View>
               {
                 MEALS.map((meal, i) => (
@@ -296,16 +374,25 @@ export class DailyScreen extends React.Component {
                     name={meal}
                     dishes={this.state.DATA[meal]}
                     key={i}
-                    foodChange={this.openUpdateOverlay}
+                    foodChange={this.openInfoOverlay}
                     animationSpeed={i}
+                    foodAdd={this.openAddOverlay}
                   />
                 ))
               }
             </View>
 
+            {/*
+              Food Info Overlay
+              View Nutrition Facts for selected food
+              View recommended alternative foods
+              Switch out selected food for recommended alternative
+              TODO: Delete selected food
+            */}
+
             <Overlay 
-              isVisible={this.state.overlay_visible}
-              onBackdropPress={this.quitOverlay}
+              isVisible={this.state.info_overlay_visible}
+              onBackdropPress={this.quitInfoOverlay}
             >
               <View>
                 <KeyboardAwareScrollView>
@@ -382,11 +469,68 @@ export class DailyScreen extends React.Component {
 
                   <Button
                     title="Close"
-                    onPress={this.quitOverlay}
-                    buttonStyle={styles.nav_button}
+                    onPress={this.quitInfoOverlay}
+                    buttonStyle={styles.overlay_bottom_button}
                     titleStyle={styles.nav_text}
                   />
                 </KeyboardAwareScrollView>
+              </View>
+            </Overlay>
+
+            {/*
+              Add Food Overlay
+              Search for and add new foods to the selected meal
+            */}
+
+            <Overlay
+              isVisible={this.state.add_food_overlay_visible}
+              onBackdropPress={this.quitAddFoodOverlay}
+            >
+              <View style={styles.container}>
+
+                <Input
+                  containerStyle={styles.search_text_input}
+                  placeholder="Search"
+                  labelStyle={styles.profile_text_input_label}
+                  leftIcon={
+                    <Icon
+                      name='search'
+                      size={18}
+                      color='black'
+                      style={{marginHorizontal: 10}}
+                    />
+                  }
+                  onChangeText = {(text) => this.searchFood(text)}
+                />
+
+                <KeyboardAwareScrollView>
+                  <View>
+                    {
+                      (this.state.SEARCH_RESULTS) ? (
+                        this.state.SEARCH_RESULTS.map((food, i) => (
+                          <ListItem
+                            key={i}
+                            title={food["Food Name"]}
+                            bottomDivider
+                            topDivider={i === 0}
+                            chevron
+                            onPress={this.addNewFood.bind(this, food)}
+                          />
+                        ))
+                      ) : (
+                        <View/>
+                      )
+                    }
+                  </View>
+                </KeyboardAwareScrollView>
+
+                <Button
+                  title="Close"
+                  onPress={this.quitAddFoodOverlay}
+                  buttonStyle={styles.overlay_bottom_button}
+                  titleStyle={styles.nav_text}
+                />
+
               </View>
             </Overlay>
 
