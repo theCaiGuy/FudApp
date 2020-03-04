@@ -42,7 +42,7 @@ def get_daily_meals():
 
     #save to date in user_history db
     user_history = db_user_history.find_one({"user_id" : user_id})
-    if user_history==None: #doesn't exist yet so create
+    if not user_history: #doesn't exist yet so create
         new_history = {"user_id": user_id, "history": {}}
         db_user_history.insert_one(new_history)
         user_history = db_user_history.find_one({"user_id" : user_id})
