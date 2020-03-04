@@ -93,7 +93,7 @@ function MealComponent({
           dishes.map((dish, i) => (
             <ListItem
               key={i}
-              title={dish["Food Name"]}
+              title={`${dish["Food Name"]}, ${dish["Servings"]} servings`}
               bottomDivider
               topDivider={i === 0}
               chevron
@@ -195,6 +195,13 @@ export class DailyScreen extends React.Component {
       food_to_edit_name: food_to_edit_name,
       ALTERNATE_FOODS: null,
     })
+    console.log('\n')
+    console.log(JSON.stringify(this.DATA))
+    console.log(JSON.stringify({
+      "food_id": food_id,
+      "servings": food_servings,
+      "num_foods": 10,
+    }))
     return AsyncStorage.getItem('userToken').then((token) => {
       fetch(`http://${API_PATH}/api/food/get_similar_foods_user`, {
         method: 'POST',
@@ -220,7 +227,6 @@ export class DailyScreen extends React.Component {
           this.setState({
             ALTERNATE_FOODS: responseJson,
           });
-          console.log(`Recieved response ${JSON.stringify(responseJson)}`);
         });
       })
     }).catch((error) => {
@@ -299,7 +305,6 @@ export class DailyScreen extends React.Component {
           this.setState({
             SEARCH_RESULTS: responseJson,
           });
-          console.log(`Recieved response ${JSON.stringify(responseJson)}`);
         });
       })
     }).catch((error) => {
@@ -311,12 +316,18 @@ export class DailyScreen extends React.Component {
   }
 
   addNewFood = async (newFood) => {
+    await this.setState({
+      add_food_overlay_visible: false,
+      loading: true
+    })
     let meal_to_edit = this.state.meal_to_edit
     var data = {... this.state.DATA}
     data[meal_to_edit].push(newFood)
     await this.setState({
-      add_food_overlay_visible: false,
       DATA: data
+    })
+    await this.setState({
+      loading: false,
     })
   }
 
@@ -411,10 +422,12 @@ export class DailyScreen extends React.Component {
                           <ListItem
                             key={i}
                             title={
-                              ('servings' in this.state.DATA[this.state.meal_to_edit][this.state.food_to_edit]) ?
-                              `${fact.charAt(0).toUpperCase() + fact.substring(1)}: ${this.state.DATA[this.state.meal_to_edit][this.state.food_to_edit][fact].toFixed(1)}`
+                              (this.state.DATA[this.state.meal_to_edit][this.state.food_to_edit][fact]) ? 
+                                `${fact.charAt(0).toUpperCase() + fact.substring(1)}: ${this.state.DATA[this.state.meal_to_edit][this.state.food_to_edit][fact].toFixed(1)}`
+                              : (this.state.DATA[this.state.meal_to_edit][this.state.food_to_edit][FACT_MAP[fact]]) ?
+                                `${fact.charAt(0).toUpperCase() + fact.substring(1)}: ${this.state.DATA[this.state.meal_to_edit][this.state.food_to_edit][FACT_MAP[fact]].toFixed(1)}`
                               :
-                              `${fact.charAt(0).toUpperCase() + fact.substring(1)}: ${this.state.DATA[this.state.meal_to_edit][this.state.food_to_edit][FACT_MAP[fact]].toFixed(1)}`
+                                `${fact.charAt(0).toUpperCase() + fact.substring(1)}: N/a`
                             }
                             bottomDivider
                             topDivider={i === 0}
