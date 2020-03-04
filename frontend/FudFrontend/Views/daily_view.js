@@ -93,7 +93,14 @@ function MealComponent({
           dishes.map((dish, i) => (
             <ListItem
               key={i}
-              title={`${dish["Food Name"]}, ${dish["Servings"]} servings`}
+              title={
+                ("Servings" in dish) ?
+                `${dish["Food Name"]}, ${dish["Servings"].toFixed(1)} servings`
+                : ("servings" in dish) ?
+                `${dish["Food Name"]}, ${dish["servings"].toFixed(1)} servings`
+                :
+                `${dish["Food Name"]}, 1 serving`
+              }
               bottomDivider
               topDivider={i === 0}
               chevron
@@ -139,6 +146,7 @@ export class DailyScreen extends React.Component {
       loading: true,
       error: false,
       SEARCH_RESULTS: null,
+      search_loading: false,
     };
     this.openInfoOverlay = this.openInfoOverlay.bind(this)
     this.updateFood = this.updateFood.bind(this)
@@ -195,13 +203,11 @@ export class DailyScreen extends React.Component {
       food_to_edit_name: food_to_edit_name,
       ALTERNATE_FOODS: null,
     })
-    console.log('\n')
-    console.log(JSON.stringify(this.DATA))
-    console.log(JSON.stringify({
-      "food_id": food_id,
-      "servings": food_servings,
-      "num_foods": 10,
-    }))
+
+    if (!food_servings) {
+      food_servings = 1
+    }
+
     return AsyncStorage.getItem('userToken').then((token) => {
       fetch(`http://${API_PATH}/api/food/get_similar_foods_user`, {
         method: 'POST',
@@ -282,6 +288,9 @@ export class DailyScreen extends React.Component {
   }
 
   searchFood = async (query) => {
+    await this.setState({
+      search_loading: true
+    })
     return AsyncStorage.getItem('userToken').then((token) => {
       fetch(`http://${API_PATH}/api/food/get_foods_keyword_user`, {
         method: 'POST',
@@ -304,13 +313,15 @@ export class DailyScreen extends React.Component {
         response.json().then((responseJson) => {
           this.setState({
             SEARCH_RESULTS: responseJson,
+            search_loading: false
           });
         });
       })
     }).catch((error) => {
       console.error(error);
       this.setState({
-        error: true
+        error: true,
+        search_loading: false
       })
     });
   }
@@ -329,6 +340,7 @@ export class DailyScreen extends React.Component {
     await this.setState({
       loading: false,
     })
+    console.log(newFood)
   }
 
   static navigationOptions = {
@@ -513,8 +525,20 @@ export class DailyScreen extends React.Component {
                       style={{marginHorizontal: 10}}
                     />
                   }
-                  onChangeText = {(text) => this.searchFood(text)}
+                  onEndEditing = {(text) => this.searchFood(text)}
                 />
+
+                <View>
+                  {
+                    (this.state.search_loading) ? (
+                      <View>
+                        <Text style={styles.central_subheader_text}>Loading...</Text>
+                      </View>
+                    ) : (
+                      <View />
+                    )
+                  }
+                </View>
 
                 <KeyboardAwareScrollView>
                   <View>
