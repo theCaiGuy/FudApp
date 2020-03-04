@@ -493,7 +493,14 @@ export class DailyScreen extends React.Component {
                         this.state.ALTERNATE_FOODS.map((food, i) => (
                           <ListItem
                             key={i}
-                            title={food["Food Name"]}
+                            title={
+                              ("Servings" in food) ?
+                              `${food["Food Name"]}, ${food["Servings"].toFixed(1)} servings`
+                              : ("servings in food") ? 
+                              `${food["Food Name"]}, ${food["servings"].toFixed(1)} servings`
+                              : 
+                              `${food["Food Name"]}`
+                            }
                             bottomDivider
                             topDivider={i === 0}
                             chevron
