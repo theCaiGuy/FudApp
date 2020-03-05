@@ -146,12 +146,13 @@ def get_foods_keyword_user():
     return_list = []
     for next_food in db.find({"Food Name": food_regx}):
         if next_food["Food Group"] not in curr_restrictions:
-            food_name = next_food["Food Name"]
-            resticted_match = False
+            food_name = next_food["Food Name"].lower()
+            restricted_match = False
             for restricted_word in curr_restricted_words:
-                if re.search(next_food["Food Name"]):
+                if re.search(restricted_word, food_name):
                     restricted_match = True
                     break
+
             if not restricted_match:
                 del next_food["_id"]
                 return_list.append(next_food)
@@ -250,8 +251,8 @@ servings (float) : Used to return how much of new food(s) to maintain caloric co
 num_foods (int) : How many similar foods you would like returned (minimum of 3, max of 14)
 
 Returns:
-return_dict (JSON) : simple dict of food_id (int) : servings (float) pairs for the num_foods most similar foods,
-where each food is part of a different food group
+return_dict (JSON) : simple list of food objects (dicts straight from Mongo) with an
+additional "Servings" field to match the servings of the food passed
 """
 
 
@@ -288,11 +289,15 @@ def get_similar_foods_user():
     # Uses set unions to find all of user's restrictions, which will be
     # empty if user has no restrictions
     curr_restrictions = set()
+    curr_restricted_words = set()
     user_restrictions = user_info["restrictions"]
     if user_restrictions:
         for restriction in user_restrictions:
             curr_groups = RESTRICTIONS_MAP[restriction]
             curr_restrictions = curr_restrictions.union(curr_groups)
+
+            curr_words = RESTRICTIONS_WORDS[restriction]
+            curr_restricted_words = curr_restricted_words.union(curr_words)
 
     # Finds the nearest foods
     curr_food = db.find_one({"food_id": food_id})
@@ -313,7 +318,6 @@ def get_similar_foods_user():
     num_same_group = 3
     food_counter = 0
     fgs = {orig_group: 0}
-    # return_dict = {}
     return_list = []
     for next_food in best_matches:
         next_group = next_food[2]
@@ -337,7 +341,6 @@ def get_similar_foods_user():
                 cal_ratio = num_cals_orig / num_cals
                 new_servings = cal_ratio * servings
 
-            # return_dict[next_food[0]] = new_servings
             full_food = db.find_one({"food_id": next_food[0]})
             if not full_food:
                 continue
@@ -345,7 +348,6 @@ def get_similar_foods_user():
             full_food["Servings"] = new_servings
             return_list.append(full_food)
 
-            # fgs.add(next_food[2])
             if next_group in fgs:
                 fgs[next_group] += 1
             else:
@@ -354,5 +356,19 @@ def get_similar_foods_user():
             if food_counter >= num_foods:
                 break
 
-    # Returns a dict of food_id : servings
+    # Final parse on return list -- make sure obvious false positives
+    # did not get through
+    for next_food in return_list:
+        food_name = next_food["Food Name"].lower()
+        restricted_match = False
+        for restricted_word in curr_restricted_words:
+            if re.search(restricted_word, food_name):
+                restricted_match = True
+                break
+
+        if restricted_match:
+            return_list.remove(next_food)
+
+
+    # Returns a list of food objects with servings as an added field to each
     return jsonify(return_list)
