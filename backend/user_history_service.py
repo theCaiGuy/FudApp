@@ -101,7 +101,11 @@ protein (double) : User protein (g)
 fat (double) : User fats (g)
 carb (double) : User carbs (g)
 """
-@user_history_service.route('/api/users/history/fetch_user_history_macros_daily', methods = ["POST"])
+
+
+@user_history_service.route(
+    "/api/users/history/fetch_user_history_macros_daily", methods=["POST"]
+)
 def fetch_user_history_macros_daily():
     if not verify_credentials(request):
         return jsonify({"err": "Unauthorized: Invalid or missing credentials"}), 401
@@ -116,26 +120,21 @@ def fetch_user_history_macros_daily():
     curr_date = str(params["date"])
 
     # Gets document from DB
-    user_info = db.find_one({"user_id" : user_id})
+    user_info = db.find_one({"user_id": user_id})
     if not user_info:
         return "No user found in DB", 400
 
     if curr_date not in user_info["history"]:
         return "Date not in user's history", 400
 
-    return_dict = {
-        "calories" : 0.0,
-        "protein" : 0.0,
-        "fat" : 0.0,
-        "carb" : 0.0
-    }
+    return_dict = {"calories": 0.0, "protein": 0.0, "fat": 0.0, "carb": 0.0}
 
     # Fetches foods from the given date and finds total macronutrients of all
     curr_date_info = user_info["history"][curr_date]
     for curr_meal in curr_date_info:
         for curr_food in curr_date_info[curr_meal]:
             curr_servings = curr_date_info[curr_meal][curr_food]
-            food_info = food_db.find_one({"food_id" : int(curr_food)})
+            food_info = food_db.find_one({"food_id": int(curr_food)})
             if not food_info:
                 return "Invalid food in user's history, abort", 400
 
@@ -148,7 +147,6 @@ def fetch_user_history_macros_daily():
             return_dict["protein"] += food_pro * curr_servings
             return_dict["fat"] += food_fat * curr_servings
             return_dict["carb"] += food_carb * curr_servings
-
 
     return jsonify(return_dict)
 
@@ -308,7 +306,7 @@ def set_user_history_meal():
             curr_history[curr_date] = {curr_meal: curr_foods}
 
     else:
-        curr_history = {curr_date : {curr_meal : curr_foods}}
+        curr_history = {curr_date: {curr_meal: curr_foods}}
 
     db.replace_one(
         {"user_id": user_id}, {"user_id": user_id, "history": curr_history}, upsert=True
