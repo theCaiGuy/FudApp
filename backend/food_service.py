@@ -27,6 +27,16 @@ RESTRICTIONS_MAP = {
     "Nut Allergy" : {"Legumes and Legume Products", "Nut and Seed Products"}
 }
 
+RESTRICTIONS_WORDS = {
+    "Vegan" : {"beef", "pork", "sausage", "chicken", "fish", "salmon", "cod", "fat", "tallow", "milk", "cheese", "turkey", "steak", "meat", "crab", "lobster", "butter"},
+    "Vegetarian" : {"beef", "pork", "sausage", "chicken", "fish", "salmon", "cod", "fat", "tallow","turkey", "steak", "meat", "crab", "lobster"},
+    "Pescatarian" : {"beef", "pork", "sausage", "chicken", "turkey", "steak", "meat"},
+    "No Red Meat" : {"beef", "sausage", "steak", "cow", "veal", "lamb", "venison"},
+    "No Pork" : {"pork", "sausage", "pig"},
+    "No Beef" : {"beef", "cow", "sasusage"},
+    "Nut Allergy" : {"peanut", "seed", "almond", "walnut", "cashew", "pistachio", "pecan", "hazelnut"}
+}
+
 """
 Function: get_food()
 
@@ -89,19 +99,30 @@ def get_foods_keyword_user():
     # Uses set unions to find all of user's restrictions, which will be
     # empty if user has no restrictions
     curr_restrictions = set()
+    curr_restricted_words = set()
     user_restrictions = user_info["restrictions"]
     if user_restrictions:
         for restriction in user_restrictions:
             curr_groups = RESTRICTIONS_MAP[restriction]
             curr_restrictions = curr_restrictions.union(curr_groups)
 
+            curr_words = RESTRICTIONS_WORDS[restriction]
+            curr_restricted_words = curr_restricted_words.union(curr_words)
+
     food_regx = re.compile(user_query, re.IGNORECASE)
 
     return_list = []
     for next_food in db.find({"Food Name" : food_regx}):
         if next_food["Food Group"] not in curr_restrictions:
-            del next_food["_id"]
-            return_list.append(next_food)
+            food_name = next_food["Food Name"]
+            resticted_match = False
+            for restricted_word in curr_restricted_words:
+                if re.search(next_food["Food Name"]):
+                    restricted_match = True
+                    break
+            if not restricted_match:
+                del next_food["_id"]
+                return_list.append(next_food)
 
     return jsonify(return_list)
 
