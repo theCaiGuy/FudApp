@@ -135,7 +135,7 @@ function MealComponent({
             titleStyle={styles.nav_text}
           />
         </View>     
-           
+
       </Card>
     </Animated.View>
   );
@@ -517,7 +517,7 @@ export class DailyScreen extends React.Component {
                   */}
                   <View>
                     {
-                      (this.state.DATA) ? (
+                      (this.state.DATA && this.state.DATA[this.state.meal_to_edit].length !== 0) ? (
                         NUTRITION_INFO.map((fact, i) => (
                           <ListItem
                             key={i}
