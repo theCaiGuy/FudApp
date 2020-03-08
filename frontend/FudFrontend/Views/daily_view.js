@@ -98,48 +98,44 @@ function MealComponent({
         titleStyle={styles.left_align_subheader_text}
         dividerStyle={{width: 0}}
       >
-        {
-          dishes.map((dish, i) => (
-            <View key ={i}>
-              <ListItem
-                key={i}
-                title={
-                  ("Servings" in dish) ?
-                  `${dish["Food Name"]}, ${dish["Servings"].toFixed(1)} servings`
-                  : ("servings" in dish) ?
-                  `${dish["Food Name"]}, ${dish["servings"].toFixed(1)} servings`
-                  :
-                  `${dish["Food Name"]}, 1 serving`
-                }
-                bottomDivider
-                topDivider={i === 0}
-                chevron
-                onPress={
-                  ("Servings" in dish) ? 
-                  foodChange.bind(this, name, i, dish["Food Name"], dish["food_id"], dish["Servings"])
-                  :
-                  foodChange.bind(this, name, i, dish["Food Name"], dish["food_id"], dish["servings"])
-                }
-              />
-
-              <View>
-                {
-                  (i === dishes.length - 1) ? (
-                    <Button
-                      title={`Add Food to ${name}`}
-                      onPress={foodAdd.bind(this, name)}
-                      buttonStyle={styles.nav_button}
-                      titleStyle={styles.nav_text}
-                    />
-                  ) : (
-                    <View/>
-                  )
-                }
+        <View>
+          {
+            dishes.map((dish, i) => (
+              <View key ={i}>
+                <ListItem
+                  key={i}
+                  title={
+                    ("Servings" in dish) ?
+                    `${dish["Food Name"]}, ${dish["Servings"].toFixed(1)} servings`
+                    : ("servings" in dish) ?
+                    `${dish["Food Name"]}, ${dish["servings"].toFixed(1)} servings`
+                    :
+                    `${dish["Food Name"]}, 1 serving`
+                  }
+                  bottomDivider
+                  topDivider={i === 0}
+                  chevron
+                  onPress={
+                    ("Servings" in dish) ? 
+                    foodChange.bind(this, name, i, dish["Food Name"], dish["food_id"], dish["Servings"])
+                    :
+                    foodChange.bind(this, name, i, dish["Food Name"], dish["food_id"], dish["servings"])
+                  }
+                />
               </View>
-              
-            </View>
-          ))
-        }
+            ))
+          }
+        </View>
+
+        <View>
+          <Button
+            title={`Add Food to ${name}`}
+            onPress={foodAdd.bind(this, name)}
+            buttonStyle={styles.nav_button}
+            titleStyle={styles.nav_text}
+          />
+        </View>     
+           
       </Card>
     </Animated.View>
   );
