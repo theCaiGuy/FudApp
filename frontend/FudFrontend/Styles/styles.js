@@ -2,7 +2,6 @@ import React from 'react';
 import {
   StyleSheet,
 } from 'react-native';
-import Constants from 'expo-constants';
 
 const styles = StyleSheet.create({
     container: {
@@ -46,6 +45,7 @@ const styles = StyleSheet.create({
       marginVertical: 10,
       marginHorizontal: 16,
       alignItems: 'center',
+      borderRadius: 10,
     },
     sign_up_button: {
       backgroundColor: '#3b821b',
@@ -53,6 +53,7 @@ const styles = StyleSheet.create({
       marginVertical: 8,
       marginHorizontal: 16,
       alignItems: 'center',
+      borderRadius: 10,
     },
     profile_text_input: { 
       marginVertical: 10,
@@ -148,6 +149,7 @@ const styles = StyleSheet.create({
     },
     goal_selection_button: {
       backgroundColor: '#3b821b',
+      borderRadius: 10,
     },
     goal_selection_text: {
       fontSize: 20,
@@ -159,12 +161,14 @@ const styles = StyleSheet.create({
     button_group_style: {
       height: 50,
       marginHorizontal: 10,
-      marginVertical: 10
+      marginVertical: 10,
+      borderRadius: 10,
     },
     bottom_button_container: {
       marginTop: 10,
       backgroundColor: '#3b821b',
       height: 100,
+      borderRadius: 10,
     },
     nav_button: {
       backgroundColor: '#3b821b',
@@ -172,6 +176,7 @@ const styles = StyleSheet.create({
       marginVertical: 10,
       marginHorizontal: 16,
       alignItems: 'center',
+      borderRadius: 10,
     },
     overlay_bottom_button: {
       backgroundColor: '#3b821b',
@@ -180,6 +185,7 @@ const styles = StyleSheet.create({
       marginHorizontal: 16,
       alignItems: 'center',
       bottom: 0,
+      borderRadius: 10,
     },
     sign_out_button: {
       backgroundColor: 'red',
@@ -187,6 +193,7 @@ const styles = StyleSheet.create({
       marginVertical: 10,
       marginHorizontal: 16,
       alignItems: 'center',
+      borderRadius: 10,
     },
     nav_text: {
       fontSize: 20,
@@ -205,6 +212,9 @@ const styles = StyleSheet.create({
       marginHorizontal: 10,
       marginVertical: 5,
     },
+    cardStyle: {
+      borderRadius: 10,
+    }
   });
 
 export { styles }

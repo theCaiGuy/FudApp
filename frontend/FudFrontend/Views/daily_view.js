@@ -82,7 +82,7 @@ function MealComponent({
       fadeAnim,
       {
         toValue: 1,
-        duration: 1000 * animationSpeed,
+        duration: 800 * animationSpeed,
       }
     ).start();
   }, [])
@@ -97,6 +97,7 @@ function MealComponent({
         title={name}
         titleStyle={styles.left_align_subheader_text}
         dividerStyle={{width: 0}}
+        containerStyle={styles.cardStyle}
       >
         <View>
           {
