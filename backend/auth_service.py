@@ -51,7 +51,7 @@ def login_auth():
     if not username or not password:
         return "Need username and password for token", 400
     if not verify_password(username, password):
-        return jsonify({"err": "Invalid credentials"}), 401
+        return "Invalid credentials", 401
     token = get_token_private(username)
     return jsonify({"token": token})
 
@@ -167,9 +167,8 @@ def get_resource():
     if not username_or_token:
         return jsonify({"err": "Need username or a valid token"}), 401
     elif not verify_password(username_or_token, password):
-        return jsonify({"err": "Invalid credentials"}), 401
+        return "Invalid credentials", 401
     return jsonify({"data": "Auth success"})
-
 
 def verify_credentials(req):
     username_or_token = req.authorization.get("username")

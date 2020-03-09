@@ -260,7 +260,7 @@ additional "Servings" field to match the servings of the food passed
 def get_similar_foods_user():
     # Handles Auth at the front
     if not verify_credentials(request):
-        return jsonify({"err": "Unauthorized: Invalid or missing credentials"}), 401
+        return "Unauthorized: Invalid or missing credentials", 401
 
     user_id = get_id_from_request(request)
     if not user_id:
@@ -302,7 +302,7 @@ def get_similar_foods_user():
     # Finds the nearest foods
     curr_food = db.find_one({"food_id": food_id})
     if curr_food is None:
-        return "Error: improper food id provided"
+        return "Improper food id provided", 400
 
     num_cals_orig = float(curr_food["Calories"])
     orig_group = curr_food["Food Group"]
@@ -311,7 +311,7 @@ def get_similar_foods_user():
     best_matches = findAllSimilarFoods(nutritional_atts)
 
     if best_matches is None:
-        return "Error: improper food id provided"
+        return "Improper food id provided", 400
 
     # Loops over food groups -- excludes those in restrictions set
     # Will take at most this many items in same group
