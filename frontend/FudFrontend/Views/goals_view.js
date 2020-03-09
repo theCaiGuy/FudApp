@@ -30,7 +30,6 @@ specified timeline.
 TODO:
 (1) Make the fat loss / muscle gain goal picking section clearer; some users might
 not understand that the two are usually mutually exlucisve.
-(2) Allow for imperial system inputs. DONE (on frontend)
 (3) Add routing with user profile view.
 */
 
@@ -69,6 +68,10 @@ const DIETARY_RESTRICTIONS = [
   'Nut Allergy',
 ]
 
+/*
+Display calculated macros for the user based on their physical attributes 
+and fitness goals as returned by the API
+*/
 function CalculationsComponent({
   fields_filled,
   loading,
@@ -77,12 +80,18 @@ function CalculationsComponent({
   carbs,
   protein,
 }) {
+  /*
+  Alert user that all fields must be filled
+  */
   if (!fields_filled) {
     return(
       <Text style={styles.satisfy_requirements_text}>Please fill in all required fields</Text>
     );
   }
 
+  /*
+  Notify user that the macros are being calculated
+  */
   if (loading) {
     return(
       <Text style={styles.central_subheader_text}>Calculating...</Text>
@@ -101,6 +110,9 @@ function CalculationsComponent({
     ).start();
   }, [])
 
+  /*
+  Display a card that lists calories, carbs, fats, and proteins per day
+  */
   return(
     <Animated.View
       style={{
@@ -112,6 +124,7 @@ function CalculationsComponent({
         title={"Your Calculations:"}
         titleStyle={styles.left_align_subheader_text}
         dividerStyle={{width: 0}}
+        containerStyle={styles.cardStyle}
       >
         <ListItem
           title={"Calories per day: " + Math.round(calories)}
@@ -136,47 +149,51 @@ function CalculationsComponent({
 }
 
 
+/*
+The primary goals page
+*/
 export class GoalsScreen extends React.Component {
     constructor(props) {
       super(props);
       this.state = {
-        fitness_goal: "Cut",
-        activity_level: "Sedentary",
-        sex: "NA",
-        sex_index: 0,
-        activity_index: 0,
-        fitness_index: 0,
-        measurement_index: 0,
-        measurement_system: "Metric",
-        height: 0,
-        weight: 0,
-        age: null,
-        kgs_to_gain: null,
-        weeks_to_goal: null,
-        fields_filled: false,
-        page_loading: true,
-        loading: false,
-        goals_set: false,
-        user_id: 1,
-        rec_carbs: null,
-        rec_fat: null,
-        rec_protein: null,
-        rec_calories: null,
-        dietary_restrictions: [],
-        weight_to_change: null,
-        weeks_to_goal: null,
+        fitness_goal: "Cut", // User's fitness goal
+        activity_level: "Sedentary", // User's activity level
+        sex: "NA", // User's sex
+        sex_index: 0, // Index in sex buttons of user's sex
+        activity_index: 0, // Index in activity level buttons of user's activity level
+        fitness_index: 0, // Index in fitness goal buttons of user's fitness goal
+        measurement_index: 0, // Index in measurement buttons of user's preferred measurement system
+        measurement_system: "Metric", // User's preferred measurement system
+        height: 0, // User's height as an integer in units of the user's preferred measurement system
+        weight: 0, // User's weight as an integer in units of the user's preferred measurement system
+        age: null, // User's age
+        fields_filled: false, // Boolean of whether the user as filled all required fields
+        page_loading: true, // Boolean of whether the page is waiting for a response from the API
+        loading: false, // Boolean of whether the page is waiting for the API to calculate user macros
+        goals_set: false, // Boolean of whether the user is allowed to move on to the next page
+        rec_carbs: null, // Recommended amount of carbs to consume for the user
+        rec_fat: null, // Recommended amount of fat to consume for the user
+        rec_protein: null, // Recommended amount of protein to consume for the user
+        rec_calories: null, // Recommended amount of calories to consume for the user
+        dietary_restrictions: [], // User's dietary restrictions
+        weight_to_change: null, // How much weight the user wishes to change in units of the user's preferred measurement system
+        weeks_to_goal: null, // # of weeks to achieve user goals
       };
-      this.updateSexIndex = this.updateSexIndex.bind(this)
-      this.updateActivityIndex = this.updateActivityIndex.bind(this)
-      this.updateFitnessIndex = this.updateFitnessIndex.bind(this)
-      this.calculatePlan = this.calculatePlan.bind(this)
-      this.updateMeasurementIndex = this.updateMeasurementIndex.bind(this)
+      this.updateSexIndex = this.updateSexIndex.bind(this);
+      this.updateActivityIndex = this.updateActivityIndex.bind(this);
+      this.updateFitnessIndex = this.updateFitnessIndex.bind(this);
+      this.calculatePlan = this.calculatePlan.bind(this);
+      this.updateMeasurementIndex = this.updateMeasurementIndex.bind(this);
     }
 
+    // Title of page
     static navigationOptions = {
       title: 'Set Fitness Goals',
     };
 
+    /*
+    If they exist, get the user's existing preferences from the API
+    */
     componentDidMount() {
       return AsyncStorage.getItem('userToken').then((token) => {
         fetch(`http://${API_PATH}/api/users/goals/fetch_user_info`, {
@@ -197,7 +214,7 @@ export class GoalsScreen extends React.Component {
           if (response.status === 400) {
             this.setState({
               page_loading: false,
-            })
+            });
             {/*
               TODO: Handle 400 response better
             */}
@@ -206,7 +223,7 @@ export class GoalsScreen extends React.Component {
           if (response.status !== 200) {
             this.setState({
               page_loading: false,
-            })
+            });
             {/*
               TODO: Handle 400 response better
             */}
@@ -235,8 +252,8 @@ export class GoalsScreen extends React.Component {
             if (this.state.height && this.state.weight && this.state.age && (!this.state.fitness_goal !== "Maintain" && this.state.weight_to_change && this.state.weeks_to_goal || this.state.fitness_goal === "Maintain")) {
               this.setState({
                 fields_filled: true
-              })
-              this.calculatePlan()
+              });
+              this.calculatePlan();
             }
 
           });
@@ -246,80 +263,107 @@ export class GoalsScreen extends React.Component {
       });
     }
 
+    /*
+    Update the user's preferred measurement units to either metric or imperial
+    Recalculate necessary values for user weight and height
+    */
     updateMeasurementIndex (measurement_index) {
-      let height = this.state.height
-      let weight = this.state.weight
-      let weight_to_change = this.state.weight_to_change
-      console.log( `Old Heignt: ${height}, Old Weight: ${weight}, Old Weight Change: ${weight_to_change}`)
+      let height = this.state.height;
+      let weight = this.state.weight;
+      let weight_to_change = this.state.weight_to_change;
+      console.log( `Old Heignt: ${height}, Old Weight: ${weight}, Old Weight Change: ${weight_to_change}`);
 
       if (MEASUREMENTS[measurement_index] == "Imperial" && this.state.measurement_system == "Metric") {
         this.setState({
           height: Math.round(height * 0.39370),
           weight: Math.round(weight * 2.20462),
           weight_to_change: Math.round(weight_to_change * 2.20462),
-        })
+        });
       }
       if (MEASUREMENTS[measurement_index] == "Metric" && this.state.measurement_system == "Imperial") {
         this.setState({
           height: Math.round(height * 2.54),
           weight: Math.round(weight * 0.453592),
           weight_to_change: Math.round(weight_to_change * 0.453592)
-        })
+        });
       }
       
-      this.setState({measurement_index})
-      this.setState({measurement_system: MEASUREMENTS[measurement_index]})
-      console.log(`user measurement set to ${MEASUREMENTS[measurement_index]}`)
+      this.setState({
+        measurement_index,
+        measurement_system: MEASUREMENTS[measurement_index]
+      });
+      console.log(`user measurement set to ${MEASUREMENTS[measurement_index]}`);
     }
 
+    /*
+    Update the selected sex of the user
+    */
     updateSexIndex (sex_index) {
-      this.setState({sex_index});
-      this.setState({sex: SEXES[sex_index]})
-      console.log(`user sex set to ${SEXES[sex_index]}`)
+      this.setState({
+        sex_index,
+        sex: SEXES[sex_index]
+      });
+      console.log(`user sex set to ${SEXES[sex_index]}`);
     }
 
+    /*
+    Update selected activity level of the user
+    */
     updateActivityIndex (activity_index) {
-      this.setState({activity_index});
-      this.setState({activity_level: ACTIVITY_LEVELS[activity_index]})
-      console.log(`user activity level set to ${ACTIVITY_LEVELS[activity_index]}`)
+      this.setState({
+        activity_index,
+        activity_level: ACTIVITY_LEVELS[activity_index]
+      });
+      console.log(`user activity level set to ${ACTIVITY_LEVELS[activity_index]}`);
     }
 
+    /*
+    Update selected fitness goal of the user
+    */
     updateFitnessIndex (fitness_index) {
-      this.setState({fitness_index});
-      this.setState({fitness_goal: GOALS[fitness_index]})
+      this.setState({
+        fitness_index,
+        fitness_goal: GOALS[fitness_index],
+      });
       if (GOALS[fitness_index] == "Maintain") {
         this.setState({
           weight_to_change: 0,
           weeks_to_goal: 0
-        })
+        });
       }
-      AsyncStorage.setItem('user_goal', GOALS[fitness_index])
-      console.log(`user goal level set to ${GOALS[fitness_index]}`)
+      AsyncStorage.setItem('user_goal', GOALS[fitness_index]);
+      console.log(`user goal level set to ${GOALS[fitness_index]}`);
     }
 
+    /*
+    Update selected dietary restrictions of the user
+    */
     updateDietaryRestrictions (restriction) {
       let restrictions = [...this.state.dietary_restrictions];
       if (restrictions.includes(restriction)) {
-        restrictions.splice( restrictions.indexOf(restriction), 1 )
+        restrictions.splice( restrictions.indexOf(restriction), 1 );
         this.setState({
           dietary_restrictions: restrictions
         });
       } else {
-        restrictions.push(restriction)
+        restrictions.push(restriction);
         this.setState({
           dietary_restrictions: restrictions
-        })
+        });
       }
-      console.log(`user dietary restrictions set to [${restrictions}]`)
+      console.log(`user dietary restrictions set to [${restrictions}]`);
     }
 
+    /*
+    Query the API for the user's daily macros based on information inputted by the user
+    */
     calculatePlan = async () => {
       if (this.state.height && this.state.weight && this.state.age && (this.state.fitness_goal !== "Maintain" && this.state.weight_to_change && this.state.weeks_to_goal || this.state.fitness_goal === "Maintain")) {
-        console.log("All fields filled!")
+        console.log("All fields filled!");
         await this.setState({
           fields_filled: true,
           loading: true,
-        })
+        });
 
         try {
           const token = await AsyncStorage.getItem("userToken");
@@ -380,17 +424,20 @@ export class GoalsScreen extends React.Component {
           console.error(err);
         }
       } else {
-        console.log("Fields not filled")
-        this.setState({fields_filled: false})
+        console.log("Fields not filled");
+        this.setState({fields_filled: false});
       }
     }
 
+    /*
+    Save the user's preferences and navigate to the daily page
+    */
     _setFudPrefsAsync = async () => {
       if (this.state.height && this.state.weight && this.state.age && (this.state.fitness_goal !== "Maintain" && this.state.weight_to_change && this.state.weeks_to_goal || this.state.fitness_goal === "Maintain")) {
-        console.log("All fields filled!")
+        console.log("All fields filled!");
         await this.setState({
           fields_filled: true,
-        })
+        });
 
         try {
           const token = await AsyncStorage.getItem("userToken");
@@ -422,21 +469,24 @@ export class GoalsScreen extends React.Component {
           };
 
           console.log(JSON.stringify(set_res));
-          this.props.navigation.navigate('Prefs');
+          this.props.navigation.navigate('App');
         } catch (err) {
           console.error(err);
         }
       } else {
-        console.log("Fields not filled")
-        this.setState({fields_filled: false})
+        console.log("Fields not filled");
+        this.setState({fields_filled: false});
       }
     };
 
     render() {
-      const sex_buttons = ['Not Specified', 'Male', 'Female']
-      const activity_buttons = ['1', '2', '3', '4', '5']
-      const fitness_buttons = ['Fat Loss', 'Muscle Gain', 'Maintenance']
+      const sex_buttons = ['Not Specified', 'Male', 'Female'];
+      const activity_buttons = ['1', '2', '3', '4', '5'];
+      const fitness_buttons = ['Fat Loss', 'Muscle Gain', 'Maintenance'];
 
+      /*
+      Notify the user that the page is being loaded
+      */
       if (this.state.page_loading) {
         return (
           <SafeAreaView style={styles.container}>

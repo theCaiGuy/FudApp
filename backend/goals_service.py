@@ -3,9 +3,11 @@ import pymongo
 
 from auth_service import verify_credentials, get_id_from_request
 
-goals_service = Blueprint('goals_service', __name__)
+goals_service = Blueprint("goals_service", __name__)
 
-client = pymongo.MongoClient("mongodb+srv://connor:connor@foodcluster-trclg.mongodb.net/test?retryWrites=true&w=majority")
+client = pymongo.MongoClient(
+    "mongodb+srv://connor:connor@foodcluster-trclg.mongodb.net/test?retryWrites=true&w=majority"
+)
 db = client.users.users_info
 
 
@@ -31,7 +33,9 @@ protein (double) : tdee protein (g)
 fat (double) : tdee fats (g)
 carb (double) : tdee carbs (g)
 """
-def calculate_tdee_macros(user_info = None):
+
+
+def calculate_tdee_macros(user_info=None):
     if not user_info:
         return None
 
@@ -43,7 +47,7 @@ def calculate_tdee_macros(user_info = None):
         user_height *= 2.54
 
     # Calculates TDEE
-    user_tdee = (10.0 * user_weight + 6.25 * user_height - 5.0 * user_info["age"])
+    user_tdee = 10.0 * user_weight + 6.25 * user_height - 5.0 * user_info["age"]
     if user_info["sex"] == "M":
         user_tdee += 5.0
     else:
@@ -54,7 +58,7 @@ def calculate_tdee_macros(user_info = None):
         user_tdee += 350.0
     elif user_activity == "Light":
         user_tdee += 650.0
-    elif user_activity ==  "Moderate":
+    elif user_activity == "Moderate":
         user_tdee += 950.0
     elif user_activity == "Heavy":
         user_tdee += 1250.0
@@ -62,18 +66,24 @@ def calculate_tdee_macros(user_info = None):
         user_tdee += 1600.0
 
     user_goal = user_info["goal"]
-    user_factor = 0.0 # for maintaining users
+    user_factor = 0.0  # for maintaining users
     if user_goal == "Bulk":
         user_factor = 1.0
     elif user_goal == "Cut":
         user_factor = -1.0
 
+    # Scales user goal if they're trying to change kg
+    if user_system == "Metric":
+        user_factor *= 0.454
+
     # E.g. if 10 lbs in 10 weeks -- 500 calorie change
     user_ratio = 0
     if not user_info["weeks_to_goal"] <= 0:
-        user_ratio = (user_info["weight_to_change"] / user_info["weeks_to_goal"]) * 500.0
+        user_ratio = (
+            user_info["weight_to_change"] / user_info["weeks_to_goal"]
+        ) * 500.0
 
-    user_tdee += (user_ratio * user_factor)
+    user_tdee += user_ratio * user_factor
 
     # Assuming 30/35/35 protein/fats/carbs ratio in terms of calories
     protein_g = (0.3 * user_tdee) / 4.0
@@ -81,14 +91,13 @@ def calculate_tdee_macros(user_info = None):
     carbs_g = (0.35 * user_tdee) / 4.0
 
     return_dict = {
-        "tdee" : user_tdee,
-        "protein" : protein_g,
-        "fat" : fat_g,
-        "carb" : carbs_g
+        "tdee": user_tdee,
+        "protein": protein_g,
+        "fat": fat_g,
+        "carb": carbs_g,
     }
 
     return return_dict
-
 
 
 """
@@ -112,7 +121,9 @@ restrictions: list of restriction strings (e.g. ["Vegan", "Nut Allergy"]) -- emp
 Returns:
 "Success" string -- indicating the user's info was updated in MongoDB
 """
-@goals_service.route('/api/users/goals/set_user_info', methods = ["POST"])
+
+
+@goals_service.route("/api/users/goals/set_user_info", methods=["POST"])
 def set_user_info():
     if not verify_credentials(request):
         return "Unauthorized: Invalid or missing credentials", 401
@@ -122,21 +133,37 @@ def set_user_info():
         return "No user found", 400
 
     params = request.json
-    if not all(k in params for k in ("age", "height", "weight", "sex", "activity", "goal", "measurement_system", "weight_to_change", "weeks_to_goal")):
-        return "Please provide an age, height, weight, sex, activity level, goal, measurement_system, weight_to_change, and weeks_to_goal.", 400
+    if not all(
+        k in params
+        for k in (
+            "age",
+            "height",
+            "weight",
+            "sex",
+            "activity",
+            "goal",
+            "measurement_system",
+            "weight_to_change",
+            "weeks_to_goal",
+        )
+    ):
+        return (
+            "Please provide an age, height, weight, sex, activity level, goal, measurement_system, weight_to_change, and weeks_to_goal.",
+            400,
+        )
 
     # Creates document for DB
     db_post = {
-        "user_id" : user_id,
-        "measurement_system" : params["measurement_system"],
-        "age" : int(params["age"]),
-        "height" : float(params["height"]),
-        "weight" : float(params["weight"]),
-        "sex" : params["sex"],
-        "activity" : params["activity"],
-        "goal" : params["goal"],
-        "weight_to_change" : float(params["weight_to_change"]),
-        "weeks_to_goal" : float(params["weeks_to_goal"])
+        "user_id": user_id,
+        "measurement_system": params["measurement_system"],
+        "age": int(params["age"]),
+        "height": float(params["height"]),
+        "weight": float(params["weight"]),
+        "sex": params["sex"],
+        "activity": params["activity"],
+        "goal": params["goal"],
+        "weight_to_change": float(params["weight_to_change"]),
+        "weeks_to_goal": float(params["weeks_to_goal"]),
     }
 
     if "restrictions" in params:
@@ -144,7 +171,7 @@ def set_user_info():
     else:
         db_post["restrictions"] = []
 
-    db.replace_one({"user_id" : user_id}, db_post, upsert = True)
+    db.replace_one({"user_id": user_id}, db_post, upsert=True)
 
     return '', 204
 
@@ -160,7 +187,9 @@ user_id (int)
 Returns:
 JSON of user's data straight from MongoDB
 """
-@goals_service.route('/api/users/goals/fetch_user_info', methods = ["POST"])
+
+
+@goals_service.route("/api/users/goals/fetch_user_info", methods=["POST"])
 def fetch_user_info():
     if not verify_credentials(request):
         return "Unauthorized: Invalid or missing credentials", 401
@@ -170,11 +199,11 @@ def fetch_user_info():
         return "No user found", 400
 
     # Gets document from DB
-    user_info = db.find_one({"user_id" : user_id})
+    user_info = db.find_one({"user_id": user_id})
     if not user_info:
         return "User not in DB", 400
 
-    del user_info["_id"] # Can't be jsonified -- remove
+    del user_info["_id"]  # Can't be jsonified -- remove
     return jsonify(user_info)
 
 
@@ -189,7 +218,9 @@ user_id (int)
 Returns:
 A Jsonified Dict of user's macros (currently TDEE Calories, Protein, Fat, and Carbs)
 """
-@goals_service.route('/api/users/goals/fetch_user_macros', methods = ["POST"])
+
+
+@goals_service.route("/api/users/goals/fetch_user_macros", methods=["POST"])
 def fetch_user_macros():
     if not verify_credentials(request):
         return "Unauthorized: Invalid or missing credentials", 401
@@ -199,7 +230,7 @@ def fetch_user_macros():
         return "No user found", 400
 
     user_info = None
-    user_info = db.find_one({"user_id" : user_id})
+    user_info = db.find_one({"user_id": user_id})
 
     if user_info is None:
         return "Error: User info not in DB", 400

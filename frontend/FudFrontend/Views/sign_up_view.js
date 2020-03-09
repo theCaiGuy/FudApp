@@ -3,6 +3,8 @@ import {
   AsyncStorage,
   Image,
   SafeAreaView,
+  Text,
+  View,
 } from 'react-native';
 import { styles } from '../Styles/styles'
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scrollview'
@@ -20,7 +22,6 @@ Hits api/users/register endpoint to register a new user, moves
 user onto setting goals and preferences
 
 TODO: 
-If account already exists then tell the user
 Require certain chars for password
 Make sure all fields are filled before allowing user to submit info to backend
 */
@@ -34,11 +35,12 @@ export class SignUpScreen extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      name: null,
-      email: null,
-      username: null,
-      password: null,
-      passwordCpy: null
+      name: null, // User's name
+      email: null, // User's email
+      username: null, // User's username
+      password: null, // User's password
+      passwordCpy: null, // Have user reenter password
+      error: false, // Boolean for whether an error has been encountered
     };
   }
 
@@ -85,7 +87,7 @@ export class SignUpScreen extends React.Component {
           />
 
           <Input
-            label="Choose a password"
+            label="Password"
             containerStyle={styles.signin_text_input}
             placeholder="Your Password"
             autoCorrect={false}
@@ -96,7 +98,7 @@ export class SignUpScreen extends React.Component {
           />
 
           <Input
-            label="Re-enter your password"
+            label="Re-enter password"
             containerStyle={styles.signin_text_input}
             placeholder="Your Password Again"
             autoCorrect={false}
@@ -106,11 +108,48 @@ export class SignUpScreen extends React.Component {
             onChangeText = {(text) => this.setState({passwordCpy: text})}
           />
 
+          <View>
+            {
+              (this.state.password !== this.state.passwordCpy) ? (
+                <Text
+                  style={styles.satisfy_requirements_text}
+                >
+                  Error: Passwords don't match
+                </Text>
+              ) : (
+                <View />
+              )
+            }
+          </View>
+
+          <View>
+            {
+              (this.state.error) ? (
+                <Text
+                  style={styles.satisfy_requirements_text}
+                >
+                  Error: Unable to create a new account. Please check your inputs and try again.
+                </Text>
+              ) : (
+                <View />
+              )
+            }
+          </View>
+
           <Button
             title="Create Account"
             onPress={this._signInAsync}
             buttonStyle={styles.sign_in_button}
             titleStyle={styles.title}
+            disabled={
+              !(
+                this.state.name 
+                && this.state.email 
+                && this.state.username 
+                && this.state.password 
+                && this.state.passwordCpy
+              )
+            }
           />
 
         </KeyboardAwareScrollView>
@@ -118,20 +157,29 @@ export class SignUpScreen extends React.Component {
     );
   }
 
+  /*
+  Attempt to register a new user with the selected username, password, name, and email
+  Display an error if the passwords don't match
+  Display a separate error if unable to register the new user
+
+  TODO (extension): More detailed error messages (ie "email invalid")
+  */ 
   _signInAsync = async () => {
-    let username = this.state.username
-    let password = this.state.password
+    let username = this.state.username;
+    let password = this.state.password;
     if (password !== this.state.passwordCpy) {
-      // passwords aren't the same, display error later
-      return
+      this.setState({
+        error: true,
+      });
+      return;
     }
-    let name = this.state.name
-    let email = this.state.email
-    console.log("Attempting signup with user " + username + " and password " + password);
+    let name = this.state.name;
+    let email = this.state.email;
+    console.log(`Attempting signup with user ${username}`);
 
     await AsyncStorage.removeItem('userToken');
-    try {
-      const res = await fetch(`http://${API_PATH}/api/users/register`, {
+    return (
+      fetch(`http://${API_PATH}/api/users/register`, {
         method: 'POST',
         headers: {
           Accept: 'application/json',
@@ -143,17 +191,33 @@ export class SignUpScreen extends React.Component {
           "email": email,
           "name": name
         })
-      });
-      const content = await res.json();
-      console.log(JSON.stringify(content));
-      console.log(content.token)
-      console.log("TEST")
-      // const token = await content.token
-
-      await AsyncStorage.setItem('userToken', content.token);
-      this.props.navigation.navigate('Prefs');
-    } catch (err) {
-      return;
-    }
+      })
+      .then((response) => {
+        if (response.status === 401) {
+          this.setState({
+            error: true,
+          })
+          return;
+        }
+        if (response.status !== 201) {
+          this.setState({
+            error: true,
+          })
+          return;
+        }
+        response.json().then((responseJson) => {
+          console.log(JSON.stringify(responseJson));
+          AsyncStorage.setItem('userToken', responseJson['token']);
+          this.props.navigation.navigate('Prefs');
+        });
+      })
+      .catch((error) => {
+        console.error(error);
+        this.setState({
+          error: true,
+        })
+        return;
+      })
+    );
   };
 }

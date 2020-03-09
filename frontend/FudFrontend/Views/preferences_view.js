@@ -24,6 +24,10 @@ AI recommendation engine.
 (2) Add routing with user profile view. 
 */
 
+/*
+NOTE: WE ARE DEPRECATING THIS PAGE AND REMOVING IT FOR NOW
+*/
+
 const PROTEIN_DATA = [
   {
     id: '1',

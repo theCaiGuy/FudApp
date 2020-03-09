@@ -5,6 +5,7 @@ import {
   Image,
   SafeAreaView,
   StatusBar,
+  Text,
   View,
 } from 'react-native';
 import { styles } from '../Styles/styles'
@@ -24,11 +25,8 @@ Provides routes for user to sign in w/ existing credentials, or sign up
 for a new Füd account
 
 TODO:
-Notify user if account information is incorrect
 Forgot Password
 */
-
-
 export class SignInScreen extends React.Component {
   static navigationOptions = {
     headerShown: false,
@@ -38,7 +36,8 @@ export class SignInScreen extends React.Component {
     super(props);
     this.state = {
       username: null,
-      password: null
+      password: null,
+      login_failed: false,
     };
   }
 
@@ -85,6 +84,22 @@ export class SignInScreen extends React.Component {
             onChangeText = {(text) => this.setState({password: text})}
           />
 
+          {/*
+            Display warning message for failed logon attempt
+          */}
+
+          {
+            (this.state.login_failed) ? (
+              <Text 
+                style={styles.satisfy_requirements_text}
+              >
+                Invalid username/password combination
+              </Text>
+            ) : (
+              <View />
+            )
+          }
+
           <Button
             title="Sign In"
             onPress={this._signInAsync}
@@ -109,10 +124,13 @@ export class SignInScreen extends React.Component {
     );
   }
 
+  /*
+  Attempts to sign in using the given username and password combination
+  */
   _signInAsync = async () => {
     let username = this.state.username
     let password = this.state.password
-    console.log("Attempting signin with user " + username + " and password " + password);
+    console.log("Attempting signin with user " + username);
 
     await AsyncStorage.removeItem('userToken');
     try {
@@ -125,7 +143,9 @@ export class SignInScreen extends React.Component {
         },
       });
       if (res.status === 401) {
-        // someone should display login failed here
+        await this.setState({
+          login_failed: true,
+        })
         return;
       };
       const content = await res.json();
@@ -137,11 +157,18 @@ export class SignInScreen extends React.Component {
     }
   };
 
+  /*
+  Navigate user to sign up screen
+  */
   _signUpAsync = async () => {
     this.props.navigation.navigate('SignUp');
   };
 }
 
+
+/*
+Check if a valid user token is already in storage
+*/
 export class AuthLoadingScreen extends React.Component {
   constructor() {
     super();
@@ -150,7 +177,30 @@ export class AuthLoadingScreen extends React.Component {
 
   // Fetch the token from storage then navigate to our appropriate place
   _bootstrapAsync = async () => {
-    const userToken = await AsyncStorage.getItem('userToken');
+    let userToken = await AsyncStorage.getItem('userToken');
+
+    // Check API if the user token in AsyncStorage is valid
+    fetch(`http://${API_PATH}/api/users/auth_test`, {
+      method: 'POST',
+      headers: {
+        Accept: 'application/json',
+        'Content-Type': 'application/json',
+        'Authorization': `Basic ${btoa(`${userToken}:`)}`
+      }
+    })
+    .then((response) => {
+      if (response.status === 401) {
+        AsyncStorage.removeItem('userToken').then(() => {
+          userToken = null
+        });
+        return;
+      }
+    })
+    .catch((error) => {
+      console.error(error);
+      AsyncStorage.removeItem('userToken');
+      userToken = null;
+    })
 
     // This will switch to the App screen or Auth screen and this loading
     // screen will be unmounted and thrown away.
