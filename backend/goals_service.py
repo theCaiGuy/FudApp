@@ -72,9 +72,10 @@ def calculate_tdee_macros(user_info=None):
     elif user_goal == "Cut":
         user_factor = -1.0
 
-    # Scales user goal if they're trying to change kg
+    # Scales user goal if they're trying to change kg -- this scales up
+    # by 2.205, the conversion from 1 kg -> 2.205 lbs
     if user_system == "Metric":
-        user_factor *= 0.454
+        user_factor *= 2.205
 
     # E.g. if 10 lbs in 10 weeks -- 500 calorie change
     user_ratio = 0
