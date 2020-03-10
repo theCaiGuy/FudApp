@@ -13,6 +13,7 @@ import * as Progress from 'react-native-progress';
 
 // HARD CODED DATA
 // THIS SHOULD EVENTUALLY COME FROM OUR API
+// DEPRECATED!
 const DATA = [
   {
     date: '2020-02-02',

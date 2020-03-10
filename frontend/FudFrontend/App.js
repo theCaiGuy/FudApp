@@ -15,7 +15,6 @@ import { MonthScreen } from './Views/monthly_view'
 import { UserProfileScreen } from './Views/user_profile_view'
 import { EditAccountInfoScreen } from './Views/edit_account_info_view'
 import { EditGoalsScreen } from './Views/edit_goals_view'
-import { EditPreferencesScreen } from './Views/edit_preferences_view'
 import { ChangePasswordScreen } from './Views/change_password_view'
 
 // Adapted from https://snack.expo.io/@react-navigation/auth-flow-v3
@@ -40,7 +39,6 @@ const AppStack = createStackNavigator(
     Profile: UserProfileScreen,
     EditAccountInfo: EditAccountInfoScreen,
     EditGoals: EditGoalsScreen,
-    EditPrefs: EditPreferencesScreen,
     ChangePass: ChangePasswordScreen,
   },
   {

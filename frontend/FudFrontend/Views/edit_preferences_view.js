@@ -16,6 +16,7 @@ import { API_PATH } from '../assets/constants'
 import {encode as btoa} from 'base-64'
 
 /*
+DEPRECATED!!
 This view lets users view and edit their food preferences of proteins, carbs,
 fats, etc. for the purposes better meal generation.
 */
