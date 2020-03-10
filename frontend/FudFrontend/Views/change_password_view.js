@@ -23,10 +23,10 @@ export class ChangePasswordScreen extends React.Component {
     constructor(props) {
       super(props);
       this.state = {
-        user_id: null,
-        current_password: null,
-        new_password: null,
-        new_password_copy: null,
+        user_id: null, // user id for authentication purposes
+        current_password: null, // current password
+        new_password: null, // new password
+        new_password_copy: null, // confirmation of new password
       };
     }
 
@@ -84,6 +84,12 @@ export class ChangePasswordScreen extends React.Component {
       );
     }
 
+    /*
+    Securely updates the password by having the user enter their current password,
+    and only if it's correct can they change their password to a new one.
+    Also checks that the new password matches their second entry of the
+    new password.
+    */
     _updatePassAsync = async () => {
       let current_password = this.state.current_password;
       let new_password = this.state.new_password;
