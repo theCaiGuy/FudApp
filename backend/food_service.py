@@ -79,7 +79,7 @@ Parameters to request:
 food_id (int) : food_id for a particular food
 
 Returns:
-results (JSON) : Simple dict of the food's attributes straight from MongoDB
+(JSON) : Simple dict of the food's attributes straight from MongoDB
 """
 
 
@@ -103,11 +103,10 @@ Function: get_foods_keyword_user()
 Returns list of foods items (in full) that match a user's keyword search
 
 Parameters:
-user_id (int) : Done via UAuth -- ensures search only returns foods out of restrictions!
 query (string) : keyword user enters in search, will ignore case here
 
 Returns
-results (JSON) : List of food items (which are dicts of food attributes)
+(JSON) : List of food items (which are dicts of food attributes)
 """
 
 
@@ -177,12 +176,12 @@ Includes additional argument "weights",
 an array-like that contains weights for the provided nutrients
 
 Parameters:
-food1 : Array-like (e.g. list) of desired macronutrients
-food2 : Array-like (e.g. list) of desired macronutrients in same order as food1
-weights: Array-like (e.g. list) of weighting for each macronutrient
+food1 (list) : array-like (e.g. list) of desired macronutrients
+food2 (list) : array-like (e.g. list) of desired macronutrients in same order as food1
+weights (list) : array-like (e.g. list) of weighting for each macronutrient
 
 Returns:
-similarity (float) : weighted cosine similarity of two foods' macros
+(float) : weighted cosine similarity of two foods' macros
 
 Reference: https://stackoverflow.com/questions/48581540/how-to-compute-weighted-cosine-similarity-between-two-vectores-in-python
 """
@@ -201,11 +200,11 @@ Function: get_important_macros()
 Returns list of an food's most important macronutrients
 
 Arguments:
-food_dict: Dictionary object retrieved from Mongo for a food's nutrition values
-nutrients: List of keys of interest -- defaults to [protein, fat, carbs, calories]
+food_dict (dict) : object retrieved from Mongo for a food's nutrition values
+nutrients (list) : keys of interest -- defaults to [protein, fat, carbs, calories]
 
 Returns:
-list of macros for that food specified in the given order to nurtients argument
+(list) : macros for that food specified in the given order to nurtients argument
 """
 
 
@@ -224,7 +223,7 @@ Arguments:
 food1: food_id of the original food
 
 Returns:
-List of (food_id, food_name, similarity, food_group, calories) tuples in sorted order of Similarity
+(list) : list (food_id, food_name, similarity, food_group, calories) tuples in sorted order of Similarity
 to the food passed (first food is most similar -- the same food as food1)
 """
 
@@ -250,13 +249,12 @@ but specific for a given user, so this includes all the AI functionality at the
 heart of Fud
 
 Arguments:
-user_id : provided via auth
 food_id (int) : food_id of food desired for similarity
 servings (float) : Used to return how much of new food(s) to maintain caloric count
 num_foods (int) : How many similar foods you would like returned (minimum of 3, max of 14)
 
 Returns:
-return_dict (JSON) : simple list of food objects (dicts straight from Mongo) with an
+(JSON) : simple list of food objects (dicts straight from Mongo) with an
 additional "Servings" field to match the servings of the food passed.
 """
 

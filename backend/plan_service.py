@@ -27,7 +27,6 @@ Returns a daily_plan object to front end. This object is a Dict with keys as mea
 values as lists of meal objects (which themselves are dicts comntaining food info)
 
 Arguments:
-user_id (int)
 goal (string) : Either "Bulk", "Cut", or "Maintain" (deprecated)
 """
 

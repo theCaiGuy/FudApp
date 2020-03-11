@@ -17,7 +17,6 @@ Function: calculate_tdee_macros
 Calculates key macros for a given user
 
 Arguments: A dict (user_info) mapping ->
-user_id (int) -- provided by UAuth,
 measurement_system (string) : One of "Metric" or "Imperial"
 height (double) : in cm for Metric, inches for Imperial
 weight (double) : in kg fo Metric, lbs for Imperial
@@ -107,7 +106,6 @@ Function: set_user_info
 Sets preferences about user in user_info table
 
 Arguments (in request body):
-user_id (int) -- provided by UAuth,
 measurement_system (string) : One of "Metric" or "Imperial"
 height (double) : in cm for Metric, inches for Imperial
 weight (double) : in kg fo Metric, lbs for Imperial
@@ -182,11 +180,8 @@ Function: fetch_user_info
 
 Gets preferences about user in user_info table
 
-Arguments:
-user_id (int) -- provided by UAuth
-
 Returns:
-JSON of user's data straight from MongoDB
+(JSON) : JSON of user's data straight from MongoDB
 """
 
 
@@ -213,11 +208,8 @@ Function: fetch_user_macros
 
 Grabs a user's calculated macronutrients given their info
 
-Arguments:
-user_id (int) -- provided by UAuth
-
 Returns:
-A Jsonified Dict of user's macros (currently TDEE Calories, Protein, Fat, and Carbs)
+(JSON) : jsonified Dict of user's macros (currently TDEE Calories, Protein, Fat, and Carbs)
 """
 
 

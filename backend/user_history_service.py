@@ -18,11 +18,8 @@ Function: fetch_user_history
 
 Gets history about a user
 
-Arguments:
-user_id (int): Provided by UAuth
-
 Returns:
-Jsonified version of user_history dict straight from MongoDB
+(JSON) : jsonified version of user_history dict straight from MongoDB
 """
 
 
@@ -51,11 +48,10 @@ Function: fetch_user_history_daily
 Gets history about a user for a specific day
 
 Arguments:
-user_id (int): Provided by UAuth
 date (str) : Format YYYY-MM-DD
 
 Returns:
-Jsonified version of user_history dict straight from MongoDB
+(JSON) : jsonified version of user_history dict straight from MongoDB
 """
 
 
@@ -92,7 +88,6 @@ Function: fetch_user_history_macros_daily
 Gets macronutrient history about a user for a specific day
 
 Arguments:
-user_id (int): Provided by UAuth
 date (str) : Format YYYY-MM-DD
 
 Returns: A dict (macros) mapping ->
@@ -157,7 +152,6 @@ Function: set_user_history_food
 Sets history about a user -- updating one food at a time
 
 Arguments:
-user_id (int): provided by UAuth
 date (string) : format YYYY-MM-DD for date of item to adjust
 meal (string) : string of the meal food is being replaced in
 prev_food_id (string) : the id of the food to replace (if not in params, adds new food without replacing anything) -- string for key access in history JSON
@@ -222,7 +216,6 @@ Function: delete_user_history_food
 Deletes history about a user -- removing the food on the date and meal given
 
 Arguments:
-user_id (int): Provided by UAuth
 date (string) : format YYYY-MM-DD for date of item to adjust
 meal (string) : string of the meal food is being replaced in
 prev_food_id (string) : the id of the food to remove -- string for key access in history JSON
@@ -271,7 +264,6 @@ Function: set_user_history_meal
 Sets history about a user -- updating one meal at a time
 
 Arguments:
-user_id (int): Provided by UAuth
 date (string) : format YYYY-MM-DD for date of item to adjust
 meal (str) : name of the meal (can be used to replace previous same meal)
 foods (dict) : maps food_id : servings -- note that food_id's are strings for JSON
@@ -321,7 +313,6 @@ Function: set_user_history_daily
 Sets history about a user -- updating for a full day
 
 Arguments:
-user_id (int): Provided by UAuth
 date (str) : string of the date desired, format YYYY-MM-DD
 day_history (dict) : Dict that maps food_ids (str) to servings (float) -- string food_ids for JSON
 """
@@ -367,7 +358,6 @@ Function: set_user_history_total
 Replaces (or creates) history for a user provided a new full history object
 
 Arguments:
-user_id (int): Provided by UAuth
 history (dict) : Full history object (see documentation) -- note everything but lowest (serving) level is string for keys
 """
 
