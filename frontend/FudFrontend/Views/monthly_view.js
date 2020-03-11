@@ -1,18 +1,23 @@
 import React from 'react';
 import {
   AsyncStorage,
-  Button,
-  FlatList,
   SafeAreaView,
   Text,
   TouchableHighlight,
   View,
-  StyleSheet,
 } from 'react-native';
 import { styles } from '../Styles/styles'
 import CalendarPicker from 'react-native-calendar-picker';
 import * as Progress from 'react-native-progress';
 import { API_PATH } from '../assets/constants'
+import {
+  Button,
+  Card,
+  Input,
+  ListItem,
+  Overlay,
+  Slider,
+} from 'react-native-elements'
 
 /*
 This view is a Calendar view that lets the user look at their meal plan for any
@@ -86,16 +91,25 @@ function Day_Component({
 export class MonthScreen extends React.Component {
   constructor(props) {
     super(props);
+
+    let curr_date = (new Date()).toISOString().slice(0, 10);
+
     this.state = {
-      selectedStartDate: null,
+      selectedDate: curr_date,
     };
     this.onDateChange = this.onDateChange.bind(this);
+    this.viewMeals = this.viewMeals.bind(this);
   }
 
-  onDateChange(date) {
-    this.setState({
-      selectedStartDate: date,
+  onDateChange = async(date) => {
+    let curr_date = date.toISOString().slice(0, 10);
+    await this.setState({
+      selectedDate: curr_date,
     });
+  }
+
+  viewMeals = async () => {
+    this.props.navigation.navigate('Home', {date: this.state.selectedDate});
   }
 
   static navigationOptions = {
@@ -103,33 +117,24 @@ export class MonthScreen extends React.Component {
   };
 
   render() {
-    const { selectedStartDate } = this.state;
-    const startDate = selectedStartDate ? selectedStartDate.toString() : '';
+    const { selectedDate } = this.state;
+    const startDate = selectedDate ? selectedDate.toString() : '';
     return (
       <SafeAreaView style={styles.container}>
         <CalendarPicker
           onDateChange={this.onDateChange}
+          selectedDayColor="#3b821b"
+          selectedDayTextColor="#ffffff"
         />
 
-        <View>
-          <Text>SELECTED DATE:{ startDate }</Text>
-        </View>
+        <Button
+          title={`View Meals: ${this.state.selectedDate}`}
+          onPress={this.viewMeals}
+          buttonStyle={styles.nav_button}
+          titleStyle={styles.nav_text}
+        />
 
-        <Button title="Sign Out of Füd" onPress={this._signOutAsync} />
       </SafeAreaView>
     );
   }
-
-  _showMoreAppAsync = () => {
-    this.props.navigation.navigate('Detail');
-  };
-
-  _changePrefsAsync = () => {
-    this.props.navigation.navigate('Prefs');
-  }
-
-  _signOutAsync = async () => {
-    await AsyncStorage.clear();
-    this.props.navigation.navigate('Auth');
-  };
 }
