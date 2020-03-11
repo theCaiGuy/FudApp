@@ -55,8 +55,11 @@ RESTRICTIONS_MAP = {
     "Nut Allergy": {"Legumes and Legume Products", "Nut and Seed Products"},
 }
 
+# Mapping of restrictions to a few key words that may slip
+# through the food group situation above -- an example is
+# "beef sticks" in the "Snacks" food group
 RESTRICTIONS_WORDS = {
-    "Vegan" : {"beef", "pork", "sausage", "chicken", "fish", "salmon", "cod", "fat", "tallow", "milk", "cheese", "turkey", "steak", "meat", "crab", "lobster", "butter"},
+    "Vegan" : {"beef", "pork", "sausage", "chicken", "fish", "salmon", "cod", "fat", "tallow", "milk", "cream", "cheese", "turkey", "steak", "meat", "crab", "lobster", "butter"},
     "Vegetarian" : {"beef", "pork", "sausage", "chicken", "fish", "salmon", "cod", "fat", "tallow","turkey", "steak", "meat", "crab", "lobster"},
     "Pescatarian" : {"beef", "pork", "sausage", "chicken", "turkey", "steak", "meat"},
     "No Red Meat" : {"beef", "sausage", "steak", "cow", "veal", "lamb", "venison"},
@@ -64,6 +67,8 @@ RESTRICTIONS_WORDS = {
     "No Beef" : {"beef", "cow", "sasusage"},
     "Nut Allergy" : {"peanut", "seed", "almond", "walnut", "cashew", "pistachio", "pecan", "hazelnut"}
 }
+
+
 
 """
 Function: get_food()
@@ -74,7 +79,7 @@ Parameters to request:
 food_id (int) : food_id for a particular food
 
 Returns:
-results (JSON) : Simple dict of the food's attributes straight from MongoDB
+(JSON) : Simple dict of the food's attributes straight from MongoDB
 """
 
 
@@ -85,7 +90,7 @@ def get_food():
         return "Please include a food id", 400
     food_id = int(params["food_id"])
 
-    # Returns first food found or none
+    # Returns first food found or none -- should only be 1 per food_id
     food = db.find_one({"food_id": food_id})
     del food["_id"]
 
@@ -98,11 +103,10 @@ Function: get_foods_keyword_user()
 Returns list of foods items (in full) that match a user's keyword search
 
 Parameters:
-user_id (int) : Done via UAuth -- ensures search only returns foods out of restrictions!
 query (string) : keyword user enters in search, will ignore case here
 
 Returns
-results (JSON) : List of food items (which are dicts of food attributes)
+(JSON) : List of food items (which are dicts of food attributes)
 """
 
 
@@ -172,12 +176,12 @@ Includes additional argument "weights",
 an array-like that contains weights for the provided nutrients
 
 Parameters:
-food1 : Array-like (e.g. list) of desired macronutrients
-food2 : Array-like (e.g. list) of desired macronutrients in same order as food1
-weights: Array-like (e.g. list) of weighting for each macronutrient
+food1 (list) : array-like (e.g. list) of desired macronutrients
+food2 (list) : array-like (e.g. list) of desired macronutrients in same order as food1
+weights (list) : array-like (e.g. list) of weighting for each macronutrient
 
 Returns:
-similarity (float) : weighted cosine similarity of two foods' macros
+(float) : weighted cosine similarity of two foods' macros
 
 Reference: https://stackoverflow.com/questions/48581540/how-to-compute-weighted-cosine-similarity-between-two-vectores-in-python
 """
@@ -196,11 +200,11 @@ Function: get_important_macros()
 Returns list of an food's most important macronutrients
 
 Arguments:
-food_dict: Dictionary object retrieved from Mongo for a food's nutrition values
-nutrients: List of keys of interest -- defaults to [protein, fat, carbs, calories]
+food_dict (dict) : object retrieved from Mongo for a food's nutrition values
+nutrients (list) : keys of interest -- defaults to [protein, fat, carbs, calories]
 
 Returns:
-list of macros for that food specified in the given order to nurtients argument
+(list) : macros for that food specified in the given order to nurtients argument
 """
 
 
@@ -219,7 +223,7 @@ Arguments:
 food1: food_id of the original food
 
 Returns:
-List of (food_id, food_name, similarity, food_group, calories) tuples in sorted order of Similarity
+(list) : list (food_id, food_name, similarity, food_group, calories) tuples in sorted order of Similarity
 to the food passed (first food is most similar -- the same food as food1)
 """
 
@@ -245,14 +249,13 @@ but specific for a given user, so this includes all the AI functionality at the
 heart of Fud
 
 Arguments:
-user_id : provided via auth
 food_id (int) : food_id of food desired for similarity
 servings (float) : Used to return how much of new food(s) to maintain caloric count
 num_foods (int) : How many similar foods you would like returned (minimum of 3, max of 14)
 
 Returns:
-return_dict (JSON) : simple list of food objects (dicts straight from Mongo) with an
-additional "Servings" field to match the servings of the food passed
+(JSON) : simple list of food objects (dicts straight from Mongo) with an
+additional "Servings" field to match the servings of the food passed.
 """
 
 
@@ -299,7 +302,7 @@ def get_similar_foods_user():
             curr_words = RESTRICTIONS_WORDS[restriction]
             curr_restricted_words = curr_restricted_words.union(curr_words)
 
-    # Finds the nearest foods
+    # Finds the nearest foods using nutrition info
     curr_food = db.find_one({"food_id": food_id})
     if curr_food is None:
         return "Improper food id provided", 400
@@ -315,12 +318,15 @@ def get_similar_foods_user():
 
     # Loops over food groups -- excludes those in restrictions set
     # Will take at most this many items in same group
+
+    # Default number of foods of same food group as original to return
     num_same_group = 3
     food_counter = 0
     fgs = {orig_group: 0}
     return_list = []
     for next_food in best_matches:
         next_group = next_food[2]
+        # If the food group has been seen too many times already, ignore it
         if (
             (
                 next_group in fgs
@@ -346,6 +352,23 @@ def get_similar_foods_user():
                 continue
             del full_food["_id"]
             full_food["Servings"] = new_servings
+
+            # Final parse on food -- make sure obvious false positives
+            # do not get through. Because of this, the function may return less
+            # than the full amount of foods desired. Uses RegEx
+            food_name = full_food["Food Name"].lower()
+            restricted_match = False
+            for restricted_word in curr_restricted_words:
+                if re.search(restricted_word, food_name):
+                    restricted_match = True
+                    break
+
+            if restricted_match:
+                continue
+
+
+            # Now handles return situation so that we're returning
+            # the correct number of foods
             return_list.append(full_food)
 
             if next_group in fgs:
@@ -355,19 +378,6 @@ def get_similar_foods_user():
             food_counter += 1
             if food_counter >= num_foods:
                 break
-
-    # Final parse on return list -- make sure obvious false positives
-    # did not get through
-    for next_food in return_list:
-        food_name = next_food["Food Name"].lower()
-        restricted_match = False
-        for restricted_word in curr_restricted_words:
-            if re.search(restricted_word, food_name):
-                restricted_match = True
-                break
-
-        if restricted_match:
-            return_list.remove(next_food)
 
 
     # Returns a list of food objects with servings as an added field to each

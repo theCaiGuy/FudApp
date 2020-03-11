@@ -17,7 +17,6 @@ Function: calculate_tdee_macros
 Calculates key macros for a given user
 
 Arguments: A dict (user_info) mapping ->
-user_id (int),
 measurement_system (string) : One of "Metric" or "Imperial"
 height (double) : in cm for Metric, inches for Imperial
 weight (double) : in kg fo Metric, lbs for Imperial
@@ -46,7 +45,7 @@ def calculate_tdee_macros(user_info=None):
         user_weight *= 0.4536
         user_height *= 2.54
 
-    # Calculates TDEE
+    # Calculates TDEE - Total Daily Calorie Expenditure
     user_tdee = 10.0 * user_weight + 6.25 * user_height - 5.0 * user_info["age"]
     if user_info["sex"] == "M":
         user_tdee += 5.0
@@ -72,9 +71,10 @@ def calculate_tdee_macros(user_info=None):
     elif user_goal == "Cut":
         user_factor = -1.0
 
-    # Scales user goal if they're trying to change kg
+    # Scales user goal if they're trying to change kg -- this scales up
+    # by 2.205, the conversion from 1 kg -> 2.205 lbs
     if user_system == "Metric":
-        user_factor *= 0.454
+        user_factor *= 2.205
 
     # E.g. if 10 lbs in 10 weeks -- 500 calorie change
     user_ratio = 0
@@ -106,7 +106,6 @@ Function: set_user_info
 Sets preferences about user in user_info table
 
 Arguments (in request body):
-user_id (int),
 measurement_system (string) : One of "Metric" or "Imperial"
 height (double) : in cm for Metric, inches for Imperial
 weight (double) : in kg fo Metric, lbs for Imperial
@@ -119,7 +118,7 @@ restrictions: list of restriction strings (e.g. ["Vegan", "Nut Allergy"]) -- emp
 
 
 Returns:
-"Success" string -- indicating the user's info was updated in MongoDB
+Empty string and code 204 -- indicating the user's info was updated in MongoDB
 """
 
 
@@ -181,11 +180,8 @@ Function: fetch_user_info
 
 Gets preferences about user in user_info table
 
-Arguments:
-user_id (int)
-
 Returns:
-JSON of user's data straight from MongoDB
+(JSON) : JSON of user's data straight from MongoDB
 """
 
 
@@ -212,11 +208,8 @@ Function: fetch_user_macros
 
 Grabs a user's calculated macronutrients given their info
 
-Arguments:
-user_id (int)
-
 Returns:
-A Jsonified Dict of user's macros (currently TDEE Calories, Protein, Fat, and Carbs)
+(JSON) : jsonified Dict of user's macros (currently TDEE Calories, Protein, Fat, and Carbs)
 """
 
 
