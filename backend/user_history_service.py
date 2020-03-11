@@ -283,7 +283,7 @@ foods (dict) : maps food_id : servings -- note that food_id's are strings for JS
 )
 def set_user_history_meal():
     if not verify_credentials(request):
-        return "err": "Unauthorized: Invalid or missing credentials", 401
+        return "Unauthorized: Invalid or missing credentials", 401
 
     user_id = get_id_from_request(request)
     if not user_id:
