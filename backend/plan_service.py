@@ -37,9 +37,9 @@ def get_daily_meals():
     user_id = get_id_from_request(request)
     if not user_id:
         return "No user found", 400
-
+    given_date = "2020-03-05"
     # DAILY PLAN GENERATOR
-    dailyPlan = generateDailyMeals(user_id, "sample date")
+    dailyPlan = generateDailyMeals(user_id, given_date)
 
     # save to date in user_history db
     user_history = db_user_history.find_one({"user_id": user_id})
@@ -73,7 +73,7 @@ def get_daily_meals():
     # add to user_history
     currHistoryObject = user_history["history"]
     currHistoryObject[
-        "2020-03-04"
+        given_date
     ] = dateObject  # hardcoded date for now b/c frontend isn't passing in date
     db_user_history.update_one(
         {"user_id": user_id}, {"$set": {"history": currHistoryObject}}
@@ -206,33 +206,35 @@ def generateDailyMeals(user_id, date):
     ]
 
     return generateDailyMeals_Cals(
-        calories, mealTemplate1, mealTemplate2, mealTemplate3
+        calories, mealTemplate1, mealTemplate2, mealTemplate3, date, user_id
     )
 
 
 """
 Function: generateDailyMeals_cals
 
-Given three meal templates (TODO: expound on this) and the user's maximum calories per day, creates a meal for breakfast, lunch,
+Given three meal templates (list of food groups) and the user's maximum calories per day, creates a meal for breakfast, lunch,
 and dinner and relevant serving sizes.
 
 Arguments:
 calories (int) : the calories the user should consume in a given day
-template1 (object) : TODO
-template2 (object) : TODO
-template3 (object) : TODO
+template1 (object) : [Protein Food Group, Carb Food Group, Fat Food Group]
+template2 (object) : [Protein Food Group, Carb Food Group, Fat Food Group]
+template3 (object) : [Protein Food Group, Carb Food Group, Fat Food Group]
+date (string) : date for which the meals are generated
+user_id (int) : identifier for the user
 
 Returns:
 (object) : list of meals for the given day
 """
 
 
-def generateDailyMeals_Cals(calories, template1, template2, template3):
+def generateDailyMeals_Cals(calories, template1, template2, template3, date, user_id):
     caloriesPerMeal = calories / 3
     dailyPlan = {}
     # STEP 1: GENERATE MEALS AND ADJUST SERVING SIZES BASED ON CALORIES
     # BREAKFAST
-    breakfast = generateMeal(template1)
+    breakfast = generateMeal(template1, date, user_id)
     serving1 = (0.5 * caloriesPerMeal) / (breakfast[0][1][3])
     breakfast[0][1][0] = breakfast[0][1][0] * float(serving1)
     breakfast[0][1][1] = breakfast[0][1][1] * float(serving1)
@@ -256,7 +258,7 @@ def generateDailyMeals_Cals(calories, template1, template2, template3):
     #     print(breakfast)
 
     # LUNCH
-    lunch = generateMeal(template2)
+    lunch = generateMeal(template2, date, user_id)
     serving1 = (0.5 * caloriesPerMeal) / (lunch[0][1][3])
     lunch[0][1][0] = lunch[0][1][0] * float(serving1)
     lunch[0][1][1] = lunch[0][1][1] * float(serving1)
@@ -280,7 +282,7 @@ def generateDailyMeals_Cals(calories, template1, template2, template3):
     #     print(lunch)
 
     # DINNER
-    dinner = generateMeal(template3)
+    dinner = generateMeal(template3, date, user_id)
     serving1 = (0.5 * caloriesPerMeal) / (dinner[0][1][3])
     dinner[0][1][0] = dinner[0][1][0] * float(serving1)
     dinner[0][1][1] = dinner[0][1][1] * float(serving1)
@@ -374,28 +376,64 @@ Function: reformatMeal
 Chooses foods for a meal given a template specifying which food groups to generate.
 
 Arguments:
-template (object) : TODO
+template (object) : [Protein Food Group, Carb Food Group, Fat Food Group]
+user_id (int) : identifier for the user
 
 Returns:
 (object) : the generated meal
 """
 
 
-def generateMeal(template):
-    meal = []
-    for group in template:
-        matches = db.find({"Food Group": group})
-        length = matches.count()
-        randomNumber = random.randint(1, length)
-        count = 1
-        for x in matches:
-            if count == randomNumber:
-                meal.append([x["Food Name"], get_important_macros(x), x["food_id"]])
-                break
-            count += 1
-    #     print(meal)
-    return meal
+def generateMeal(template, date, user_id):
+	meal = []
+	recentFoods = fetchRecentFoods(user_id, date)
+	for group in template:
+		matches = db.find({"Food Group": group})
+		length = matches.count()
+		randomNumber = random.randint(1, length)
+		count = 1
+		for x in matches:
+			if count == randomNumber:
+				if x["food_id"] in recentFoods: #we have recently recommended this food, so try again
+					randomNumber += 1
+				meal.append([x["Food Name"], get_important_macros(x), x["food_id"]])
+				break
+			count += 1
+	return meal
 
+
+
+"""
+Function: fetchRecentFoods
+
+Looks at the user history db for a list of foods recently recommended to the user. (previous day)
+
+Arguments:
+user_id (int) : identifier for the user
+date (string) : Date for which the meals are generated
+
+Returns:
+(list) : the list of foods
+"""
+
+
+def fetchRecentFoods(user_id, date):
+	recentFoods = []
+	user_history = db_user_history.find_one({"user_id": user_id})
+	currHistoryObject = user_history["history"]
+
+	#math to get the string date for yesterday
+	prevDate = int(date[-1]) - 1
+	yesterday = date[:-1] + str(prevDate)
+
+	if yesterday in currHistoryObject: #there is an entry for yesterday
+		recentFoods.append(currHistoryObject[yesterday]['Breakfast'].keys())
+		recentFoods.append(currHistoryObject[yesterday]['Lunch'].keys())
+		recentFoods.append(currHistoryObject[yesterday]['Dinner'].keys())
+		recentFoods.append(currHistoryObject[yesterday]['Snacks'].keys())
+
+	print ('recent foods: ', recentFoods)
+	return recentFoods
 
 """
 Function: get_important_macros
