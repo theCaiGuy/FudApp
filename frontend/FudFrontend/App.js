@@ -38,7 +38,7 @@ const AppStack = createStackNavigator(
     Month: MonthScreen,
     Profile: UserProfileScreen,
     EditAccountInfo: EditAccountInfoScreen,
-    EditGoals: EditGoalsScreen,
+    EditGoals: GoalsScreen,
     ChangePass: ChangePasswordScreen,
   },
   {

@@ -152,16 +152,11 @@ Allow users to select recommended foods and add new foods
 export class DailyScreen extends React.Component {
   constructor(props) {
     super(props);
-    var today = new Date();
-    var dd = String(today.getDate()).padStart(2, '0');
-    var mm = String(today.getMonth() + 1).padStart(2, '0');
-    var yyyy = today.getFullYear();
-    let curr_date = yyyy + '-' + mm + '-' + dd;
 
     this.state = {
       info_overlay_visible: false, // Boolean to display nutrition info/recommended foods overlay
       add_food_overlay_visible: false, // Boolean to display search foods overlay
-      date: curr_date, // Date for which meals should be grabbed or generated
+      date: (new Date()).toISOString().slice(0, 10), // Date for which meals should be grabbed or generated
       meal_to_edit: "Breakfast", // Meal which the user has chosen to edit
       food_to_edit: 0, // Index of food item in meal user has chosen to edit
       food_to_edit_name: null, // Name of food item user has chosen to edit
@@ -190,6 +185,16 @@ export class DailyScreen extends React.Component {
   Fetches generated meals for the given date
   */
   componentDidMount() {
+    let { params } = this.props.navigation.state;
+    let date = params ? params.date : null;
+    if (!date) {
+      date = (new Date()).toISOString().slice(0, 10);
+    }
+    console.log(date);
+    this.setState({
+      date: date,
+    })
+
     return AsyncStorage.getItem('userToken').then((token) => {
       console.log(`Basic ${btoa(`${token}:`)}`)
       let goal = "Cut";
@@ -200,7 +205,12 @@ export class DailyScreen extends React.Component {
           'Content-Type': 'application/json',
           'Authorization': `Basic ${btoa(`${token}:`)}`
         },
-        body: JSON.stringify({"goal": goal})
+        body: JSON.stringify(
+          {
+            "goal": goal,
+            "date": date,
+          }
+        )
       })
       .then((response) => {
         if (response.status === 401) {
@@ -224,6 +234,62 @@ export class DailyScreen extends React.Component {
         loading: false,
       })
     });
+  }
+
+  /*
+  Reload screen if new date is selected
+  */
+  componentDidUpdate(prevProps, prevState) {
+    let { params } = this.props.navigation.state;
+    let prop_date = params ? params.date : null;
+    let curr_date = this.state.date;
+    console.log(curr_date);
+    console.log(prop_date);
+    if (prop_date && curr_date !== prop_date) {
+      this.setState({
+        date: prop_date,
+        loading: true,
+      })
+      return AsyncStorage.getItem('userToken').then((token) => {
+        console.log(`Basic ${btoa(`${token}:`)}`)
+        let goal = "Cut";
+        fetch(`http://${API_PATH}/api/users/plan/get_daily_meals`, {
+          method: 'POST',
+          headers: {
+            Accept: 'application/json',
+            'Content-Type': 'application/json',
+            'Authorization': `Basic ${btoa(`${token}:`)}`
+          },
+          body: JSON.stringify(
+            {
+              "goal": goal,
+              "date": prop_date,
+            }
+          )
+        })
+        .then((response) => {
+          if (response.status === 401) {
+            AsyncStorage.removeItem('userToken').then(() => {
+              this.props.navigation.navigate('Auth');
+              return;
+            });
+          }
+          response.json().then((responseJson) => {
+            this.setState({
+              DATA: responseJson,
+              loading: false
+            });
+            console.log(`Recieved response ${JSON.stringify(responseJson)} for user_goal ${goal}`);
+          });
+        })
+      }).catch((error) => {
+        console.error(error);
+        this.setState({
+          error: true,
+          loading: false,
+        })
+      });
+    }
   }
 
   /*
@@ -429,7 +495,6 @@ export class DailyScreen extends React.Component {
   };
 
     render() {
-
       /*
       If the state is set to loading display the loading screen
       */
@@ -732,7 +797,7 @@ export class DailyScreen extends React.Component {
     Navigate to goals_view to allow the user to change their goals + settings
     */
     _changePrefsAsync = () => {
-      this.props.navigation.navigate('Prefs');
+      this.props.navigation.navigate('EditGoals');
     }
 
     /*

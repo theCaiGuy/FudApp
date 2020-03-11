@@ -469,7 +469,14 @@ export class GoalsScreen extends React.Component {
           };
 
           console.log(JSON.stringify(set_res));
-          this.props.navigation.navigate('App');
+
+          let curr_date = (new Date()).toISOString().slice(0, 10);
+
+          if (this.props.navigation.state.routeName == "Goals") {
+            this.props.navigation.navigate('App', { date: curr_date });
+          } else {
+            this.props.navigation.navigate('Home', { date: curr_date })
+          }
         } catch (err) {
           console.error(err);
         }

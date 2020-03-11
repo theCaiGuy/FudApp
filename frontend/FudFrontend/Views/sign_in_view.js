@@ -151,7 +151,9 @@ export class SignInScreen extends React.Component {
       const content = await res.json();
       console.log(JSON.stringify(content));
       await AsyncStorage.setItem('userToken', content.token)
-      this.props.navigation.navigate('App');
+      
+      let curr_date = (new Date()).toISOString().slice(0, 10);
+      this.props.navigation.navigate('App', { date: curr_date });
     } catch (err) {
       console.error(err);
     }
