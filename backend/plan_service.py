@@ -25,9 +25,6 @@ Function: get_daily_plan
 
 Returns a daily_plan object to front end. This object is a Dict with keys as meals,
 values as lists of meal objects (which themselves are dicts comntaining food info)
-
-Arguments:
-goal (string) : Either "Bulk", "Cut", or "Maintain" (deprecated)
 """
 
 
@@ -86,13 +83,21 @@ def get_daily_meals():
     return jsonify(dailyPlan)
 
 
-# Function: generateDailyMeals:
+"""
+Function: generateDailyMeals
 
-# Given a user id and date, finds the user's prescribed calories and calls function to generate meals given cals
+Given a user identifier and a date, finds the user's prescribed calories for their personal plan and
+generates meals for the given day given the user's constraints.
 
-# Arguments:
-#     userID: user's unique ID provided from front-end
-#     date: date for which the meals are to be created
+Arguments:
+user_id (int) : identifier for the user
+date (string) : the date for which meals should be generated
+
+Returns:
+(object) : list of meals for the given day
+"""
+
+
 def generateDailyMeals(user_id, date):
     # get macros
     proteinGroups = [
@@ -205,13 +210,23 @@ def generateDailyMeals(user_id, date):
     )
 
 
-# Function: generateDailyMeals_cals:
+"""
+Function: generateDailyMeals_cals
 
-# Main function of meal generation. Creates meals for breakfast lunch, dinner, and calculates serving sizes proportionate to calorie intake.
+Given three meal templates (TODO: expound on this) and the user's maximum calories per day, creates a meal for breakfast, lunch,
+and dinner and relevant serving sizes.
 
-# Arguments:
-#     calories: amount of calories/day
-#     template1,2,3: food group templates for breakfast, lunch, dinner
+Arguments:
+calories (int) : the calories the user should consume in a given day
+template1 (object) : TODO
+template2 (object) : TODO
+template3 (object) : TODO
+
+Returns:
+(object) : list of meals for the given day
+"""
+
+
 def generateDailyMeals_Cals(calories, template1, template2, template3):
     caloriesPerMeal = calories / 3
     dailyPlan = {}
@@ -292,13 +307,21 @@ def generateDailyMeals_Cals(calories, template1, template2, template3):
     return reformatDay(breakfast, lunch, dinner)
 
 
-# Function: reformatMeal:
+"""
+Function: reformatMeal
 
-# Reformats list of foods in a meal to format required by front-end API
+Helper function to reformat a series of meals to the format expected on the frontend.
 
-# Arguments:
-#     meal: List of foods (output of generateMeal function)
-#          Each element has : [Food name, [Protein(g), Fat(g), Carbs(g), Calories]]
+Arguments:
+meal1 (object) : the generated breakfast meal
+meal2 (object) : the generated lunch meal
+meal3 (object) : the generated dinner meal
+
+Returns:
+(object) : list of meals for the given day
+"""
+
+
 def reformatDay(meal1, meal2, meal3):
     dailyPlan = {}
 
@@ -345,13 +368,19 @@ def reformatDay(meal1, meal2, meal3):
     return dailyPlan
 
 
-# Function: generateMeal:
+"""
+Function: reformatMeal
 
-# Returns list of foods in a given meal.
-#          Each element has : [Food name, [Protein(g), Fat(g), Carbs(g), Calories]]
+Chooses foods for a meal given a template specifying which food groups to generate.
 
-# Arguments:
-#     template: List of food groups specifying what food groups the meal should contain
+Arguments:
+template (object) : TODO
+
+Returns:
+(object) : the generated meal
+"""
+
+
 def generateMeal(template):
     meal = []
     for group in template:
@@ -368,13 +397,18 @@ def generateMeal(template):
     return meal
 
 
-# Function: get_important_macros:
+"""
+Function: get_important_macros
 
-# Returns list of an food's most important macronutrients
+Fetches the important nutrients from a food's nutritional profile.
 
-# Arguments:
-#     food_dict: Dictionary object retrieved from Mongo for a food's nutrition values
-#     nutrients: List of keys of interest -- defaults to [protein, fat, carbs, calories]
+Arguments:
+food_dict (object) : dictionary from Mongo with a food's nutrition values
+nutrients (list) : list of all nutrient keys that are important
+
+Returns:
+(list) : list of the important nutrients
+"""
 
 
 def get_important_macros(

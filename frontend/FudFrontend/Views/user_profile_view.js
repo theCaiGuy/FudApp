@@ -52,15 +52,8 @@ export class UserProfileScreen extends React.Component {
                 />
 
                 <Button
-                  title="Physical Goals and Dietary Restrictions"
+                  title="Goals and Preferences"
                   onPress={this._editGoalsAsync}
-                  buttonStyle={styles.nav_button}
-                  titleStyle={styles.central_subheader_text}
-                />
-
-                <Button
-                  title="Food Preferences"
-                  onPress={this._editPreferencesAsync}
                   buttonStyle={styles.nav_button}
                   titleStyle={styles.central_subheader_text}
                 />
@@ -100,10 +93,6 @@ export class UserProfileScreen extends React.Component {
 
     _editGoalsAsync = () => {
       this.props.navigation.navigate('EditGoals');
-    };
-
-    _editPreferencesAsync = () => {
-      this.props.navigation.navigate('EditPrefs');
     };
 
   }

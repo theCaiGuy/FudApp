@@ -24,9 +24,9 @@ export class EditAccountInfoScreen extends React.Component {
     constructor(props) {
       super(props);
       this.state = {
-        user_id: null,
-        name: null,
-        email: null,
+        user_id: null, // user id for authentication purposes
+        name: null, // user's name
+        email: null, // user's email address
       };
     }
 
@@ -34,6 +34,10 @@ export class EditAccountInfoScreen extends React.Component {
       title: 'View & Edit Account Info',
     };
 
+    /*
+    On startup, fetching and displaying current account info:
+    user's name + email address
+    */
     componentDidMount() {
       return AsyncStorage.getItem('userToken').then((token) => {
         fetch(`http://${API_PATH}/api/users/get_name`, {
@@ -99,57 +103,10 @@ export class EditAccountInfoScreen extends React.Component {
       }).catch((error) => {
         console.error(error);
       });
-
-      // return AsyncStorage.getItem('userToken').then((token) => {
-      //   Promise.all([
-      //     fetch(`http://${API_PATH}/api/users/get_name`, {
-      //       method: 'POST',
-      //       headers: {
-      //         Accept: 'application/json',
-      //         'Content-Type': 'application/json',
-      //         'Authorization': `Basic ${btoa(`${token}:`)}`
-      //       },
-      //     }),
-      //     fetch(`http://${API_PATH}/api/users/get_email`, {
-      //       method: 'POST',
-      //       headers: {
-      //         Accept: 'application/json',
-      //         'Content-Type': 'application/json',
-      //         'Authorization': `Basic ${btoa(`${token}:`)}`
-      //       },
-      //     })
-      //   ]).then(([response, response2]) => {
-      //     // console.log(response.json());
-      //     // console.log(response2.json());
-      //     if (response.status === 401 || response2.status === 401) {
-      //       AsyncStorage.removeItem('userToken').then(() => {
-      //         this.props.navigation.navigate('Auth');
-      //         return;
-      //       });
-      //     }
-      //     if (response.status === 400 || response2.status === 400) {
-      //       {/*
-      //         TODO: Handle 400 response better
-      //       */}
-      //       return;
-      //     }
-      //     [response.json(), response2.json()].then(([responseJson, responseJson2]) => {
-      //       this.setState({
-      //         name: responseJson['name'],
-      //         email: responseJson2['email'],
-      //       });
-      //       console.log(`Recieved response ${JSON.stringify(responseJson)}`);
-      //       console.log(`Recieved response ${JSON.stringify(responseJson2)}`);
-      //     });
-      //   });
-      // }).catch((error) => {
-      //   console.error(error);
-      // });
     }
 
     render() {
 
-      // CHANGE ALL DEFAULT VALUES TO BE THE VALUES FROM ComponentDidMount()
       return (
         <SafeAreaView style={styles.container}>
           <KeyboardAwareScrollView>
@@ -194,6 +151,10 @@ export class EditAccountInfoScreen extends React.Component {
       );
     }
 
+    /*
+    Lets users persist changes they make to their name and email address.
+    Changes persist to the backend and are displayed once the page is reloaded.
+    */
     _submitChangesAsync = async () => {
       let name = this.state.name;
       let email = this.state.email;
