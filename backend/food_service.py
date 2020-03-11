@@ -114,7 +114,7 @@ Returns
 def get_foods_keyword_user():
     # Handles Auth at the front
     if not verify_credentials(request):
-        return jsonify({"err": "Unauthorized: Invalid or missing credentials"}), 401
+        return "Unauthorized: Invalid or missing credentials", 401
 
     user_id = get_id_from_request(request)
     if not user_id:
