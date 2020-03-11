@@ -475,7 +475,7 @@ export class GoalsScreen extends React.Component {
           if (this.props.navigation.state.routeName == "Goals") {
             this.props.navigation.navigate('App', { date: curr_date });
           } else {
-            this.props.navigation.navigate('Home', { date: curr_date })
+            this.props.navigation.goBack();
           }
         } catch (err) {
           console.error(err);
