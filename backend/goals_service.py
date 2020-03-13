@@ -106,6 +106,7 @@ Function: set_user_info
 Sets preferences about user in user_info table
 
 Arguments (in request body):
+age (int) : Age of user
 measurement_system (string) : One of "Metric" or "Imperial"
 height (double) : in cm for Metric, inches for Imperial
 weight (double) : in kg fo Metric, lbs for Imperial
