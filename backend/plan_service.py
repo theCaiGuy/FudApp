@@ -37,7 +37,11 @@ def get_daily_meals():
     user_id = get_id_from_request(request)
     if not user_id:
         return "No user found", 400
-    given_date = "2020-03-05"
+
+    if not params or "date" not in params:
+        return "Please include the date", 400
+    given_date = str(params["date"])
+    
     # DAILY PLAN GENERATOR
     dailyPlan = generateDailyMeals(user_id, given_date)
 
