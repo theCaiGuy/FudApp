@@ -59,13 +59,13 @@ RESTRICTIONS_MAP = {
 # through the food group situation above -- an example is
 # "beef sticks" in the "Snacks" food group
 RESTRICTIONS_WORDS = {
-    "Vegan" : {"beef", "pork", "sausage", "chicken", "fish", "salmon", "cod", "fat", "tallow", "milk", "cream", "cheese", "turkey", "steak", "meat", "crab", "lobster", "butter"},
-    "Vegetarian" : {"beef", "pork", "sausage", "chicken", "fish", "salmon", "cod", "fat", "tallow","turkey", "steak", "meat", "crab", "lobster"},
-    "Pescatarian" : {"beef", "pork", "sausage", "chicken", "turkey", "steak", "meat"},
+    "Vegan" : {"beef", "cow", "pork", "pig", "sausage", "chicken", "bird", "fish", "salmon", "cod", "fat", "tallow", "milk", "cream", "cheese", "turkey", "steak", "meat", "crab", "lobster", "shellfish", "butter"},
+    "Vegetarian" : {"beef", "cow", "pork", "pig", "sausage", "chicken", "bird", "fish", "salmon", "cod", "fat", "tallow","turkey", "steak", "meat", "crab", "lobster"},
+    "Pescatarian" : {"beef", "cow", "pork", "pig", "sausage", "chicken", "turkey", "bird", "steak", "meat"},
     "No Red Meat" : {"beef", "sausage", "steak", "cow", "veal", "lamb", "venison"},
     "No Pork" : {"pork", "sausage", "pig"},
     "No Beef" : {"beef", "cow", "sasusage"},
-    "Nut Allergy" : {"peanut", "seed", "almond", "walnut", "cashew", "pistachio", "pecan", "hazelnut"}
+    "Nut Allergy" : {"nut", "seed", "peanut", "seed", "almond", "walnut", "cashew", "pistachio", "pecan", "hazelnut"}
 }
 
 
