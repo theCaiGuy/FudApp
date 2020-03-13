@@ -197,7 +197,7 @@ export class DailyScreen extends React.Component {
 
     return AsyncStorage.getItem('userToken').then((token) => {
       console.log(`Basic ${btoa(`${token}:`)}`)
-      let goal = "Cut";
+
       fetch(`http://${API_PATH}/api/users/plan/get_daily_meals`, {
         method: 'POST',
         headers: {
@@ -207,7 +207,6 @@ export class DailyScreen extends React.Component {
         },
         body: JSON.stringify(
           {
-            "goal": goal,
             "date": date,
           }
         )
@@ -224,7 +223,7 @@ export class DailyScreen extends React.Component {
             DATA: responseJson,
             loading: false
           });
-          console.log(`Recieved response ${JSON.stringify(responseJson)} for user_goal ${goal}`);
+          console.log(`Recieved response ${JSON.stringify(responseJson)}`);
         });
       })
     }).catch((error) => {
@@ -252,7 +251,7 @@ export class DailyScreen extends React.Component {
       })
       return AsyncStorage.getItem('userToken').then((token) => {
         console.log(`Basic ${btoa(`${token}:`)}`)
-        let goal = "Cut";
+
         fetch(`http://${API_PATH}/api/users/plan/get_daily_meals`, {
           method: 'POST',
           headers: {
@@ -262,7 +261,6 @@ export class DailyScreen extends React.Component {
           },
           body: JSON.stringify(
             {
-              "goal": goal,
               "date": prop_date,
             }
           )
@@ -279,7 +277,7 @@ export class DailyScreen extends React.Component {
               DATA: responseJson,
               loading: false
             });
-            console.log(`Recieved response ${JSON.stringify(responseJson)} for user_goal ${goal}`);
+            console.log(`Recieved response ${JSON.stringify(responseJson)}`);
           });
         })
       }).catch((error) => {
