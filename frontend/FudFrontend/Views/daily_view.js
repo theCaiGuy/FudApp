@@ -184,6 +184,7 @@ export class DailyScreen extends React.Component {
     this.selectNewFood = this.selectNewFood.bind(this);
     this.generateDailyMeals = this.generateDailyMeals.bind(this);
     this.fetchDailyMeals = this.fetchDailyMeals.bind(this);
+    this.regenerateMeals = this.regenerateMeals.bind(this);
   }
 
   /*
@@ -688,6 +689,17 @@ export class DailyScreen extends React.Component {
   }
 
   /*
+  Regenerate the user's meals
+  */
+  regenerateMeals = async () => {
+    await this.setState({
+      loading: true,
+    });
+    let date = this.state.date;
+    this.generateDailyMeals(date);
+  }
+
+  /*
   Do not show the react navigation header
   */
   static navigationOptions = {
@@ -714,10 +726,6 @@ export class DailyScreen extends React.Component {
 
       /*
       If the state is set to error display the error screen
-
-      NOTE: THIS ISN'T WORKING RIGHT NOW
-
-      TODO: MAKE THIS WORK
       */
       if (this.state.error) {
         return(
@@ -989,6 +997,13 @@ export class DailyScreen extends React.Component {
             <Button
               title="User Profile"
               onPress={this._goProfileAsync}
+              buttonStyle={styles.nav_button}
+              titleStyle={styles.nav_text}
+            />
+
+            <Button
+              title="Regenerate Meals"
+              onPress={this.regenerateMeals}
               buttonStyle={styles.nav_button}
               titleStyle={styles.nav_text}
             />
