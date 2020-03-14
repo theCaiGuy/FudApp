@@ -79,7 +79,28 @@ def fetch_user_history_daily():
     if curr_date not in user_info["history"]:
         return "Date not in user's history", 400
 
-    return jsonify(user_info["history"][curr_date])
+    # Formats history for front end
+    return_dict = {}
+    for next_meal in user_info["history"][curr_date]:
+        meal_list = []
+        for next_food_id in user_info["history"][curr_date][next_meal]:
+            int_food_id = int(next_food_id)
+            curr_food_dict = {"food_id" : int_food_id}
+            full_food = food_db.find_one({"food_id": int_food_id})
+            if not full_food:
+                continue
+            curr_food_dict["Food Name"] = full_food["Food Name"]
+            curr_food_dict["Calories"] = full_food["Calories"]
+            curr_food_dict["Protein"] = full_food["Protein (g)"]
+            curr_food_dict["Carb"] = full_food["Carbohydrates (g)"]
+            curr_food_dict["Fat"] = full_food["Fat (g)"]
+            curr_food_dict["Servings"] = user_info["history"][curr_date][next_meal][next_food_id]
+
+            meal_list.append(curr_food_dict)
+
+        return_dict[next_meal] = meal_list
+
+    return jsonify(return_dict)
 
 
 """
