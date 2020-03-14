@@ -100,8 +100,10 @@ function MealComponent({
         containerStyle={styles.cardStyle}
       >
         <View>
-          {
-            dishes.map((dish, i) => (
+          { 
+            dishes.sort((a, b) => {
+              return a["Food Name"].localeCompare(b["Food Name"])
+            }).map((dish, i) => (
               <View key ={i}>
                 <ListItem
                   key={i}
@@ -157,6 +159,7 @@ export class DailyScreen extends React.Component {
       info_overlay_visible: false, // Boolean to display nutrition info/recommended foods overlay
       add_food_overlay_visible: false, // Boolean to display search foods overlay
       date: (new Date()).toISOString().slice(0, 10), // Date for which meals should be grabbed or generated
+      last_updated: (new Date()).valueOf(), // Last time the daily page was refreshed
       meal_to_edit: "Breakfast", // Meal which the user has chosen to edit
       food_to_edit: 0, // Index of food item in meal user has chosen to edit
       food_to_edit_name: null, // Name of food item user has chosen to edit
@@ -179,23 +182,16 @@ export class DailyScreen extends React.Component {
     this.searchFood = this.searchFood.bind(this);
     this.addNewFood = this.addNewFood.bind(this);
     this.selectNewFood = this.selectNewFood.bind(this);
+    this.generateDailyMeals = this.generateDailyMeals.bind(this);
+    this.fetchDailyMeals = this.fetchDailyMeals.bind(this);
+    this.regenerateMeals = this.regenerateMeals.bind(this);
   }
 
   /*
-  Fetches generated meals for the given date
+  Generate new daily meals for the specified date from the generate meals endpoint
   */
-  componentDidMount() {
-    let { params } = this.props.navigation.state;
-    let date = params ? params.date : null;
-    if (!date) {
-      date = (new Date()).toISOString().slice(0, 10);
-    }
-    console.log(date);
-    this.setState({
-      date: date,
-    })
-
-    return AsyncStorage.getItem('userToken').then((token) => {
+  generateDailyMeals(date) {
+    AsyncStorage.getItem('userToken').then((token) => {
       console.log(`Basic ${btoa(`${token}:`)}`)
 
       fetch(`http://${API_PATH}/api/users/plan/get_daily_meals`, {
@@ -218,21 +214,97 @@ export class DailyScreen extends React.Component {
             return;
           });
         }
+
+        if (response.status === 400) {
+          this.setState({
+            error: true,
+            loading: false,
+          });
+          return;
+        }
+        
         response.json().then((responseJson) => {
           this.setState({
             DATA: responseJson,
             loading: false
           });
-          console.log(`Recieved response ${JSON.stringify(responseJson)}`);
+          console.log(`Recieved response ${JSON.stringify(responseJson)} from meal generator`);
         });
-      })
+      });
     }).catch((error) => {
       console.error(error);
       this.setState({
         error: true,
         loading: false,
-      })
+      });
     });
+  }
+
+
+  /*
+  Get daily meals for the specified date from the user history endpoint
+  */
+  fetchDailyMeals(date) {
+    AsyncStorage.getItem('userToken').then((token) => {
+      console.log(`Basic ${btoa(`${token}:`)}`)
+
+      fetch(`http://${API_PATH}/api/users/history/fetch_user_history_daily`, {
+        method: 'POST',
+        headers: {
+          Accept: 'application/json',
+          'Content-Type': 'application/json',
+          'Authorization': `Basic ${btoa(`${token}:`)}`
+        },
+        body: JSON.stringify(
+          {
+            "date": date,
+          }
+        )
+      })
+      .then((response) => {
+        if (response.status === 401) {
+          AsyncStorage.removeItem('userToken').then(() => {
+            this.props.navigation.navigate('Auth');
+            return;
+          });
+        }
+
+        if (response.status === 400) {
+          this.generateDailyMeals(date)
+          return;
+        }
+
+        response.json().then((responseJson) => {
+          this.setState({
+            DATA: responseJson,
+            loading: false
+          });
+          console.log(`Recieved response ${JSON.stringify(responseJson)} from user history`);
+        });
+      });
+    }).catch((error) => {
+      console.error(error);
+      this.setState({
+        error: true,
+        loading: false,
+      });
+    });
+  }
+
+  /*
+  Fetches generated meals for the given date
+  */
+  componentDidMount() {
+    let { params } = this.props.navigation.state;
+    let date = params ? params.date : null;
+    if (!date) {
+      date = (new Date()).toISOString().slice(0, 10);
+    }
+    console.log(date);
+    this.setState({
+      date: date,
+    })
+    return(this.fetchDailyMeals(date));
   }
 
   /*
@@ -242,52 +314,27 @@ export class DailyScreen extends React.Component {
     let { params } = this.props.navigation.state;
     let prop_date = params ? params.date : null;
     let curr_date = this.state.date;
-    console.log(curr_date);
-    console.log(prop_date);
+
+    let prefs_updated_time = params ? params.prefs_updated_time : null;
+    let curr_updated_time = this.state.last_updated;
+
+    if (prefs_updated_time && prefs_updated_time > curr_updated_time) {
+      this.setState({
+        last_updated: (new Date()).valueOf(),
+        loading: true,
+      });
+      return (this.generateDailyMeals(this.state.date));
+    }
+
     if (prop_date && curr_date !== prop_date) {
       this.setState({
+        last_updated: (new Date()).valueOf(),
         date: prop_date,
         loading: true,
-      })
-      return AsyncStorage.getItem('userToken').then((token) => {
-        console.log(`Basic ${btoa(`${token}:`)}`)
-
-        fetch(`http://${API_PATH}/api/users/plan/get_daily_meals`, {
-          method: 'POST',
-          headers: {
-            Accept: 'application/json',
-            'Content-Type': 'application/json',
-            'Authorization': `Basic ${btoa(`${token}:`)}`
-          },
-          body: JSON.stringify(
-            {
-              "date": prop_date,
-            }
-          )
-        })
-        .then((response) => {
-          if (response.status === 401) {
-            AsyncStorage.removeItem('userToken').then(() => {
-              this.props.navigation.navigate('Auth');
-              return;
-            });
-          }
-          response.json().then((responseJson) => {
-            this.setState({
-              DATA: responseJson,
-              loading: false
-            });
-            console.log(`Recieved response ${JSON.stringify(responseJson)}`);
-          });
-        })
-      }).catch((error) => {
-        console.error(error);
-        this.setState({
-          error: true,
-          loading: false,
-        })
       });
+      return (this.fetchDailyMeals(prop_date));
     }
+
   }
 
   /*
@@ -348,29 +395,211 @@ export class DailyScreen extends React.Component {
   updateFood = async (updatedFood) => {
     let meal_to_edit = this.state.meal_to_edit;
     let food_to_edit = this.state.food_to_edit;
+    let date = this.state.date;
     var data = {... this.state.DATA};
+    let prev_food_id = data[meal_to_edit][food_to_edit]["food_id"];
+
+    await AsyncStorage.getItem('userToken').then((token) => {
+      fetch(`http://${API_PATH}/api/users/history/set_user_history_food`, {
+        method: 'POST',
+        headers: {
+          Accept: 'application/json',
+          'Content-Type': 'application/json',
+          'Authorization': `Basic ${btoa(`${token}:`)}`
+        },
+        body: JSON.stringify(
+          {
+            "date": date,
+            "meal": meal_to_edit,
+            "prev_food_id": prev_food_id,
+            "food_id": updatedFood["food_id"],
+            "servings": updatedFood["Servings"],
+          }
+        )
+      })
+      .then((response) => {
+        if (response.status === 401) {
+          AsyncStorage.removeItem('userToken').then(() => {
+            this.props.navigation.navigate('Auth');
+            return;
+          });
+        }
+
+        if (response.status === 400) {
+          this.setState({
+            error: true,
+            loading: false,
+          });
+        }
+
+        console.log(`Recieved response ${JSON.stringify(response)} for updating food`);
+      
+      });
+    }).catch((error) => {
+      console.error(error);
+      this.setState({
+        error: true,
+        loading: false,
+      });
+      return;
+    });
+
     data[meal_to_edit][food_to_edit] = updatedFood;
+
     await this.setState({
       info_overlay_visible: false,
-      DATA: data
+      DATA: data,
+      meal_to_edit: null,
+      food_to_edit: null,
     });
   }
 
   /*
-    NOTE: IMPLEMENT THIS when user histories become a thing
+  Add the selected food + number of servings from the user's search query to the given meal
   */
+  addNewFood = async () => {
+    if (this.state.selected_add_food) {
+      let meal_to_edit = this.state.meal_to_edit;
+      let date = this.state.date;
+      var data = {... this.state.DATA};
+      let selected_add_food = this.state.selected_add_food;
+
+      selected_add_food["Servings"] = this.state.add_servings;
+      data[meal_to_edit].push(selected_add_food);
+      let curr_meal = data[meal_to_edit];
+
+      var foods_dict = {};
+      var i;
+      for (i in curr_meal) {
+        let food = curr_meal[i]
+        let food_id = food["food_id"]
+        let servings = food["Servings"]
+        foods_dict[food_id] = servings
+      }
+
+      console.log(JSON.stringify(
+        {
+          "date": date,
+          "meal": meal_to_edit,
+          "foods": foods_dict,
+        }
+      ))
+
+      await AsyncStorage.getItem('userToken').then((token) => {
+        fetch(`http://${API_PATH}/api/users/history/set_user_history_meal`, {
+          method: 'POST',
+          headers: {
+            Accept: 'application/json',
+            'Content-Type': 'application/json',
+            'Authorization': `Basic ${btoa(`${token}:`)}`
+          },
+          body: JSON.stringify(
+            {
+              "date": date,
+              "meal": meal_to_edit,
+              "foods": foods_dict,
+            }
+          )
+        })
+        .then((response) => {
+          if (response.status === 401) {
+            AsyncStorage.removeItem('userToken').then(() => {
+              this.props.navigation.navigate('Auth');
+              return;
+            });
+          }
+  
+          if (response.status === 400) {
+            this.setState({
+              error: true,
+              loading: false,
+            });
+          }
+  
+          console.log(`Recieved response ${JSON.stringify(response)} for adding food`);
+        
+        });
+      }).catch((error) => {
+        console.error(error);
+        this.setState({
+          error: true,
+          loading: false,
+        });
+        return;
+      });
+
+      await this.setState({
+        loading: false,
+        meal_to_edit: null,
+        food_to_edit: null,
+        DATA: data,
+        add_food_overlay_visible: false,
+      });
+    }
+  }
 
   /*
   Deletes the selected food from the meal plan
-
-  TODO: Make this function work
   */
   deleteFood = async () => {
     let meal_to_edit = this.state.meal_to_edit;
     let food_to_edit = this.state.food_to_edit;
+    let date = this.state.date;
     var data = {... this.state.DATA};
+    let prev_food_id = data[meal_to_edit][food_to_edit]["food_id"];
+
+    var meal = data[meal_to_edit];
+    meal.splice(food_to_edit, 1);
+    data[meal_to_edit] = meal;
+
+    await AsyncStorage.getItem('userToken').then((token) => {
+      fetch(`http://${API_PATH}/api/users/history/delete_user_history_food`, {
+        method: 'POST',
+        headers: {
+          Accept: 'application/json',
+          'Content-Type': 'application/json',
+          'Authorization': `Basic ${btoa(`${token}:`)}`
+        },
+        body: JSON.stringify(
+          {
+            "date": date,
+            "meal": meal_to_edit,
+            "prev_food_id": prev_food_id,
+          }
+        )
+      })
+      .then((response) => {
+        if (response.status === 401) {
+          AsyncStorage.removeItem('userToken').then(() => {
+            this.props.navigation.navigate('Auth');
+            return;
+          });
+        }
+
+        if (response.status === 400) {
+          this.setState({
+            error: true,
+            loading: false,
+          });
+        }
+
+        console.log(`Recieved response ${JSON.stringify(response)} for deleting food`);
+      
+      });
+    }).catch((error) => {
+      console.error(error);
+      this.setState({
+        error: true,
+        loading: false,
+      });
+      return;
+    });
+
     await this.setState({
       info_overlay_visible: false,
+      DATA: data,
+      meal_to_edit: null,
+      food_to_edit: null,
     });
   }
 
@@ -451,38 +680,23 @@ export class DailyScreen extends React.Component {
   }
 
   /*
-  Add the selected food + number of servings from the user's search query to the given meal
-
-  TODO: LINK THIS FUNCTION USER HISTORIES
-  */
-  addNewFood = async () => {
-    if (this.state.selected_add_food) {
-      await this.setState({
-        add_food_overlay_visible: false,
-        loading: true
-      });
-      let meal_to_edit = this.state.meal_to_edit;
-      var data = {... this.state.DATA};
-      let selected_add_food = this.state.selected_add_food;
-      selected_add_food["Servings"] = this.state.add_servings;
-      data[meal_to_edit].push(selected_add_food);
-      await this.setState({
-        DATA: data
-      });
-      await this.setState({
-        loading: false,
-      });
-      console.log(this.state.DATA);
-    }
-  }
-
-  /*
   Allow the user to select a new food to add to the given meal
   */
   selectNewFood = async (newFood) => {
     await this.setState({
       selected_add_food: newFood,
     });
+  }
+
+  /*
+  Regenerate the user's meals
+  */
+  regenerateMeals = async () => {
+    await this.setState({
+      loading: true,
+    });
+    let date = this.state.date;
+    this.generateDailyMeals(date);
   }
 
   /*
@@ -512,10 +726,6 @@ export class DailyScreen extends React.Component {
 
       /*
       If the state is set to error display the error screen
-
-      NOTE: THIS ISN'T WORKING RIGHT NOW
-
-      TODO: MAKE THIS WORK
       */
       if (this.state.error) {
         return(
@@ -571,95 +781,104 @@ export class DailyScreen extends React.Component {
             >
               <View>
                 <KeyboardAwareScrollView>
-                  
-                  <Text style={styles.left_align_subheader_text}>
-                    {"Nutrition Facts: " + this.state.food_to_edit_name}
-                  </Text>
-
-                  {/*
-                    Nutrition Facts 
-                  */}
                   <View>
                     {
-                      (this.state.DATA && this.state.DATA[this.state.meal_to_edit].length !== 0) ? (
-                        NUTRITION_INFO.map((fact, i) => (
-                          <ListItem
-                            key={i}
-                            title={
-                              (this.state.DATA[this.state.meal_to_edit][this.state.food_to_edit][fact]) ? 
-                                `${fact.charAt(0).toUpperCase() + fact.substring(1)}: ${this.state.DATA[this.state.meal_to_edit][this.state.food_to_edit][fact].toFixed(1)}`
-                              : (this.state.DATA[this.state.meal_to_edit][this.state.food_to_edit][FACT_MAP[fact]]) ?
-                                `${fact.charAt(0).toUpperCase() + fact.substring(1)}: ${this.state.DATA[this.state.meal_to_edit][this.state.food_to_edit][FACT_MAP[fact]].toFixed(1)}`
-                              :
-                                `${fact.charAt(0).toUpperCase() + fact.substring(1)}: N/a`
-                            }
-                            bottomDivider
-                            topDivider={i === 0}
-                          />
-                        ))
-                      ) : (
+                      (this.state.meal_to_edit !== null && this.state.food_to_edit !== null) ? (
                         <View>
-                          <Text style={styles.central_subheader_text}>Data Not Loaded</Text>
+                          <Text style={styles.left_align_subheader_text}>
+                            {"Nutrition Facts: " + this.state.food_to_edit_name}
+                          </Text>
+
+                          {/*
+                            Nutrition Facts 
+                          */}
+                          <View>
+                            {
+                              (this.state.DATA && this.state.DATA[this.state.meal_to_edit].length !== 0) ? (
+                                NUTRITION_INFO.map((fact, i) => (
+                                  <ListItem
+                                    key={i}
+                                    title={
+                                      (this.state.DATA[this.state.meal_to_edit][this.state.food_to_edit][fact]) ? 
+                                        `${fact.charAt(0).toUpperCase() + fact.substring(1)}: ${this.state.DATA[this.state.meal_to_edit][this.state.food_to_edit][fact].toFixed(1)}`
+                                      : (this.state.DATA[this.state.meal_to_edit][this.state.food_to_edit][FACT_MAP[fact]]) ?
+                                        `${fact.charAt(0).toUpperCase() + fact.substring(1)}: ${this.state.DATA[this.state.meal_to_edit][this.state.food_to_edit][FACT_MAP[fact]].toFixed(1)}`
+                                      :
+                                        `${fact.charAt(0).toUpperCase() + fact.substring(1)}: 0`
+                                    }
+                                    bottomDivider
+                                    topDivider={i === 0}
+                                  />
+                                ))
+                              ) : (
+                                <View>
+                                  <Text style={styles.central_subheader_text}>Data Not Loaded</Text>
+                                </View>
+                              )
+                            }
+                          </View>
+
+                          {/*
+                            Alternate Foods
+                          */}
+
+                          <Text style={styles.left_align_subheader_text}>
+                            {"Don't like " + this.state.food_to_edit_name + "? Try something similar!"}
+                          </Text>
+
+                          <View>
+                            {
+                              (this.state.ALTERNATE_FOODS) ? (
+                                this.state.ALTERNATE_FOODS.map((food, i) => (
+                                  <ListItem
+                                    key={i}
+                                    title={
+                                      ("Servings" in food) ?
+                                      `${food["Food Name"]}, ${food["Servings"].toFixed(1)} servings`
+                                      : ("servings in food") ? 
+                                      `${food["Food Name"]}, ${food["servings"].toFixed(1)} servings`
+                                      : 
+                                      `${food["Food Name"]}`
+                                    }
+                                    bottomDivider
+                                    topDivider={i === 0}
+                                    chevron
+                                    onPress={this.updateFood.bind(this, food)}
+                                  />
+                                ))
+                              ) : (
+                                <View>
+                                  <Text style={styles.central_subheader_text}>Loading...</Text>
+                                </View>
+                              )
+                            }
+                          </View>
+
+                          {/*
+                            NOTE: This button currently doesn't do anything. Implement it when user histories
+                            become a thing and you can refresh the data.
+                          */}
+                          
+                          <Button
+                            title="Delete This Item"
+                            onPress={this.deleteFood}
+                            buttonStyle={styles.sign_out_button}
+                            titleStyle={styles.nav_text}
+                          />
+
+                          <Button
+                            title="Close"
+                            onPress={this.quitInfoOverlay}
+                            buttonStyle={styles.overlay_bottom_button}
+                            titleStyle={styles.nav_text}
+                          />
                         </View>
+
+                      ) : (
+                        <View />
                       )
                     }
                   </View>
-
-                  {/*
-                    Alternate Foods
-                  */}
-
-                  <Text style={styles.left_align_subheader_text}>
-                    {"Don't like " + this.state.food_to_edit_name + "? Try something similar!"}
-                  </Text>
-
-                  <View>
-                    {
-                      (this.state.ALTERNATE_FOODS) ? (
-                        this.state.ALTERNATE_FOODS.map((food, i) => (
-                          <ListItem
-                            key={i}
-                            title={
-                              ("Servings" in food) ?
-                              `${food["Food Name"]}, ${food["Servings"].toFixed(1)} servings`
-                              : ("servings in food") ? 
-                              `${food["Food Name"]}, ${food["servings"].toFixed(1)} servings`
-                              : 
-                              `${food["Food Name"]}`
-                            }
-                            bottomDivider
-                            topDivider={i === 0}
-                            chevron
-                            onPress={this.updateFood.bind(this, food)}
-                          />
-                        ))
-                      ) : (
-                        <View>
-                          <Text style={styles.central_subheader_text}>Loading...</Text>
-                        </View>
-                      )
-                    }
-                  </View>
-
-                  {/*
-                    NOTE: This button currently doesn't do anything. Implement it when user histories
-                    become a thing and you can refresh the data.
-                  */}
-                  
-                  <Button
-                    title="Delete This Item"
-                    onPress={this.deleteFood}
-                    buttonStyle={styles.sign_out_button}
-                    titleStyle={styles.nav_text}
-                  />
-
-                  <Button
-                    title="Close"
-                    onPress={this.quitInfoOverlay}
-                    buttonStyle={styles.overlay_bottom_button}
-                    titleStyle={styles.nav_text}
-                  />
-
                 </KeyboardAwareScrollView>
               </View>
             </Overlay>
@@ -722,18 +941,28 @@ export class DailyScreen extends React.Component {
                   </View>
                 </KeyboardAwareScrollView>
 
-                <Text style={styles.left_align_subheader_text}>
-                  {`${this.state.add_servings.toFixed(1)} servings of ${(this.state.selected_add_food) ? this.state.selected_add_food["Food Name"] : ""}`}
-                </Text>
+                <View>
+                  {
+                    (this.state.selected_add_food) ? (
+                      <View>
+                        <Text style={styles.left_align_subheader_text}>
+                          {`${this.state.add_servings.toFixed(1)} servings of ${this.state.selected_add_food["Food Name"]}`}
+                        </Text>
 
-                <Slider
-                  value={this.state.add_servings}
-                  minimumValue={0.1}
-                  maximumValue={5}
-                  thumbTintColor={"#3b821b"}
-                  style={styles.servings_slider}
-                  onValueChange={value => this.setState({ add_servings: value })}
-                />
+                        <Slider
+                          value={this.state.add_servings}
+                          minimumValue={0.1}
+                          maximumValue={10}
+                          thumbTintColor={"#3b821b"}
+                          style={styles.servings_slider}
+                          onValueChange={value => this.setState({ add_servings: value })}
+                        />
+                      </View>
+                    ) : (
+                      <View />
+                    )
+                  }
+                </View>
 
                 <View>
                   {
@@ -759,14 +988,7 @@ export class DailyScreen extends React.Component {
             </Overlay>
 
             <Button
-              title="Adjust Preferences"
-              onPress={this._changePrefsAsync}
-              buttonStyle={styles.nav_button}
-              titleStyle={styles.nav_text}
-            />
-
-            <Button
-              title="Monthly View"
+              title="View Progress"
               onPress={this._goMonthAsync}
               buttonStyle={styles.nav_button}
               titleStyle={styles.nav_text}
@@ -775,6 +997,13 @@ export class DailyScreen extends React.Component {
             <Button
               title="User Profile"
               onPress={this._goProfileAsync}
+              buttonStyle={styles.nav_button}
+              titleStyle={styles.nav_text}
+            />
+
+            <Button
+              title="Regenerate Meals"
+              onPress={this.regenerateMeals}
               buttonStyle={styles.nav_button}
               titleStyle={styles.nav_text}
             />
