@@ -70,7 +70,6 @@ const AuthStack = createStackNavigator(
 const PreferencesStack = createStackNavigator(
   {
     Goals: GoalsScreen,
-    Prefs: PreferencesScreen,
   },
   {
     defaultNavigationOptions: {
