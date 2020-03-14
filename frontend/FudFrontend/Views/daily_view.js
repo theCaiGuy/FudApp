@@ -198,7 +198,7 @@ export class DailyScreen extends React.Component {
     return AsyncStorage.getItem('userToken').then((token) => {
       console.log(`Basic ${btoa(`${token}:`)}`)
 
-      fetch(`http://${API_PATH}/api/users/plan/get_daily_meals`, {
+      fetch(`http://${API_PATH}/api/users/history/fetch_user_history_daily`, {
         method: 'POST',
         headers: {
           Accept: 'application/json',
@@ -252,7 +252,7 @@ export class DailyScreen extends React.Component {
       return AsyncStorage.getItem('userToken').then((token) => {
         console.log(`Basic ${btoa(`${token}:`)}`)
 
-        fetch(`http://${API_PATH}/api/users/plan/get_daily_meals`, {
+        fetch(`http://${API_PATH}/api/users/history/fetch_user_history_daily`, {
           method: 'POST',
           headers: {
             Accept: 'application/json',
