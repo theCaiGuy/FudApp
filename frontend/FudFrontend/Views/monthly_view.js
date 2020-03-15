@@ -24,6 +24,15 @@ their daily goal of calories, protein, carbs, and fat.
 */
 
 
+/*
+Display a progress bar for the selected macro
+
+Arguments:
+current_progress (float): Amount of the given macro consumed on the given date
+max_progress (float): Recommended amount of the given macro to consume
+animationSpeed (float): Time in seconds the component should fade in
+macro_name (String): Name of the macro whose progress bar is being displayed
+*/
 function ProgressComponent({
   current_progress,
   max_progress,
@@ -92,16 +101,16 @@ export class MonthScreen extends React.Component {
     let curr_date = (new Date()).toISOString().slice(0, 10);
 
     this.state = {
-      selectedDate: curr_date,
-      curr_cals: null,
-      max_cals: null,
-      curr_protein: null,
-      max_protein: null,
-      curr_carbs: null,
-      max_carbs: null,
-      curr_fat: null,
-      max_fat: null,
-      no_data: false,
+      selectedDate: curr_date, // Date selected by the user in the calendar view
+      curr_cals: null, // Current calories consumed by the user for the selected date
+      max_cals: null, // Recommended calories to be consumed by the user
+      curr_protein: null, // Current protein consumed by the user for the selected date
+      max_protein: null, // Recommended protein to be consumed by the user
+      curr_carbs: null, // Current carbs to be consumed by the user for the selected date
+      max_carbs: null, // Recommended carbs to be consumed by the user
+      curr_fat: null, // Current fat consumed by the user for the selected date
+      max_fat: null, // Recommended fat to be consumed by the user
+      no_data: false, // Flag to be set if there is no data for the selected date
     };
     this.onDateChange = this.onDateChange.bind(this);
     this.viewMeals = this.viewMeals.bind(this);
@@ -109,8 +118,8 @@ export class MonthScreen extends React.Component {
   }
 
   /*
-  Query API for expected user macro attainment as well as
-  macro attainment for the given date
+  Query API for expected user macro attainment based
+  on the user's stated measurements and goals
   */
   fetchUserMacros = async() => {
     AsyncStorage.getItem('userToken').then((token) => {
@@ -153,6 +162,9 @@ export class MonthScreen extends React.Component {
     });
   }
 
+  /*
+  Get user's macro attainment for the given date
+  */
   fetchMacroAttainment = async(curr_date) => {
     AsyncStorage.getItem('userToken').then((token) => {
       // GET CURRENT CALS, PROTEIN, CARBS, AND FAT
