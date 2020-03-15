@@ -59,7 +59,7 @@ export class EditAccountInfoScreen extends React.Component {
             {/*
               TODO: Handle 400 response better
             */}
-            console.log(response);
+            console.log(JSON.stringify(response));
             return;
           }
           response.json().then((responseJson) => {
@@ -89,7 +89,7 @@ export class EditAccountInfoScreen extends React.Component {
             {/*
               TODO: Handle 400 response better
             */}
-            console.log(response2);
+            console.log(JSON.stringify(response2));
             return;
           }
           response2.json().then((responseJson2) => {

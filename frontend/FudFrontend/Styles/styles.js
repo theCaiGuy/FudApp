@@ -55,13 +55,13 @@ const styles = StyleSheet.create({
       alignItems: 'center',
       borderRadius: 10,
     },
-    profile_text_input: { 
+    profile_text_input: {
       marginVertical: 10,
     },
-    signin_text_input: { 
+    signin_text_input: {
       marginVertical: 20,
     },
-    search_text_input: { 
+    search_text_input: {
       marginVertical: 5,
     },
     profile_text_input_label: {
@@ -214,6 +214,13 @@ const styles = StyleSheet.create({
     },
     cardStyle: {
       borderRadius: 10,
+    },
+    progress_bar: {
+      marginHorizontal: 15,
+      marginBottom: 5,
+    },
+    progress_text: {
+      marginHorizontal: 10,
     }
   });
 
