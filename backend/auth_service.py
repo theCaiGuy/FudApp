@@ -192,7 +192,6 @@ def change_password():
     password_hash = hash_pwd(password)
 
     # before changing the password, check that the user's old password is correct
-    params = request.json
     if not params or "old_password" not in params:
         return "Please include the user's old password", 400
     old_password = params.get("old_password")
