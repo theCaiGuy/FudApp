@@ -28,37 +28,107 @@ TODO:
 */
 
 export class UserProfileScreen extends React.Component {
-    constructor(props) {
-      super(props);
-      this.state = {
-        user_id: null,
-        toggle: false,
-      };
-    }
+  constructor(props) {
+    super(props);
+    this.state = {
+      name: null,
+      toggle: false,
+      loading: false,
+    };
+  }
+
+  /*
+  On startup, fetching and displaying current account info:
+  user's name + email address
+  */
+  componentDidMount() {
+    this.setState({
+      loading: true,
+    })
+
+    return AsyncStorage.getItem('userToken').then((token) => {
+      fetch(`http://${API_PATH}/api/users/get_name`, {
+        method: 'POST',
+        headers: {
+          Accept: 'application/json',
+          'Content-Type': 'application/json',
+          'Authorization': `Basic ${btoa(`${token}:`)}`
+        },
+      })
+      .then((response) => {
+        if (response.status === 401) {
+          AsyncStorage.removeItem('userToken').then(() => {
+            this.props.navigation.navigate('Auth');
+            return;
+          });
+        }
+        if (response.status === 400) {
+          {/*
+            TODO: Handle 400 response better
+          */}
+          console.log(JSON.stringify(response));
+          return;
+        }
+        response.json().then((responseJson) => {
+          this.setState({
+            name: responseJson['name'],
+            loading: false,
+          });
+          console.log(`Recieved response ${JSON.stringify(responseJson)}`);
+        });
+
+      });
+    });
+  }
 
     render() {
+
+      if (this.state.loading) {
+        return(
+          <SafeAreaView style={styles.container}>
+            <Text style={styles.central_subheader_text}>Loading User Profile...</Text>
+            <Button
+              title="Back"
+              onPress={() => {this.props.navgation.goBack()}}
+              buttonStyle={styles.nav_button}
+              titleStyle={styles.nav_text}
+            />
+          </SafeAreaView>
+        )
+      }
 
       return (
         <SafeAreaView style={styles.container}>
           <KeyboardAwareScrollView>
             <View style={styles.container}>
-                <Text style={styles.central_header_text}>User Profile Page</Text>
+                <Text style={styles.central_header_text}>
+                  {`Welcome ${this.state.name}`}
+                </Text>
+
+                <Text style={styles.central_subheader_text}>
+                  View and adjust your user profile
+                </Text>
 
                 <Button
                   title="Account Info"
                   onPress={this._editAccountInfoAsync}
                   buttonStyle={styles.nav_button}
-                  titleStyle={styles.central_subheader_text}
+                  titleStyle={styles.nav_text}
                 />
 
                 <Button
                   title="Goals and Preferences"
                   onPress={this._editGoalsAsync}
                   buttonStyle={styles.nav_button}
-                  titleStyle={styles.central_subheader_text}
+                  titleStyle={styles.nav_text}
                 />
 
+                
+                {/* 
+                TODO: Add color scheme changer
+
                 <Text style={styles.left_align_subheader_text}>Color Scheme</Text>
+                
                 <FlipToggle
                   value={this.state.toggle}
                   buttonWidth={200}
@@ -79,7 +149,7 @@ export class UserProfileScreen extends React.Component {
                   onToggleLongPress={() => {
                     console.log('toggle long pressed!');
                   }}
-                />
+                /> */}
 
             </View>
           </KeyboardAwareScrollView>

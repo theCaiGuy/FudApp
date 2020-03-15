@@ -27,6 +27,7 @@ export class EditAccountInfoScreen extends React.Component {
         user_id: null, // user id for authentication purposes
         name: null, // user's name
         email: null, // user's email address
+        error: false, // Flag to see if error was encountered
       };
     }
 
@@ -131,18 +132,32 @@ export class EditAccountInfoScreen extends React.Component {
                   defaultValue={(this.state.email) ? String(this.state.email) : ""}
                 />
 
+                <View>
+                  {
+                    (this.state.error) ? (
+                      <Text
+                        style={styles.satisfy_requirements_text}
+                      >
+                        Error: Unable to update user account info. Please check your inputs and try again.
+                      </Text>
+                    ) : (
+                      <View />
+                    )
+                  }
+                </View>
+
                 <Button
                   title="Submit Changes"
                   onPress={this._submitChangesAsync}
                   buttonStyle={styles.nav_button}
-                  titleStyle={styles.central_subheader_text}
+                  titleStyle={styles.nav_text}
                 />
 
                 <Button
                   title="Change Password"
                   onPress={this._changePasswordAsync}
                   buttonStyle={styles.nav_button}
-                  titleStyle={styles.central_subheader_text}
+                  titleStyle={styles.nav_text}
                 />
 
             </View>
@@ -186,9 +201,9 @@ export class EditAccountInfoScreen extends React.Component {
             });
           }
           if (response.status === 400 || response2.status === 400) {
-            {/*
-              TODO: Handle 400 response better
-            */}
+            this.setState({
+              error: true,
+            })
             return;
           }
           console.log(`New name ${name}`);

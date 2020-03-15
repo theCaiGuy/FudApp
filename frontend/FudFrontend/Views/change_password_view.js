@@ -27,6 +27,7 @@ export class ChangePasswordScreen extends React.Component {
         current_password: null, // current password
         new_password: null, // new password
         new_password_copy: null, // confirmation of new password
+        error: false, // Flag for whether an error has been encountered when attempting to update the password
       };
     }
 
@@ -71,11 +72,47 @@ export class ChangePasswordScreen extends React.Component {
                   onChangeText = {(text) => this.setState({new_password_copy: text})}
                 />
 
+                <View>
+                  {
+                    (this.state.new_password !== this.state.new_password_copy) ? (
+                      <Text
+                        style={styles.satisfy_requirements_text}
+                      >
+                        Error: Passwords don't match
+                      </Text>
+                    ) : (
+                      <View />
+                    )
+                  }
+                </View>
+
+                <View>
+                  {
+                    (this.state.error) ? (
+                      <Text
+                        style={styles.satisfy_requirements_text}
+                      >
+                        Error: Unable to update password. Please check your inputs and try again.
+                      </Text>
+                    ) : (
+                      <View />
+                    )
+                  }
+                </View>
+
                 <Button
                   title="Update Password"
                   onPress={this._updatePassAsync}
                   buttonStyle={styles.nav_button}
-                  titleStyle={styles.central_subheader_text}
+                  titleStyle={styles.nav_text}
+                  disabled={
+                    !(
+                      this.state.current_password 
+                      && this.state.new_password 
+                      && this.state.new_password_copy
+                    )
+                    || this.state.new_password !== this.state.new_password_copy
+                  }
                 />
 
             </View>
@@ -120,10 +157,10 @@ export class ChangePasswordScreen extends React.Component {
               return;
             });
           }
-          if (response.status === 400) {
-            {/*
-              TODO: Handle 400 response better
-            */}
+          if (response.status === 400 || response.status === 500) {
+            this.setState({
+              error: true,
+            });
             return;
           }
           if (response.status !== 204) {
