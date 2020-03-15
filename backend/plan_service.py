@@ -75,7 +75,7 @@ def get_daily_meals():
     dateObject["Snacks"] = {}
 
     # add to user_history
-    currHistoryObject = user_history["history"]
+    currHistoryObject = user_history.get("history", {})
     currHistoryObject[
         given_date
     ] = dateObject  # hardcoded date for now b/c frontend isn't passing in date
