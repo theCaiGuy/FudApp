@@ -216,11 +216,14 @@ const styles = StyleSheet.create({
       borderRadius: 10,
     },
     progress_bar: {
-      marginHorizontal: 15,
-      marginBottom: 5,
+      marginHorizontal: 10,
+      marginVertical: 5,
     },
     progress_text: {
       marginHorizontal: 10,
+    },
+    calendarStyle: {
+      marginVertical: 0
     }
   });
 

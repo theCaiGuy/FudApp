@@ -1031,7 +1031,7 @@ export class DailyScreen extends React.Component {
     Navigate to the monthly view
     */
     _goMonthAsync = async () => {
-      this.props.navigation.navigate('Month')
+      this.props.navigation.navigate('Month', {'date': this.state.date})
     }
 
     /*

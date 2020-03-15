@@ -1,9 +1,9 @@
-import React from 'react';
+import React, { Component, useState, useEffect } from 'react';
 import {
+  Animated,
   AsyncStorage,
   SafeAreaView,
   Text,
-  TouchableHighlight,
   View,
 } from 'react-native';
 import { styles } from '../Styles/styles'
@@ -12,13 +12,9 @@ import * as Progress from 'react-native-progress';
 import { API_PATH } from '../assets/constants';
 import {
   Button,
-  Card,
-  Input,
-  ListItem,
-  Overlay,
-  Slider,
 } from 'react-native-elements';
 import {encode as btoa} from 'base-64';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scrollview';
 
 /*
 This view is a Calendar view that lets the user look at their meal plan for any
@@ -27,6 +23,68 @@ It also is a Progress tracker that lets them see how they are doing towards
 their daily goal of calories, protein, carbs, and fat.
 */
 
+
+function ProgressComponent({
+  current_progress,
+  max_progress,
+  animationSpeed,
+  macro_name,
+}) {
+  const [fadeAnim] = useState(new Animated.Value(0))  // Initial value for opacity: 0
+
+  React.useEffect(() => {
+    Animated.timing(
+      fadeAnim,
+      {
+        toValue: 1,
+        duration: 1000 * animationSpeed,
+      }
+    ).start();
+  }, [])
+
+  return (
+    <Animated.View
+      style={{
+        opacity: fadeAnim
+      }}
+    >
+      <View>
+        <Text 
+          style={styles.left_align_subheader_text}
+        > 
+          {`${macro_name}: ${(current_progress) ? current_progress : 0} / ${(max_progress) ? max_progress : 0}`}
+        </Text>
+      
+        <View>
+          {
+            (current_progress === null || max_progress === null) ? (
+              <Progress.Bar 
+                style={styles.progress_bar} 
+                progress={0} 
+                width={null} 
+                height={20}
+                color={'#3b821b'}
+              />
+            ) : (
+              <Progress.Bar 
+                style={styles.progress_bar} 
+                progress={Math.min(1.0, parseInt(current_progress, 10) / parseInt(max_progress, 10))} 
+                width={null} 
+                height={20}
+                color={(parseInt(current_progress, 10) / parseInt(max_progress, 10) > 1.0) ? 'red' : '#3b821b'}
+              />
+            )
+          }
+        </View>
+      </View>
+    </Animated.View>
+  );
+}
+
+
+/*
+Main export class for the monthly progress view
+*/
 export class MonthScreen extends React.Component {
   constructor(props) {
     super(props);
@@ -43,17 +101,18 @@ export class MonthScreen extends React.Component {
       max_carbs: null,
       curr_fat: null,
       max_fat: null,
+      no_data: false,
     };
     this.onDateChange = this.onDateChange.bind(this);
     this.viewMeals = this.viewMeals.bind(this);
+    this.fetchUserMacros = this.fetchUserMacros.bind(this);
   }
 
-  onDateChange = async(date) => {
-    let curr_date = date.toISOString().slice(0, 10);
-    this.setState({
-      selectedDate: curr_date,
-    });
-
+  /*
+  Query API for expected user macro attainment as well as
+  macro attainment for the given date
+  */
+  fetchUserMacros = async() => {
     AsyncStorage.getItem('userToken').then((token) => {
       // GET MAX CALS, PROTEIN, CARBS, AND FAT
       fetch(`http://${API_PATH}/api/users/goals/fetch_user_macros`, {
@@ -81,7 +140,6 @@ export class MonthScreen extends React.Component {
 
         response.json().then((responseJson) => {
           this.setState({
-            // selectedDate: curr_date,
             max_cals: Math.round(responseJson['tdee']),
             max_protein: Math.round(responseJson['protein']),
             max_carbs: Math.round(responseJson['carb']),
@@ -90,7 +148,13 @@ export class MonthScreen extends React.Component {
           console.log(`Recieved max response ${JSON.stringify(responseJson)}`);
         });
       });
+    }).catch((error) => {
+      console.error(JSON.stringify(error));
+    });
+  }
 
+  fetchMacroAttainment = async(curr_date) => {
+    AsyncStorage.getItem('userToken').then((token) => {
       // GET CURRENT CALS, PROTEIN, CARBS, AND FAT
       fetch(`http://${API_PATH}/api/users/history/fetch_user_history_macros_daily`, {
         method: 'POST',
@@ -109,9 +173,14 @@ export class MonthScreen extends React.Component {
           });
         }
         if (response2.status === 400) {
-          {/*
-            TODO: Handle 400 response better
-          */}
+          this.setState({
+            no_data: true,
+            curr_cals: 0,
+            curr_protein: 0,
+            curr_carbs: 0,
+            curr_fat: 0,
+            loading: false,
+          })
           console.log(JSON.stringify(response2));
           return;
         }
@@ -122,6 +191,8 @@ export class MonthScreen extends React.Component {
             curr_protein: Math.round(responseJson2['protein']),
             curr_carbs: Math.round(responseJson2['carb']),
             curr_fat: Math.round(responseJson2['fat']),
+            no_data: false,
+            loading: false,
           });
           console.log(`Recieved curr response ${JSON.stringify(responseJson2)}`);
         });
@@ -129,7 +200,36 @@ export class MonthScreen extends React.Component {
     }).catch((error) => {
       console.error(JSON.stringify(error));
     });
+  }
 
+  /*
+  On mount, display macros for the specified date
+  */
+  componentDidMount() {
+    let { params } = this.props.navigation.state;
+    let date = params ? params.date : null;
+    if (!date) {
+      date = (new Date()).toISOString().slice(0, 10);
+    }
+    console.log(date);
+    this.setState({
+      selectedDate: date,
+      loading: true,
+    })
+    this.fetchUserMacros();
+    this.fetchMacroAttainment(date);
+  }
+
+  /*
+  Callback function for when the user selects a date from the calendar
+  */
+  onDateChange = async(date) => {
+    let curr_date = date.toISOString().slice(0, 10);
+    this.setState({
+      selectedDate: curr_date,
+      loading: true,
+    });
+    this.fetchMacroAttainment(curr_date);
   }
 
   viewMeals = async () => {
@@ -141,77 +241,66 @@ export class MonthScreen extends React.Component {
   };
 
   render() {
-    const { selectedDate } = this.state;
-    const startDate = selectedDate ? selectedDate.toString() : '';
     return (
       <SafeAreaView style={styles.container}>
-        <CalendarPicker
-          onDateChange={this.onDateChange}
-          selectedDayColor="#3b821b"
-          selectedDayTextColor="#ffffff"
-        />
+        <KeyboardAwareScrollView>
 
-        <Button
-          title={`View Meals: ${this.state.selectedDate}`}
-          onPress={this.viewMeals}
-          buttonStyle={styles.nav_button}
-          titleStyle={styles.nav_text}
-        />
+          <View style={styles.calendarStyle}>
+            <CalendarPicker
+              onDateChange={this.onDateChange}
+              selectedDayColor="#3b821b"
+              selectedDayTextColor="#ffffff"
+              initialDate={this.state.selectedDate}
+            />
+          </View>
 
-        <Text style={styles.left_align_subheader_text}> Progress Tracking </Text>
+          <View>
+            {
+              (this.state.loading) ? (
+                <Text style={styles.central_subheader_text}>Loading...</Text>
+              ) : (this.state.no_data) ? (
+                <Text style={styles.central_subheader_text}> {`No data available: ${this.state.selectedDate}`} </Text>
+              ) : (
+                <Text style={styles.central_subheader_text}> {`Progress Tracking: ${this.state.selectedDate}`} </Text>
+              )
+            }
+          </View>
 
-        <Text style={styles.progress_text}> Calories: {this.state.curr_cals} / {this.state.max_cals}</Text>
-        {
-          this.state.curr_cals === null || this.state.max_cals === null
-          ?
-          <Progress.Bar style={styles.progress_bar} progress={0} width={200} />
-          :
-          parseInt(this.state.curr_cals, 10) / parseInt(this.state.max_cals, 10) > 1.0
-          ?
-          <Progress.Bar style={styles.progress_bar} progress={1.0} width={200} color={'red'}/>
-          :
-          <Progress.Bar style={styles.progress_bar} progress={Math.min(1.0, parseInt(this.state.curr_cals, 10) / parseInt(this.state.max_cals, 10))} width={200} color={'green'}/>
-        }
+          <ProgressComponent
+            current_progress={this.state.curr_cals}
+            max_progress={this.state.max_cals}
+            animationSpeed={1}
+            macro_name="Calories"
+          />
 
-        <Text style={styles.progress_text}> Protein: {this.state.curr_protein} / {this.state.max_protein}</Text>
-        {
-          this.state.curr_protein === null || this.state.max_protein === null
-          ?
-          <Progress.Bar style={styles.progress_bar} progress={0} width={200} />
-          :
-          parseInt(this.state.curr_protein, 10) / parseInt(this.state.max_protein, 10) > 1.0
-          ?
-          <Progress.Bar style={styles.progress_bar} progress={1.0} width={200} color={'red'}/>
-          :
-          <Progress.Bar style={styles.progress_bar} progress={Math.min(1.0, parseInt(this.state.curr_protein, 10) / parseInt(this.state.max_protein, 10))} width={200} color={'green'}/>
-        }
+          <ProgressComponent
+            current_progress={this.state.curr_carbs}
+            max_progress={this.state.max_carbs}
+            animationSpeed={1.25}
+            macro_name="Carbs"
+          />
 
-        <Text style={styles.progress_text}> Carbs: {this.state.curr_carbs} / {this.state.max_carbs}</Text>
-        {
-          this.state.curr_carbs === null || this.state.max_carbs === null
-          ?
-          <Progress.Bar style={styles.progress_bar} progress={0} width={200} />
-          :
-          parseInt(this.state.curr_carbs, 10) / parseInt(this.state.max_carbs, 10) > 1.0
-          ?
-          <Progress.Bar style={styles.progress_bar} progress={1.0} width={200} color={'red'}/>
-          :
-          <Progress.Bar style={styles.progress_bar} progress={Math.min(1.0, parseInt(this.state.curr_carbs, 10) / parseInt(this.state.max_carbs, 10))} width={200} color={'green'}/>
-        }
+          <ProgressComponent
+            current_progress={this.state.curr_fat}
+            max_progress={this.state.max_fat}
+            animationSpeed={1.5}
+            macro_name="Fats"
+          />
 
-        <Text style={styles.progress_text}> Fat: {this.state.curr_fat} / {this.state.max_fat}</Text>
-        {
-          this.state.curr_fat === null || this.state.max_fat === null
-          ?
-          <Progress.Bar style={styles.progress_bar} progress={0} width={200} />
-          :
-          parseInt(this.state.curr_fat, 10) / parseInt(this.state.max_fat, 10) > 1.0
-          ?
-          <Progress.Bar style={styles.progress_bar} progress={1.0} width={200} color={'red'}/>
-          :
-          <Progress.Bar style={styles.progress_bar} progress={Math.min(1.0, parseInt(this.state.curr_fat, 10) / parseInt(this.state.max_fat, 10))} width={200} color={'green'}/>
-        }
-
+          <ProgressComponent
+            current_progress={this.state.curr_protein}
+            max_progress={this.state.max_protein}
+            animationSpeed={1.75}
+            macro_name="Protein"
+          />
+          
+          <Button
+            title={`${(this.state.no_data) ? ("Generate") : ("View")} Meals: ${this.state.selectedDate}`}
+            onPress={this.viewMeals}
+            buttonStyle={styles.nav_button}
+            titleStyle={styles.nav_text}
+          />
+        </KeyboardAwareScrollView>
       </SafeAreaView>
     );
   }
