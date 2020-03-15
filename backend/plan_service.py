@@ -41,9 +41,6 @@ def get_daily_meals():
     if not params or "date" not in params:
         return "Please include the date", 400
     given_date = str(params["date"])
-    
-    # DAILY PLAN GENERATOR
-    dailyPlan = generateDailyMeals(user_id, given_date)
 
     # save to date in user_history db
     user_history = db_user_history.find_one({"user_id": user_id})
@@ -51,6 +48,10 @@ def get_daily_meals():
         new_history = {"user_id": user_id, "history": {}}
         db_user_history.insert_one(new_history)
         user_history = db_user_history.find_one({"user_id": user_id})
+    
+    # DAILY PLAN GENERATOR
+    dailyPlan = generateDailyMeals(user_id, given_date, user_history)
+
     # go through daily plan for bfast, lunch, dinner, snacks, and one by one add
     dateObject = {}
     # Breakfast
@@ -75,7 +76,7 @@ def get_daily_meals():
     dateObject["Snacks"] = {}
 
     # add to user_history
-    currHistoryObject = user_history["history"]
+    currHistoryObject = user_history.get("history", {})
     currHistoryObject[
         given_date
     ] = dateObject  # hardcoded date for now b/c frontend isn't passing in date
@@ -102,7 +103,7 @@ Returns:
 """
 
 
-def generateDailyMeals(user_id, date):
+def generateDailyMeals(user_id, date, user_history):
     # get macros
     proteinGroups = [
         "Sausages and Luncheon Meats",
@@ -210,7 +211,7 @@ def generateDailyMeals(user_id, date):
     ]
 
     return generateDailyMeals_Cals(
-        calories, mealTemplate1, mealTemplate2, mealTemplate3, date, user_id
+        calories, mealTemplate1, mealTemplate2, mealTemplate3, date, user_id, user_history
     )
 
 
@@ -233,12 +234,12 @@ Returns:
 """
 
 
-def generateDailyMeals_Cals(calories, template1, template2, template3, date, user_id):
+def generateDailyMeals_Cals(calories, template1, template2, template3, date, user_id, user_history):
     caloriesPerMeal = calories / 3
     dailyPlan = {}
     # STEP 1: GENERATE MEALS AND ADJUST SERVING SIZES BASED ON CALORIES
     # BREAKFAST
-    breakfast = generateMeal(template1, date, user_id)
+    breakfast = generateMeal(template1, date, user_id, user_history)
     serving1 = (0.5 * caloriesPerMeal) / (breakfast[0][1][3])
     breakfast[0][1][0] = breakfast[0][1][0] * float(serving1)
     breakfast[0][1][1] = breakfast[0][1][1] * float(serving1)
@@ -262,7 +263,7 @@ def generateDailyMeals_Cals(calories, template1, template2, template3, date, use
     #     print(breakfast)
 
     # LUNCH
-    lunch = generateMeal(template2, date, user_id)
+    lunch = generateMeal(template2, date, user_id, user_history)
     serving1 = (0.5 * caloriesPerMeal) / (lunch[0][1][3])
     lunch[0][1][0] = lunch[0][1][0] * float(serving1)
     lunch[0][1][1] = lunch[0][1][1] * float(serving1)
@@ -286,7 +287,7 @@ def generateDailyMeals_Cals(calories, template1, template2, template3, date, use
     #     print(lunch)
 
     # DINNER
-    dinner = generateMeal(template3, date, user_id)
+    dinner = generateMeal(template3, date, user_id, user_history)
     serving1 = (0.5 * caloriesPerMeal) / (dinner[0][1][3])
     dinner[0][1][0] = dinner[0][1][0] * float(serving1)
     dinner[0][1][1] = dinner[0][1][1] * float(serving1)
@@ -388,9 +389,9 @@ Returns:
 """
 
 
-def generateMeal(template, date, user_id):
+def generateMeal(template, date, user_id, user_history):
 	meal = []
-	recentFoods = fetchRecentFoods(user_id, date)
+	recentFoods = fetchRecentFoods(user_id, date, user_history)
 	for group in template:
 		matches = db.find({"Food Group": group})
 		length = matches.count()
@@ -421,10 +422,9 @@ Returns:
 """
 
 
-def fetchRecentFoods(user_id, date):
+def fetchRecentFoods(user_id, date, user_history):
 	recentFoods = []
-	user_history = db_user_history.find_one({"user_id": user_id})
-	currHistoryObject = user_history["history"]
+	currHistoryObject = user_history.get("history", {})
 
 	#math to get the string date for yesterday
 	prevDate = int(date[-1]) - 1
