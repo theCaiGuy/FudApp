@@ -6,15 +6,12 @@ import {
 import { createStackNavigator } from 'react-navigation-stack';
 
 import { GoalsScreen } from './Views/goals_view'
-import { WeekScreen } from './Views/weekly_view'
-import { PreferencesScreen } from './Views/preferences_view'
 import { AuthLoadingScreen, SignInScreen } from './Views/sign_in_view'
 import { SignUpScreen } from './Views/sign_up_view'
 import { DailyScreen } from './Views/daily_view'
 import { MonthScreen } from './Views/monthly_view'
 import { UserProfileScreen } from './Views/user_profile_view'
 import { EditAccountInfoScreen } from './Views/edit_account_info_view'
-import { EditGoalsScreen } from './Views/edit_goals_view'
 import { ChangePasswordScreen } from './Views/change_password_view'
 
 // Adapted from https://snack.expo.io/@react-navigation/auth-flow-v3
@@ -34,7 +31,6 @@ A switch navigator handles navigation between the three stacks and checks for us
 const AppStack = createStackNavigator(
   {
     Home: DailyScreen,
-    Week: WeekScreen,
     Month: MonthScreen,
     Profile: UserProfileScreen,
     EditAccountInfo: EditAccountInfoScreen,
