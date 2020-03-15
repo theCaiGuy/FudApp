@@ -185,6 +185,7 @@ def change_password():
         return "No user found", 400
 
     # check whether the new password is sent first to guard against side channel attacks
+    params = request.json
     if "new_password" not in params:
         return "Please include the user's new password", 400
     password = params.get("new_password")
