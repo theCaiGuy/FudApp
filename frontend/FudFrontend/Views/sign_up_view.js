@@ -212,7 +212,7 @@ export class SignUpScreen extends React.Component {
         });
       })
       .catch((error) => {
-        console.error(error);
+        // console.error(error);
         this.setState({
           error: true,
         })

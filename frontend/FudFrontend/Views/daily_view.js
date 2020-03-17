@@ -232,7 +232,7 @@ export class DailyScreen extends React.Component {
         });
       });
     }).catch((error) => {
-      console.error(error);
+      // console.error(error);
       this.setState({
         error: true,
         loading: false,
@@ -283,7 +283,7 @@ export class DailyScreen extends React.Component {
         });
       });
     }).catch((error) => {
-      console.error(error);
+      // console.error(error);
       this.setState({
         error: true,
         loading: false,
@@ -382,7 +382,7 @@ export class DailyScreen extends React.Component {
         });
       })
     }).catch((error) => {
-      console.error(error);
+      // console.error(error);
       this.setState({
         error: true
       })
@@ -436,7 +436,7 @@ export class DailyScreen extends React.Component {
       
       });
     }).catch((error) => {
-      console.error(error);
+      // console.error(error);
       this.setState({
         error: true,
         loading: false,
@@ -520,7 +520,7 @@ export class DailyScreen extends React.Component {
         
         });
       }).catch((error) => {
-        console.error(error);
+        // console.error(error);
         this.setState({
           error: true,
           loading: false,
@@ -587,7 +587,7 @@ export class DailyScreen extends React.Component {
       
       });
     }).catch((error) => {
-      console.error(error);
+      // console.error(error);
       this.setState({
         error: true,
         loading: false,
@@ -671,7 +671,7 @@ export class DailyScreen extends React.Component {
         });
       })
     }).catch((error) => {
-      console.error(error);
+      // console.error(error);
       this.setState({
         error: true,
         search_loading: false

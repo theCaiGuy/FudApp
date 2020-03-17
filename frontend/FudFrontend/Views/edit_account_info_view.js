@@ -102,7 +102,7 @@ export class EditAccountInfoScreen extends React.Component {
 
         })
       }).catch((error) => {
-        console.error(error);
+        // console.error(error);
       });
     }
 
@@ -211,7 +211,7 @@ export class EditAccountInfoScreen extends React.Component {
           this.props.navigation.navigate('Profile');
         });
       }).catch((error) => {
-        console.error(error);
+        // console.error(error);
       });
     };
 

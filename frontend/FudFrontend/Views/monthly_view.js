@@ -158,7 +158,7 @@ export class MonthScreen extends React.Component {
         });
       });
     }).catch((error) => {
-      console.error(JSON.stringify(error));
+      // console.error(JSON.stringify(error));
     });
   }
 
@@ -210,7 +210,7 @@ export class MonthScreen extends React.Component {
         });
       });
     }).catch((error) => {
-      console.error(JSON.stringify(error));
+      // console.error(JSON.stringify(error));
     });
   }
 

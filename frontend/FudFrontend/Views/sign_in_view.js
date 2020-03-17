@@ -155,7 +155,7 @@ export class SignInScreen extends React.Component {
       let curr_date = (new Date()).toISOString().slice(0, 10);
       this.props.navigation.navigate('App', { date: curr_date });
     } catch (err) {
-      console.error(err);
+      // console.error(err);
     }
   };
 
@@ -199,7 +199,7 @@ export class AuthLoadingScreen extends React.Component {
       }
     })
     .catch((error) => {
-      console.error(error);
+      // console.error(error);
       AsyncStorage.removeItem('userToken');
       userToken = null;
     })

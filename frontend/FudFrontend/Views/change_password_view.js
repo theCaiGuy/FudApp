@@ -173,7 +173,7 @@ export class ChangePasswordScreen extends React.Component {
           this.props.navigation.navigate('Profile');
         })
       }).catch((error) => {
-        console.error(error);
+        // console.error(error);
       });
     };
   }

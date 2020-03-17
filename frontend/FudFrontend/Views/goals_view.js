@@ -259,7 +259,7 @@ export class GoalsScreen extends React.Component {
           });
         })
       }).catch((error) => {
-        console.error(error);
+        // console.error(error);
       });
     }
 
@@ -421,7 +421,7 @@ export class GoalsScreen extends React.Component {
             goals_set: true,
           });
         } catch (err) {
-          console.error(err);
+          // console.error(err);
         }
       } else {
         console.log("Fields not filled");
@@ -484,7 +484,7 @@ export class GoalsScreen extends React.Component {
             );
           }
         } catch (err) {
-          console.error(err);
+          // console.error(err);
         }
       } else {
         console.log("Fields not filled");
